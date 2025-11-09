@@ -1,0 +1,506 @@
+/* src/pages/Page.css */
+.page-container {
+  max-width: 1100px; /* 캘린더를 위해 페이지 너비 확장 */
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.page-container h2 {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.page-container p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 40px;
+}
+
+/* --- AuthPage & ProfileSetup --- */
+.auth-container, .profile-setup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh; /* 최소 높이 보장 */
+  padding: 40px 20px; /* 상하좌우 패딩 */
+  box-sizing: border-box;
+  background-color: #f8f9fa; /* App.css의 unauthed와 동일한 배경 */
+}
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 50px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  text-align: center;
+  box-sizing: border-box;
+}
+/* ProfileSetup.js 카드 (더 넓게, 왼쪽 쏠림 문제 해결) */
+.profile-card {
+  width: 100%;
+  max-width: 900px; /* 최대 너비 확장 */
+  padding: 40px 50px; /* 패딩 조정 */
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  text-align: left; /* 기본 정렬을 왼쪽으로 */
+  box-sizing: border-box;
+}
+
+.auth-logo {
+  font-size: 42px;
+  font-weight: 800;
+  color: #007bff;
+  margin: 0 0 15px 0;
+  text-align: center; /* 로고만 중앙 정렬 */
+}
+.auth-subtitle { 
+  font-size: 17px; 
+  color: #555; 
+  margin-bottom: 40px; 
+  line-height: 1.6;
+  text-align: center; /* 부제목도 중앙 정렬 */
+}
+.google-login-button {
+  width: 100%; padding: 14px; font-size: 16px; font-weight: 600;
+  background-color: #ffffff; color: #333; border: 1px solid #dee2e6;
+  border-radius: 8px; cursor: pointer; transition: all 0.2s ease-in-out;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.google-login-button:hover { background-color: #f8f9fa; border-color: #ced4da; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.google-icon { width: 22px; height: 22px; }
+.auth-helper-text { margin-top: 20px; font-size: 13px; color: #888; line-height: 1.5; text-align: center; }
+
+/* --- ProfileSetup & MyPage Form --- */
+.profile-card h2, .profile-card p {
+  text-align: left;
+}
+.profile-card h2 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+.profile-card p { 
+  font-size: 15px; 
+  margin-bottom: 30px; 
+  color: #666;
+  text-align: center; /* 설명 텍스트도 중앙 정렬 */
+}
+.form-section {
+  margin-bottom: 30px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 30px;
+}
+.form-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 10px;
+}
+.form-section h3 {
+  font-size: 18px; /* 제목 크기 살짝 줄임 */
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 20px;
+}
+.form-grid.two-cols {
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (max-width: 640px) {
+  .form-grid.two-cols {
+    grid-template-columns: 1fr; /* 모바일에서는 1줄로 */
+  }
+}
+
+.form-group {
+  margin-bottom: 15px; /* 폼 그룹간 간격 살짝 줄임 */
+  text-align: left;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+/* 동적 입력 UI (Skill, Experience 등) */
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+/* ExperienceFit의 폼 그룹 */
+.input-group.experience-group {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 2fr auto;
+  gap: 10px;
+}
+@media (max-width: 768px) {
+  .input-group.experience-group {
+    grid-template-columns: 1fr; /* 모바일에서는 1줄로 */
+  }
+}
+.input-group input { flex-grow: 1; } /* 입력창이 남는 공간 차지 */
+.input-group select { min-width: 100px; }
+.add-item-btn {
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap; /* '추가' 버튼 줄바꿈 방지 */
+  height: 47px; /* input과 높이 맞춤 */
+  align-self: end; /* 그리드 하단 정렬 */
+}
+.add-item-btn:hover { background-color: #0056b3; }
+
+.added-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.added-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f1f3f5;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #333;
+}
+.remove-item-btn {
+  background: #ced4da;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 20px; /* 텍스트 중앙 정렬 */
+  text-align: center;
+  padding: 0;
+}
+.remove-item-btn:hover { background: #adb5bd; }
+
+
+.submit-button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.submit-button:hover { background-color: #0056b3; }
+.submit-button:disabled { background-color: #6c757d; }
+.mypage-card { max-width: 100%; }
+
+/* --- PromptInput --- */
+.prompt-card { background-color: #f8f9fa; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.prompt-input-area { width: 100%; min-height: 120px; padding: 15px; border: 1px solid #dee2e6; border-radius: 8px; font-size: 16px; resize: vertical; box-sizing: border-box; margin-bottom: 15px; }
+.prompt-button { padding: 12px 25px; font-size: 16px; font-weight: bold; color: white; background-color: #007bff; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
+.prompt-button:disabled { background-color: #6c757d; cursor: not-allowed; }
+.prompt-button:hover:not(:disabled) { background-color: #0056b3; }
+.loading-container { text-align: center; padding: 40px 0; }
+.spinner {
+  border: 4px solid #f3f3f3; border-top: 4px solid #007bff;
+  border-radius: 50%; width: 40px; height: 40px;
+  animation: spin 1s linear infinite; margin: 0 auto 15px auto;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.results-container { margin-top: 40px; }
+.results-container h3 { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+.result-card { background: #fff; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 20px; position: relative; }
+.result-card h4 { margin-top: 0; }
+.result-card span { font-size: 14px; color: #888; display: block; margin-bottom: 10px; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+.tag { background-color: #e7f3ff; color: #007bff; padding: 5px 10px; border-radius: 5px; font-size: 13px; font-weight: 500; }
+.pin-button { position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid #007bff; color: #007bff; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 500; }
+.pin-button:hover { background-color: #e7f3ff; }
+
+/* 토스트 팝업 */
+.toast-popup {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 30px;
+  font-size: 15px;
+  z-index: 1000;
+  animation: fadeInOut 3s forwards;
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; bottom: 0; }
+  20% { opacity: 1; bottom: 30px; }
+  80% { opacity: 1; bottom: 30px; }
+  100% { opacity: 0; bottom: 0; }
+}
+
+/* --- PortfolioCalendar --- */
+.semester-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+.semester-box {
+  padding: 20px; border: 1px solid #ddd; border-radius: 8px;
+  text-align: center; cursor: pointer; transition: all 0.2s; background-color: #f9f9f9;
+}
+.semester-box:hover { border-color: #007bff; color: #007bff; }
+.semester-box.selected { background-color: #007bff; color: white; font-weight: bold; border-color: #007bff; }
+.activity-editor-card { padding: 20px; border-radius: 8px; background-color: #f8f9fa; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.activity-editor-card h3 { margin-top: 0; }
+.activity-editor-card textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; box-sizing: border-box; min-height: 150px; }
+.editor-actions { display: flex; justify-content: flex-end; align-items: center; margin-top: 15px; }
+.save-button { padding: 10px 20px; font-size: 15px; font-weight: bold; color: white; background-color: #007bff; border: none; border-radius: 8px; cursor: pointer; }
+.save-button:hover { background-color: #0056b3; }
+
+/* --- GraduationCalculator --- */
+.calculator-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr; /* 오른쪽 영역을 조금 더 넓게 */
+  gap: 30px;
+}
+@media (max-width: 768px) {
+  .calculator-layout { grid-template-columns: 1fr; }
+}
+.calculator-card { background-color: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+.card-header h3 { margin: 0; }
+.card-header span { font-size: 15px; color: #666; }
+.gpa-info { display: flex; justify-content: space-around; margin-bottom: 25px; }
+.gpa-info div { font-size: 16px; color: #555; text-align: center; }
+.gpa-info strong { display: block; font-size: 22px; color: #007bff; margin-top: 5px; }
+.credit-details { display: grid; gap: 15px; }
+.credit-item { display: flex; align-items: center; gap: 15px; }
+.credit-item span:first-child { width: 80px; font-weight: 500; }
+.progress-bar { flex-grow: 1; height: 10px; background-color: #e9ecef; border-radius: 5px; overflow: hidden; }
+.progress-bar div { height: 100%; background-color: #007bff; border-radius: 5px; transition: width 0.3s ease; }
+.course-list-card { background-color: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.course-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.course-list-header h3 { margin: 0; }
+.add-grade-btn { padding: 8px 15px; font-size: 14px; font-weight: bold; color: white; background-color: #007bff; border: none; border-radius: 8px; cursor: pointer; }
+.add-grade-btn:hover { background-color: #0056b3; }
+.course-table { width: 100%; border-collapse: collapse; }
+.course-table th, .course-table td { text-align: left; padding: 12px 8px; border-bottom: 1px solid #f1f3f5; }
+.course-table th { font-size: 14px; color: #888; }
+.course-table td { font-size: 15px; color: #333; }
+.course-table th:nth-child(2), .course-table td:nth-child(2),
+.course-table th:nth-child(3), .course-table td:nth-child(3) { 
+  text-align: center;
+  width: 15%; /* 학점, 성적 컬럼 너비 고정 */
+}
+
+/* --- ActivityRecommender --- */
+.recommender-layout { display: flex; gap: 30px; align-items: flex-start; }
+.task-list-card {
+  width: 280px; flex-shrink: 0; background-color: #f8f9fa;
+  padding: 20px; border-radius: 8px; position: sticky; top: 30px;
+}
+.task-list-card h4 { margin-top: 0; font-size: 18px; }
+.task-list-card ul { list-style: none; padding: 0; }
+.task-list-card li { padding: 12px; border-radius: 5px; cursor: pointer; margin-bottom: 5px; font-weight: 500; }
+.task-list-card li.active { background-color: #007bff; color: white; }
+.task-list-card li:not(.active):hover { background-color: #e9ecef; }
+.activity-detail-card { flex-grow: 1; background-color: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.activity-detail-card h3 { margin-top: 0; font-size: 24px; }
+.activity-section { margin-bottom: 25px; }
+.activity-section h4 { font-size: 18px; color: #333; border-left: 4px solid #007bff; padding-left: 10px; margin-bottom: 15px; }
+.activity-section p, .activity-section li { font-size: 16px; color: #555; line-height: 1.7; }
+.activity-section ul { padding-left: 20px; }
+.recommendation { background-color: #e7f3ff; padding: 15px; border-radius: 8px; font-weight: 500; }
+.activity-links { display: flex; gap: 10px; flex-wrap: wrap; }
+.activity-links button { padding: 10px 18px; border: none; background-color: #f1f3f5; color: #333; border-radius: 5px; cursor: pointer; font-size: 14px; }
+.activity-links button:hover { background-color: #dee2e6; }
+
+/* --- ScheduleCalendar (수정됨) --- */
+.calendar-container {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.calendar-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+.calendar-title {
+  margin: 0; 
+  font-size: 28px;
+  font-weight: 700;
+}
+.calendar-nav {
+  display: flex;
+  gap: 10px;
+  margin-left: auto; /* 네비게이션을 중앙으로 */
+  margin-right: 20px; /* 오른쪽 버튼과 간격 */
+}
+.nav-btn {
+  background: #f1f3f5;
+  border: 1px solid #dee2e6;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.nav-btn:hover { background: #e9ecef; }
+.add-event-btn { 
+  padding: 10px 18px; 
+  font-size: 15px; 
+  font-weight: bold; 
+  color: white; 
+  background-color: #007bff; 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: background-color 0.2s;
+}
+.add-event-btn:hover { background-color: #0056b3; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.days-header { border-bottom: 1px solid #dee2e6; }
+.calendar-day-header { 
+  text-align: center; 
+  font-weight: 600; 
+  padding: 12px 5px; 
+  background-color: #f8f9fa;
+  font-size: 14px;
+}
+.calendar-grid:not(.days-header) {
+  border-left: 1px solid #dee2e6;
+}
+.calendar-day {
+  min-height: 120px;
+  padding: 8px;
+  border-right: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 14px;
+  position: relative;
+  background-color: #fff;
+  transition: background-color 0.2s;
+}
+.calendar-day span { font-weight: 600; color: #555; }
+.calendar-day.other-month { background-color: #fdfdfd; }
+.calendar-day.other-month span { color: #ccc; }
+.calendar-day.day-today {
+  background-color: #f7f9ff;
+}
+.calendar-day.day-today span {
+  background-color: #007bff;
+  color: white;
+  border-radius: 50%;
+  padding: 4px 8px;
+  font-weight: 700;
+}
+.calendar-event {
+  background-color: #e7f3ff;
+  color: #0056b3;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-top: 5px;
+  white-space: normal; /* 텍스트 자동 줄바꿈 허용 */
+  word-break: break-all; /* 긴 텍스트 강제 줄바꿈 */
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.calendar-event:hover { background-color: #d0e7ff; }
+.calendar-event.green { background-color: #e6f9f0; color: #087f5b; }
+.calendar-event.green:hover { background-color: #c3fae2; }
+
+/* --- 모달 (Modal) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: modalFadeIn 0.2s;
+}
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  transform: scale(0.95);
+  animation: modalZoomIn 0.2s forwards;
+}
+@keyframes modalZoomIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.modal-content h3 { margin-top: 0; }
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+.modal-actions button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modal-actions .btn-cancel {
+  background-color: #e9ecef;
+  color: #333;
+}
+.modal-actions .btn-cancel:hover { background-color: #dee2e6; }
+.modal-actions .btn-save {
+  background-color: #007bff;
+  color: white;
+}
+.modal-actions .btn-save:hover { background-color: #0056b3; }

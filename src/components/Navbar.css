@@ -1,0 +1,78 @@
+/* src/components/Navbar.css */
+.navbar {
+  width: 250px;
+  height: 100vh;
+  background-color: #007bff;
+  padding: 20px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* 메뉴와 로그아웃 버튼을 위아래로 분리 */
+  box-sizing: border-box; /* 패딩이 너비/높이에 포함되도록 설정 */
+  position: fixed; /* 화면에 고정 */
+  left: 0;
+  top: 0;
+}
+
+.navbar-logo {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 40px;
+}
+
+.navbar-logo a {
+  color: white;
+  text-decoration: none;
+}
+
+.navbar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar-menu li {
+  margin-bottom: 20px;
+}
+
+.navbar-menu a {
+  color: #e0e0e0;
+  text-decoration: none;
+  font-size: 16px;
+  display: block;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+}
+
+.navbar-menu a:hover {
+  background-color: #0056b3;
+}
+
+.navbar-menu a.active {
+  background-color: #0056b3;
+  font-weight: bold;
+  color: white;
+}
+
+.navbar-footer {
+  padding: 10px 0;
+}
+
+.logout-button {
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  color: white;
+  background-color: transparent;
+  border: 1px solid white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logout-button:hover {
+  background-color: white;
+  color: #007bff;
+}
