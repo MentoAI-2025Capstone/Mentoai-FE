@@ -28,3 +28,15 @@ body {
   margin-left: 250px; /* Navbar 너비만큼 왼쪽 여백 추가 */
   box-sizing: border-box;
 }
+
+/* [신규 추가]
+  로그인/프로필 설정 페이지처럼 Navbar가 없을 때 사용할 클래스.
+  margin-left가 없고, padding은 0입니다 (AuthPage.js가 스스로 처리).
+*/
+.content-full {
+  flex-grow: 1;
+  background-color: #f8f9fa; /* auth-container와 동일한 배경색 */
+  min-height: 100vh;
+  margin-left: 0; /* 왼쪽 여백 없음 */
+  box-sizing: border-box;
+}

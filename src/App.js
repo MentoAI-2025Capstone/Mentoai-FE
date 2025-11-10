@@ -2,9 +2,10 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import AuthPage from './pages/Auth';
+// [오류 수정] pagesS -> pages로 경로 수정
 import ProfileSetup from './pages/ProfileSetup';
 import PromptInput from './pages/PromptInput';
-// import PortfolioCalendar from './pages/PortfolioCalendar'; // 1. 이 줄을 삭제
+// import PortfolioCalendar from './pages/PortfolioCalendar'; // 삭제됨
 import ActivityRecommender from './pages/ActivityRecommender';
 import ScheduleCalendar from './pages/ScheduleCalendar';
 import MyPage from './pages/MyPage';
@@ -101,7 +102,10 @@ function App() {
   return (
     <div className={appClassName}>
       {showNavbar && <Navbar />}
-      <main className="content">
+      
+      {/* Navbar가 보일 땐 "content", 안 보일 땐 "content-full" 클래스를 사용하도록 변경 
+      */}
+      <main className={showNavbar ? "content" : "content-full"}>
         <Routes>
           {/* 1. 로그인/프로필 설정 경로는 로그인한 사용자가 접근하지 못하게 */}
           <Route path="/login" element={
@@ -116,6 +120,13 @@ function App() {
           } />
 
           {/* 2. 메인 서비스 경로는 로그인 + 프로필 설정 완료 사용자만 접근 가능하게 */}
+          {/* (순서 변경됨) 활동 추천 목록이 첫번째 */}
+          <Route path="/recommend" element={
+            <PrivateRoute>
+              <ActivityRecommender />
+            </PrivateRoute>
+          } />
+          {/* (순서 변경됨) 진로 설계 AI가 두번째 */}
           <Route path="/prompt" element={
             <PrivateRoute>
               <PromptInput />
@@ -124,14 +135,6 @@ function App() {
           <Route path="/schedule" element={
             <PrivateRoute>
               <ScheduleCalendar />
-            </PrivateRoute>
-          } />
-
-          {/* 2. '/portfolio' 경로 삭제됨 */}
-          
-          <Route path="/recommend" element={
-            <PrivateRoute>
-              <ActivityRecommender />
             </PrivateRoute>
           } />
           <Route path="/mypage" element={
