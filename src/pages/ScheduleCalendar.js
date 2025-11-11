@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './Page.css';
 
 function ScheduleCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 10, 4)); // 2025년 11월 4일 (오늘)
+  const [currentDate, setCurrentDate] = useState(new Date()); 
   const [events, setEvents] = useState([
     { date: '2025-10-18', title: 'AI 데이터 분석 공모전 마감' },
     { date: '2025-10-25', title: '빅데이터 경진대회 설명회' },
@@ -11,6 +11,12 @@ function ScheduleCalendar() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({ title: '', date: '' });
+
+  // [신규] ESLint (no-loop-func) 경고를 해결하기 위해
+  // 필터링 로직을 루프(cells 함수) 밖으로 분리합니다.
+  const getEventsForDate = (dateString) => {
+    return events.filter(event => event.date === dateString);
+  };
 
   // --- 캘린더 헤더 ---
   const header = () => (
@@ -52,16 +58,16 @@ function ScheduleCalendar() {
     const rows = [];
     let days = [];
     let day = startDate;
-    // let formattedDate = ''; // <-- 이 줄(기존 60줄)이 삭제되었습니다.
+    // formattedDate는 루프 안에서 const로 선언되므로 여기서 선언할 필요 없습니다.
 
     while (day <= endDate) {
       for (let i = 0; i < 7; i++) {
-        // 'const'가 추가되었습니다. (기존 64줄)
         const formattedDate = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
         const isCurrentMonth = day.getMonth() === currentDate.getMonth();
-        const isToday = day.toDateString() === new Date(2025, 10, 4).toDateString(); // '오늘' 날짜 하이라이트
+        const isToday = day.toDateString() === new Date().toDateString(); 
 
-        const dayEvents = events.filter(event => event.date === formattedDate);
+        // [수정] 루프 안에서 함수를 선언하는 대신, 밖에서 만든 헬퍼 함수를 호출
+        const dayEvents = getEventsForDate(formattedDate);
 
         days.push(
           <div
@@ -90,7 +96,7 @@ function ScheduleCalendar() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };
   const today = () => {
-    setCurrentDate(new Date(2025, 10, 4));
+    setCurrentDate(new Date());
   };
 
   // --- 모달 로직 ---
