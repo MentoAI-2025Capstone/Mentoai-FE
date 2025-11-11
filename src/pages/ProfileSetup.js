@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import './Page.css';
 
 function ProfileSetup() {
-  const [education, setEducation] = useState({ school: '멘토대학교', major: '컴퓨터공학과', grade: 3 });
+  const [education, setEducation] = useState({ school: '경희대학교', major: '컴퓨터공학과', grade: 3 });
   const [careerGoal, setCareerGoal] = useState('AI 엔지니어');
   
   // SkillFit

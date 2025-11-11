@@ -4,7 +4,7 @@ import './Page.css';
 
 function MyPage() {
   // --- 데모를 위해, 사용자의 프로필 정보 예시를 미리 채워둡니다. ---
-  const [education, setEducation] = useState({ school: '멘토대학교', major: '컴퓨터공학과', grade: 3 });
+  const [education, setEducation] = useState({ school: '경희대학교', major: '컴퓨터공학과', grade: 3 });
   const [careerGoal, setCareerGoal] = useState('AI 엔지니어');
   
   const [skills, setSkills] = useState([
