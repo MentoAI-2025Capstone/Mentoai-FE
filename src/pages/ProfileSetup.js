@@ -93,7 +93,7 @@ function ProfileSetup() {
       <form className="profile-card" onSubmit={handleSubmit}>
         <h1 className="auth-logo">멘토아이</h1>
         <h2>상세 프로필 설정</h2>
-        <p>AI 추천 점수(RoleFitScore) 계산의 정확도를 높이기 위해 정보를 입력해주세요. (나중에 마이페이지에서 수정할 수 있습니다)</p>
+        <p>AI 추천 점수 계산의 정확도를 높이기 위해 정보를 입력해주세요. (나중에 마이페이지에서 수정할 수 있습니다)</p>
 
         {/* --- 1. 기본 정보 섹션 (EducationFit, CareerGoal) --- */}
         <div className="form-section">
