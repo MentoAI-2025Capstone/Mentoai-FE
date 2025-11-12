@@ -28,13 +28,6 @@
   text-decoration: none; /* 👈 [추가] 밑줄 제거 */
 }
 
-/* [삭제] 이 선택자는 더 이상 필요 없음
-.navbar-logo a {
-  color: white;
-  text-decoration: none;
-}
-*/
-
 .navbar-menu {
   list-style: none;
   padding: 0;

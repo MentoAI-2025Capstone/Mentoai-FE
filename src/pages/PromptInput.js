@@ -30,8 +30,6 @@ function PromptInput() {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  // [신규] 채팅 메시지 배열
-  // (임시) 초기 메시지 추가
   const [messages, setMessages] = useState([
     { role: 'ai', content: '안녕하세요! AI 멘토입니다. 진로 설계에 대해 무엇이든 물어보세요.' }
   ]);
@@ -39,36 +37,31 @@ function PromptInput() {
   const [chatHistory, setChatHistory] = useState(mockChatHistory);
   const [activeChatId, setActiveChatId] = useState(1);
 
-  // [신규] 메시지 목록 스크롤을 위한 ref
   const messagesEndRef = useRef(null);
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(scrollToBottom, [messages]); // 메시지가 추가될 때마다 스크롤
+  useEffect(scrollToBottom, [messages]);
 
   const handleRecommend = () => {
-    if (!prompt.trim()) return; // 빈 메시지 전송 방지
+    // [수정] 로딩 중이거나 프롬프트가 비어있으면 전송 안 함
+    if (isLoading || !prompt.trim()) return;
 
-    // 1. 가드레일 검사
     const guardrailResult = checkGuardrails(prompt);
     if (!guardrailResult.isSafe) {
       alert(guardrailResult.message);
       return;
     }
 
-    // 2. 사용자 메시지 추가
     setMessages(prev => [...prev, { role: 'user', content: prompt }]);
-    setPrompt(''); // 입력창 비우기
+    setPrompt(''); 
     setIsLoading(true);
 
-    // 3. (가짜) 프롬프트 엔지니어링 및 API 호출 시뮬레이션
-    // const finalPrompt = createFinalPrompt(prompt, fakeUserProfile, []); // (API 연동 시)
+    // ... (API 호출 시뮬레이션) ...
     console.log("RAG 프롬프트 생성 (시뮬레이션)");
 
-    // 4. (가짜) AI 응답
     setTimeout(() => {
-      // (임시) 가짜 응답 중 하나를 랜덤으로 선택
       const aiResponse = sampleResults[Math.floor(Math.random() * sampleResults.length)];
       
       setMessages(prev => [
@@ -76,15 +69,14 @@ function PromptInput() {
         { 
           role: 'ai', 
           content: aiResponse.summary,
-          title: aiResponse.title, // [신규] 카드 제목 추가
-          tags: aiResponse.tags,   // [신규] 태그 추가
+          title: aiResponse.title,
+          tags: aiResponse.tags,
         }
       ]);
       setIsLoading(false);
     }, 2000);
   };
   
-  // (임시) 새 채팅 시작
   const handleNewChat = () => {
     const newId = chatHistory.length + 1;
     setChatHistory(prev => [...prev, { id: newId, title: '새 채팅' }]);
@@ -95,9 +87,6 @@ function PromptInput() {
   };
 
   return (
-    // [수정]
-    // page-container 대신 새로운 chat-page-container를 사용
-    // (이유: .content의 기본 padding 30px을 제거해야 함)
     <div className="chat-page-container">
       <div className="chat-layout">
         
@@ -126,7 +115,6 @@ function PromptInput() {
           <div className="chat-messages-area">
             {messages.map((msg, index) => (
               <div key={index} className={`chat-message ${msg.role}`}>
-                {/* [신규] AI 응답이 카드 형태일 경우 */}
                 {msg.role === 'ai' && msg.title ? (
                   <div className="result-card-chat">
                     <h4>{msg.title}</h4>
@@ -136,13 +124,11 @@ function PromptInput() {
                     </div>
                   </div>
                 ) : (
-                  // 일반 텍스트 메시지
                   <p>{msg.content}</p>
                 )}
               </div>
             ))}
             
-            {/* 로딩 스피너 */}
             {isLoading && (
               <div className="chat-message ai">
                 <div className="spinner-dots">
@@ -152,11 +138,10 @@ function PromptInput() {
                 </div>
               </div>
             )}
-            {/* 스크롤을 위한 빈 div */}
             <div ref={messagesEndRef} />
           </div>
           
-          {/* 2-2. 메시지 입력 영역 (기존 prompt-card 재활용) */}
+          {/* 2-2. 메시지 입력 영역 */}
           <div className="chat-input-area">
             <textarea
               className="prompt-input-area"
@@ -170,8 +155,22 @@ function PromptInput() {
                 }
               }}
             />
-            <button className="prompt-button" onClick={handleRecommend} disabled={isLoading}>
-              {isLoading ? '...' : '전송'}
+            {/* [수정] 텍스트 버튼 -> SVG 아이콘 버튼으로 변경 */}
+            <button 
+              className="prompt-button" 
+              onClick={handleRecommend} 
+              disabled={isLoading || !prompt.trim()}
+            >
+              {/* 종이비행기 아이콘 (ChatGPT 스타일) */}
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                width="24" 
+                height="24" 
+                className="send-icon"
+              >
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2 .01 7z"></path>
+              </svg>
             </button>
           </div>
         </div>

@@ -235,7 +235,7 @@
 
 /* --- PromptInput (기존) --- */
 .prompt-card { background-color: #f8f9fa; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-.prompt-input-area { width: 100%; min-height: 120px; padding: 15px; border: 1px solid #dee2e6; border-radius: 8px; font-size: 16px; resize: vertical; box-sizing: border-box; margin-bottom: 15px; }
+.prompt-input-area { width: 100%; min-height: 120px; padding: 15px; border: 1px solid #dee2e6; border-radius: 8px; font-size: 16px; resize: none; box-sizing: border-box; margin-bottom: 15px; }
 .prompt-button { padding: 12px 25px; font-size: 16px; font-weight: bold; color: white; background-color: #007bff; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
 .prompt-button:disabled { background-color: #6c757d; cursor: not-allowed; }
 .prompt-button:hover:not(:disabled) { background-color: #0056b3; }
@@ -481,17 +481,14 @@
 .modal-actions .btn-save:hover { background-color: #0056b3; }
 
 
-/* [신규] 
-   --- 진로설계 AI (채팅 UI) 전용 CSS --- 
+/* --- 진로설계 AI (채팅 UI) 전용 CSS --- 
 */
 
 .chat-page-container {
-  /* [수정] App.js에서 .content-chat이 패딩을 0으로 
-     만들어주므로, -30px 마진 핵(hack)이 더 이상 필요 없음 */
 }
 .chat-layout {
   display: flex;
-  height: calc(100vh - 60px); /* 100vh - 상단바 높이 */
+  height: calc(100vh - 60px); 
 }
 
 /* * 2. 왼쪽: 채팅 히스토리 사이드바
@@ -526,7 +523,7 @@
   padding: 0;
   margin: 0;
   overflow-y: auto;
-  flex-grow: 1; /* 남은 공간 모두 차지 */
+  flex-grow: 1;
 }
 .chat-history-list li {
   padding: 12px 15px;
@@ -552,7 +549,7 @@
 /* * 3. 오른쪽: 메인 채팅창
 */
 .chat-window {
-  flex: 1; /* 남은 너비 모두 차지 */
+  flex: 1;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
@@ -560,7 +557,7 @@
 
 /* 3-1. 메시지 출력 영역 */
 .chat-messages-area {
-  flex-grow: 1; /* 입력창 제외한 모든 높이 차지 */
+  flex-grow: 1;
   overflow-y: auto;
   padding: 30px;
   display: flex;
@@ -600,7 +597,7 @@
   border: 1px solid #e9ecef;
   border-radius: 8px;
   padding: 0;
-  margin: -5px; /* .chat-message의 패딩 고려 */
+  margin: -5px;
   overflow: hidden;
 }
 .result-card-chat h4 {
@@ -639,24 +636,63 @@
 }
 
 
-/* 3-2. 메시지 입력 영역 (기존 .prompt-card CSS 재활용) */
+/* [수정] 3-2. 메시지 입력 영역 (레이아웃 수정) */
 .chat-input-area {
   padding: 20px 30px;
   border-top: 1px solid #dee2e6;
   background-color: #ffffff;
-  /* .prompt-card의 스타일을 가져옴 */
   display: flex;
-  align-items: flex-end;
+  align-items: flex-end; /* 텍스트가 늘어나도 버튼이 하단에 고정됨 */
   gap: 15px;
 }
 .chat-input-area .prompt-input-area {
-  flex-grow: 1;
-  min-height: 24px; /* 최소 높이 */
-  max-height: 150px; /* 최대 높이 (스크롤 생성) */
-  height: 24px; /* 기본 높이 (1줄) */
+  flex-grow: 1; /* 남은 공간 모두 차지 */
+  min-height: 24px;
+  max-height: 150px;
+  /* height: 24px; (삭제) -> min-height가 대체함 */
   margin-bottom: 0;
   padding: 12px 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 16px;
+  resize: none; 
+  box-sizing: border-box; 
+  overflow-y: auto; /* 스크롤바 자동 */
 }
+
+/* [수정] 전송 버튼을 아이콘 버튼으로 변경 */
 .chat-input-area .prompt-button {
-  height: 48px; /* textarea 패딩 포함 높이와 맞춤 */
+  width: 48px;  /* 정사각형 */
+  height: 48px; /* textarea 높이와 맞춤 */
+  padding: 0;   /* 내부 패딩 제거 */
+  
+  flex-shrink: 0; /* 버튼이 찌그러지지 않게 함 */
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  border-radius: 8px;
+  background-color: #007bff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chat-input-area .prompt-button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.chat-input-area .prompt-button:disabled {
+  background-color: #e9ecef; /* 비활성화 색상 변경 */
+  cursor: not-allowed;
+}
+
+/* [신규] SVG 아이콘 스타일 */
+.send-icon {
+  fill: white; /* 활성화 시 아이콘 색상 */
+}
+
+.chat-input-area .prompt-button:disabled .send-icon {
+  fill: #adb5bd; /* 비활성화 시 아이콘 색상 */
 }
