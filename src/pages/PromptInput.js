@@ -139,12 +139,11 @@ function PromptInput() {
             <div ref={messagesEndRef} />
           </div>
           
-          {/* 2-2. 메시지 입력 영역 */}
-          {/* [수정] 입력창 UI 구조 변경 */}
+          {/* 2-2. 메시지 입력 영역 (Gemini 스타일) */}
           <div className="chat-input-area">
-            <div className="chat-input-wrapper">
+            <div className="chat-input-wrapper"> {/* 👈 [신규] 래퍼 추가 */}
               <textarea
-                className="chat-textarea" 
+                className="chat-textarea" // 👈 [수정] 클래스 이름 변경
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="AI 멘토에게 질문을 입력하세요..."
@@ -154,10 +153,10 @@ function PromptInput() {
                     handleRecommend();
                   }
                 }}
-                rows={1} // [신규] 기본 1줄로 시작
+                rows={1}
               />
               <button 
-                className="chat-send-button" 
+                className="chat-send-button" // 👈 [수정] 클래스 이름 변경
                 onClick={handleRecommend} 
                 disabled={isLoading || !prompt.trim()}
               >
@@ -173,6 +172,7 @@ function PromptInput() {
               </button>
             </div>
           </div>
+
         </div>
       </div>
     </div>

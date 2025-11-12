@@ -2,7 +2,7 @@
 
 .profile-card-container {
   margin: -30px; 
-  padding: 40px 20px; 
+  padding: 20px; 
   box-sizing: border-box;
   background-color: #f8f9fa;
   display: flex;
@@ -51,7 +51,7 @@
 .profile-card {
   width: 100%;
   max-width: 1200px; 
-  padding: 30px 40px; 
+  padding: 25px 40px; 
   background-color: white;
   border-radius: 16px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.12);
@@ -77,12 +77,25 @@
   line-height: 1.6;
   text-align: center;
 }
+
+/* [수정] <a> 태그와 <button> 태그 모두에 적용되는 스타일 */
 .google-login-button {
-  width: 100%; padding: 14px; font-size: 16px; font-weight: 600;
-  background-color: #ffffff; color: #333; border: 1px solid #dee2e6;
-  border-radius: 8px; cursor: pointer; transition: all 0.2s ease-in-out;
-  display: flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; 
+  padding: 14px; 
+  font-size: 16px; 
+  font-weight: 600;
+  background-color: #ffffff; 
+  color: #333; 
+  border: 1px solid #dee2e6;
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: all 0.2s ease-in-out;
+  display: flex; 
+  align-items: center; 
+  justify-content: center; /* 👈 이 속성이 텍스트를 중앙 정렬합니다. */
+  gap: 12px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-sizing: border-box; /* 👈 <a> 태그 호환성을 위해 추가 */
 }
 .google-login-button:hover { background-color: #f8f9fa; border-color: #ced4da; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 .google-icon { width: 22px; height: 22px; }
@@ -96,14 +109,14 @@
 }
 .profile-card-description {
   font-size: 15px; 
-  margin-bottom: 30px; 
+  margin-bottom: 20px; 
   color: #666;
   text-align: center;
 }
 .form-section {
-  margin-bottom: 25px; 
+  margin-bottom: 20px; 
   border-bottom: 1px solid #eee;
-  padding-bottom: 25px; 
+  padding-bottom: 20px; 
 }
 .form-section:last-of-type {
   border-bottom: none;
@@ -112,7 +125,7 @@
 .form-section h3 {
   font-size: 18px;
   color: #333;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .form-grid {
@@ -129,7 +142,7 @@
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 10px; 
   text-align: left;
 }
 .form-group label {
@@ -148,7 +161,6 @@
   box-sizing: border-box;
 }
 
-/* [수정] .input-group의 input 공통 스타일 */
 .input-group input {
   border-radius: 8px;
   border: 1px solid #ccc;
@@ -159,63 +171,47 @@
   height: 37px;
 }
 
-/* [삭제] 모든 화살표 스타일 제거 (CustomSelect.css가 담당) */
-/*
-.input-group select, .custom-select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: url(...);
-  ...
+.input-group select {
+  /* (사용 안 함) */
 }
-.custom-select::-ms-expand {
-    display: none;
-}
-*/
-/* [삭제 끝] */
-
 
 /* 동적 입력 UI (Skill, Experience 등) */
 .input-group {
   display: flex;
   gap: 10px;
-  margin-bottom: 15px;
-  align-items: center; /* [추가] CustomSelect와 높이를 맞추기 위해 */
+  margin-bottom: 10px;
+  align-items: center;
 }
 .input-group.experience-group {
   display: grid;
   grid-template-columns: 1fr 1.5fr 1fr 1.5fr 2fr auto;
   gap: 10px;
-  align-items: center; /* [추가] CustomSelect와 높이를 맞추기 위해 */
+  align-items: center;
 }
 
-/* [신규] 기술 스택(skill-group) 레이아웃만 grid로 변경 */
 .input-group.skill-group {
   display: grid;
-  grid-template-columns: 1fr auto auto; /* Input(1fr), Select(auto), Button(auto) */
+  grid-template-columns: 1fr auto auto;
   gap: 10px;
   align-items: center;
 }
-/* [신규] 기술 스택의 CustomSelect 너비 고정 */
 .input-group.skill-group .custom-select-wrapper {
   width: 200px;
 }
 
 @media (max-width: 768px) {
   .input-group.experience-group,
-  .input-group.skill-group { /* [추가] skill-group 모바일 대응 */
+  .input-group.skill-group {
     display: flex;
     flex-direction: column; 
     align-items: stretch;
   }
   .input-group.skill-group .custom-select-wrapper {
-    width: 100%; /* 모바일에선 꽉 차게 */
+    width: 100%; 
   }
 }
 
 .input-group input { flex-grow: 1; }
-/* [삭제] .input-group select { min-width: 100px; } (CustomSelect.js가 제어) */
-
 .add-item-btn {
   padding: 0 20px;
   font-size: 14px;
@@ -228,7 +224,7 @@
   transition: background-color 0.2s;
   white-space: nowrap;
   height: 37px; 
-  align-self: end; /* [수정] flex-end -> end (grid 호환) */
+  align-self: end;
 }
 .add-item-btn:hover { background-color: #0056b3; }
 
@@ -679,7 +675,7 @@
 }
 
 
-/* 3-2. 메시지 입력 영역 (Gemini 스타일) */
+/* [수정] 3-2. 메시지 입력 영역 (Gemini 스타일) */
 .chat-input-area {
   margin: 0 1.5rem 1.5rem 1.5rem;
   padding: 0; 
@@ -697,7 +693,7 @@
 .chat-input-wrapper {
   position: relative;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-end; /* [수정] flex-start -> flex-end */
   width: 100%;
   
   background-color: #f1f3f5; 
@@ -713,7 +709,9 @@
   max-height: 150px;
   margin: 0;
   padding: 12px 15px;
-  padding-right: 60px; /* 버튼 공간 확보 */
+  
+  /* [수정] 버튼 공간 확보 (버튼 너비 + gap) */
+  padding-right: 60px; /* 50px -> 60px로 여유 공간 */
   
   border: none; 
   font-size: 16px;
