@@ -34,7 +34,6 @@ export const loginWithGoogle = async (googleUserData) => {
       profileImageUrl: googleUserData.profileImageUrl // Google 프로필 사진
     };
 
-    // [수정] /auth/google/start가 아닌 POST /users 호출
     const response = await apiClient.post('/users', payload);
     
     // AuthResponse 스키마 반환 (user, tokens)
@@ -82,7 +81,7 @@ export const getUserProfile = async () => {
     return { success: true, data: response.data }; // UserProfile 스키마 반환
   } catch (error) {
     console.error("프로필 불러오기 실패:", error);
-    // [수정] 프로필이 없는 신규 유저는 404가 정상, 성공으로 처리
+    // [수정] 프로필이 없는 신규 유저는 404가 정상, isNewUser로 구분
     if (error.response && error.response.status === 404) {
       return { success: false, data: null, isNewUser: true };
     }

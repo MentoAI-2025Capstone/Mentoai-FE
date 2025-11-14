@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google'; // [복원]
 import { useAuth } from '../contexts/AuthContext'; // [복원]
-// [삭제] useNavigate 제거
 import './Page.css';
 
 function AuthPage() {
@@ -15,7 +14,7 @@ function AuthPage() {
       setIsLoading(true);
       try {
         // [수정] AuthContext의 login 함수로 Google 토큰을 전달
-        // 이 함수가 백엔드 API(POST /users)를 호출할 것임
+        // 이 함수가 Google userinfo API -> MentoAI 'POST /users' API를 호출
         await auth.login(tokenResponse);
         
         // (성공 시 AuthContext가 user 상태를 변경하고,
