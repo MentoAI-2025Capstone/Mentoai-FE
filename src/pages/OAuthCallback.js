@@ -1,28 +1,39 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react'; // [수정] useState 임포트
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import './Page.css'; // 로딩 스피너 등을 위한 CSS
+import './Page.css'; 
 
 function OAuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const auth = useAuth();
+  
+  // [!!! 핵심 수정 !!!]
+  // 무한 루프를 방지하기 위한 '잠금 장치(guard)' state
+  const [hasRun, setHasRun] = useState(false);
 
   useEffect(() => {
     
-    // 1. (레이스 컨디션 방지) 
-    //    1차 렌더링: searchParams.toString() === '' 이므로 return.
+    // (레이스 컨디션 방지)
     if (searchParams.toString() === '') {
       return; 
     }
+    
+    // [!!! 핵심 수정 !!!]
+    // 이미 한 번이라도 이 로직을 실행했다면,
+    // auth 객체가 바뀌어도 다시 실행하지 않고 즉시 중단
+    if (hasRun) {
+      return;
+    }
 
-    // 2. (URL 파싱 완료 후 2차 렌더링)
-    //    이 코드가 실행됩니다.
     const accessToken = searchParams.get('accessToken');
     const userId = searchParams.get('userId');
 
     if (accessToken && userId) {
-      // [정상 경로] 토큰과 ID가 모두 있음
+      // [!!! 핵심 수정 !!!]
+      // 로직을 실행했음을 '잠금'
+      setHasRun(true); 
+
       const refreshToken = searchParams.get('refreshToken');
       const name = searchParams.get('name');
       const isNewUser = searchParams.get('isNewUser') === 'true'; 
@@ -45,21 +56,24 @@ function OAuthCallback() {
         navigate('/prompt', { replace: true });
       }
       
-  } else if (accessToken && !userId) {
-    // [백엔드 오류] accessToken은 있으나 userId가 없음
-    alert('[프론트엔드 감지] 백엔드가 accessToken은 보냈으나, userId를 누락했습니다.');
-    navigate('/login', { replace: true });
+  } else {
+      // (백엔드가 userId나 accessToken을 주지 않은 경우)
 
-  } else if (!accessToken) {
-    // [토큰 수신 오류] accessToken 자체가 없음
-    alert('로그인에 실패했습니다. (토큰 수신 오류)');
-    navigate('/login', { replace: true });
+      // [!!! 핵심 수정 !!!]
+      // 로직을 실행했음을 '잠금'
+      setHasRun(true); 
+
+      if (accessToken && !userId) {
+        alert('[프론트엔드 감지] 백엔드가 accessToken은 보냈으나, userId를 누락했습니다.');
+      } else if (!accessToken) {
+        alert('로그인에 실패했습니다. (토큰 수신 오류)');
+      }
+      navigate('/login', { replace: true });
   }
 
-  // 3. 의존성 배열에 searchParams.toString()을 넣습니다.
-  }, [searchParams.toString(), navigate, auth]); 
+  }, [searchParams.toString(), navigate, auth, hasRun]); // [수정] hasRun 의존성 추가
 
-  // 로딩 스피너를 보여줍니다.
+  // 로딩 스피너
   return (
     <div className="auth-container">
       <div className="auth-card">
