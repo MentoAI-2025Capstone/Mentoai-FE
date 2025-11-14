@@ -1,42 +1,20 @@
-// src/routes/PrivateRoute.jsx
 import React from "react";
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
-/**
- * 보호 라우트
- *
- * 사용 예:
- * <Route element={<PrivateRoute />}>
- *   <Route path="/recommend" element={<RecommendPage />} />
- *   ...
- * </Route>
- *
- * 프로필을 반드시 작성한 유저만 접근하게 하고 싶으면:
- * <Route element={<PrivateRoute requireProfileComplete />}>
- *   <Route path="/recommend" element={<RecommendPage />} />
- * </Route>
- */
-const PrivateRoute = ({ requireProfileComplete = false }) => {
-  const { user, loading, profileComplete } = useAuth();
+function PrivateRoute(props) {
+  const { children } = props;
 
-  if (loading) {
-    // 토큰 검증 중이면 아무것도 렌더링하지 않거나 스피너 렌더
-    return null;
+  // 여기 로직은 프로젝트에 맞게 바꾸면 된다
+  // 예시: localStorage에 토큰이 있으면 로그인된 것으로 간주
+  const isAuthenticated = !!localStorage.getItem("accessToken");
+
+  if (!isAuthenticated) {
+    // 로그인 안 됐으면 /auth로 보냄
+    return <Navigate to="/auth" replace />;
   }
 
-  if (!user) {
-    // 로그인 안 되어 있으면 로그인 페이지로
-    return <Navigate to="/login" replace />;
-  }
-
-  if (requireProfileComplete && !profileComplete) {
-    // 프로필 미완이면 프로필 설정 페이지로
-    return <Navigate to="/profile-setup" replace />;
-  }
-
-  // 권한 통과 → 자식 라우트 렌더
-  return <Outlet />;
-};
+  // 로그인 돼 있으면 원래 보여주려던 컴포넌트 렌더링
+  return children;
+}
 
 export default PrivateRoute;

@@ -1,65 +1,89 @@
-// src/api/auth.js
-import apiClient from "./apiClient"; // ✅ 여기 경로/파일명은 프로젝트에 맞게 수정
+import React, { useState } from "react";
 
-/**
- * Google 로그인 후 백엔드에 사용자 정보 전달
- * body 예시:
- * {
- *   providerUserId: string,
- *   email: string,
- *   name: string,
- *   profileImageUrl: string,
- *   authProvider: 'GOOGLE'
- * }
- */
-export const loginWithGoogle = async (googleUserData) => {
-  try {
-    const payload = {
-      ...googleUserData,
-      authProvider: "GOOGLE",
-    };
+function Auth() {
+  const [mode, setMode] = useState("login"); // "login" 또는 "signup"
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    const response = await apiClient.post("/users", payload);
+  const handleSubmit = function (event) {
+    event.preventDefault();
 
-    // 기대 응답: { user: {...}, tokens: { accessToken, refreshToken } }
-    return { success: true, data: response.data };
-  } catch (error) {
-    console.error("[api/auth] POST /users 로그인 실패:", error.response || error);
-    return { success: false, data: null, error };
-  }
-};
+    if (mode === "login") {
+      console.log("로그인 시도:", email, password);
+      // 로그인 API 호출 자리
+    } else {
+      console.log("회원가입 시도:", email, password);
+      // 회원가입 API 호출 자리
+    }
+  };
 
-/**
- * 현재 유저 정보 확인
- * - Authorization 헤더로 accessToken이 붙어 있어야 함
- * - 성공 시 { id, email, name, ... } 형태라고 가정
- */
-export const checkCurrentUser = async () => {
-  try {
-    const response = await apiClient.get("/auth/me");
-    return { success: true, data: response.data };
-  } catch (error) {
-    console.warn("[api/auth] GET /auth/me 실패:", error.response || error);
-    return { success: false, data: null, error };
-  }
-};
+  return (
+    <div style={{ maxWidth: "400px", margin: "0 auto", padding: "16px" }}>
+      <h2>{mode === "login" ? "로그인" : "회원가입"}</h2>
 
-/**
- * 프로필 존재 여부 확인
- * - 예: GET /users/profile
- *   응답 예시: { isNewUser: true } 또는 { isNewUser: false, ... }
- */
-export const getUserProfile = async () => {
-  try {
-    const response = await apiClient.get("/users/profile");
-    // 응답 예: { isNewUser: true/false, ... }
-    return {
-      success: true,
-      isNewUser: response.data.isNewUser,
-      data: response.data,
-    };
-  } catch (error) {
-    console.warn("[api/auth] GET /users/profile 실패:", error.response || error);
-    return { success: false, isNewUser: true, data: null, error };
-  }
-};
+      <div style={{ marginBottom: "12px" }}>
+        <button
+          type="button"
+          onClick={function () {
+            setMode("login");
+          }}
+          style={{
+            marginRight: "8px",
+            fontWeight: mode === "login" ? "bold" : "normal",
+          }}
+        >
+          로그인
+        </button>
+        <button
+          type="button"
+          onClick={function () {
+            setMode("signup");
+          }}
+          style={{
+            fontWeight: mode === "signup" ? "bold" : "normal",
+          }}
+        >
+          회원가입
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: "8px" }}>
+          <label>
+            이메일
+            <input
+              type="email"
+              value={email}
+              onChange={function (e) {
+                setEmail(e.target.value);
+              }}
+              style={{ display: "block", width: "100%", marginTop: "4px" }}
+              required
+            />
+          </label>
+        </div>
+
+        <div style={{ marginBottom: "8px" }}>
+          <label>
+            비밀번호
+            <input
+              type="password"
+              value={password}
+              onChange={function (e) {
+                setPassword(e.target.value);
+              }}
+              style={{ display: "block", width: "100%", marginTop: "4px" }}
+              required
+            />
+          </label>
+        </div>
+
+        <button type="submit">
+          {mode === "login" ? "로그인" : "회원가입"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export default Auth;

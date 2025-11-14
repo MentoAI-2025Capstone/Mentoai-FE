@@ -1,36 +1,18 @@
-// src/routes/PublicRoute.jsx
 import React from "react";
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
-/**
- * 로그인/회원가입 페이지용 공개 라우트
- * - 이미 로그인된 사용자는 접근 시 적절한 페이지로 리다이렉트
- *
- * 사용 예:
- * <Route element={<PublicRoute />}>
- *   <Route path="/login" element={<AuthPage />} />
- * </Route>
- */
-const PublicRoute = () => {
-  const { user, loading, profileComplete } = useAuth();
+function PublicRoute(props) {
+  const { children } = props;
 
-  if (loading) {
-    return null;
+  const isAuthenticated = !!localStorage.getItem("accessToken");
+
+  if (isAuthenticated) {
+    // 이미 로그인했으면 홈이나 마이페이지로 보내기
+    return <Navigate to="/" replace />;
   }
 
-  if (user) {
-    // 로그인 되어 있으면:
-    // 프로필 완료 → 추천 페이지
-    // 프로필 미완 → 프로필 설정 페이지
-    if (profileComplete) {
-      return <Navigate to="/recommend" replace />;
-    }
-    return <Navigate to="/profile-setup" replace />;
-  }
-
-  // 로그인 안 된 상태 → 자식 라우트(로그인/회원가입 페이지) 노출
-  return <Outlet />;
-};
+  // 로그인 안 했으면 페이지 그대로 보여줌 (Auth 같은 페이지)
+  return children;
+}
 
 export default PublicRoute;
