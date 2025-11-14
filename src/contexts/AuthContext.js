@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react'; // [!!!] useCallback, useMemo 임포트
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import { 
   checkCurrentUser, 
   saveUserProfile, 
@@ -29,7 +29,6 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const verifyUser = async () => {
-      // (이하 로직 동일...)
       const storedUserJSON = sessionStorage.getItem('mentoUser');
       let tokenData = null; 
       if (storedUserJSON) {
@@ -89,14 +88,9 @@ export const AuthProvider = ({ children }) => {
     }
   }, []); // 빈 의존성 배열 (고정)
 
-  if (loading) {
-    return <div>Loading...</div>; 
-  }
-
   // [!!! 핵심 수정 !!!]
-  // useMemo를 사용해 'value' 객체를 'user'가 바뀔 때만 새로 만듭니다.
-  // login, logout 등 함수들은 useCallback으로 고정되어 있으므로
-  // 'user'가 바뀌어도 'login' 함수 자체는 재활용됩니다.
+  // 'if (loading)' 블록보다 *먼저* useMemo를 호출합니다.
+  // React Hook은 컴포넌트 최상단에서, 조건문/return보다 먼저 호출되어야 합니다.
   const value = useMemo(() => ({
     user,
     login,
@@ -104,6 +98,11 @@ export const AuthProvider = ({ children }) => {
     completeProfile,
     profileComplete: user?.profileComplete
   }), [user, login, logout, completeProfile]);
+
+  // [!!!] useMemo를 호출한 *뒤에* early return을 합니다.
+  if (loading) {
+    return <div>Loading...</div>; 
+  }
 
   return (
     <AuthContext.Provider value={value}> 
