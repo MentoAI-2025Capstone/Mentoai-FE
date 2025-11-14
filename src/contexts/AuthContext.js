@@ -1,154 +1,198 @@
 // src/contexts/AuthContext.js
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios'; // [신규] Google userinfo API 호출용
-import { 
-  loginWithGoogle, 
-  checkCurrentUser, 
-  saveUserProfile, 
-  logoutUser, 
-  getUserProfile 
-} from '../api/api'; 
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+import {
+  loginWithGoogle,
+  checkCurrentUser,
+  getUserProfile,
+} from "../api/auth";
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+export const useAuth = () => useContext(AuthContext);
 
-  // [수정] login 함수: Google 토큰을 받아 Google API -> MentoAI API 순차 호출
-  const login = async (googleTokenResponse) => {
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null); // { user: {...}, tokens: {...}, ... }
+  const [loading, setLoading] = useState(true); // 앱 시작 시 auth 확인 로딩
+
+  // 세션 스토리지 키 통일
+  const STORAGE_KEY = "mentoUser";
+
+  /**
+   * Google 로그인 후 백엔드 연동 + 세션 저장
+   * @param {object} googleTokenResponse - @react-oauth/google 에서 온 tokenResponse
+   */
+  const login = useCallback(async (googleTokenResponse) => {
     try {
-      // 1. Google access_token으로 Google userinfo API 호출
-      const googleUser = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${googleTokenResponse.access_token}` }
+      console.log("[AuthContext/login] tokenResponse:", googleTokenResponse);
+
+      // 1) Google userinfo 가져오기
+      const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: {
+          Authorization: `Bearer ${googleTokenResponse.access_token}`,
+        },
       });
 
-      const { sub, email, name, picture } = googleUser.data;
+      if (!res.ok) {
+        throw new Error("Failed to fetch Google userinfo");
+      }
 
-      // 2. MentoAI 백엔드 (POST /users) API 호출
-      const response = await loginWithGoogle({ 
-        providerUserId: sub, // 'sub'이 Google의 고유 ID입니다.
-        email: email,
-        name: name,
-        profileImageUrl: picture
-      }); 
-      
-      if (response.success) {
-        // 3. API가 반환한 AuthResponse (user + tokens)를 저장
-        sessionStorage.setItem('mentoUser', JSON.stringify(response.data));
-        
-        // 4. 프로필 정보가 있는지 확인
-        const profileResponse = await getUserProfile();
-        // [수정] profileResponse.success가 아닌, isNewUser로 확인
-        const profileComplete = !profileResponse.isNewUser; 
+      const googleUser = await res.json();
+      console.log("[AuthContext/login] googleUser:", googleUser);
 
-        const finalUserData = {
-          ...response.data,
-          user: {
-            ...response.data.user,
-            profileComplete: profileComplete
-          }
-        };
-        
-        setUser(finalUserData);
-        sessionStorage.setItem('mentoUser', JSON.stringify(finalUserData));
+      const { sub, email, name, picture } = googleUser;
 
-      } else {
+      // 2) 백엔드에 로그인 요청 (회원가입 + 로그인)
+      const backendRes = await loginWithGoogle({
+        providerUserId: sub,
+        email,
+        name,
+        profileImageUrl: picture,
+      });
+
+      if (!backendRes.success) {
+        console.error(
+          "[AuthContext/login] loginWithGoogle 실패:",
+          backendRes.error
+        );
         throw new Error("loginWithGoogle API failed");
       }
+
+      // backendRes.data 형식 예: { user: {...}, tokens: { accessToken, refreshToken } }
+      console.log("[AuthContext/login] backend /users 응답:", backendRes.data);
+
+      const baseData = backendRes.data;
+
+      // 3) 프로필 존재 여부 확인
+      const profileRes = await getUserProfile();
+      console.log("[AuthContext/login] getUserProfile:", profileRes);
+
+      const profileComplete = profileRes.success && !profileRes.isNewUser;
+
+      // 4) 최종 user 데이터 구성
+      const finalUserData = {
+        ...baseData,
+        user: {
+          ...baseData.user,
+          profileComplete,
+        },
+      };
+
+      // 5) 상태 + 세션 저장
+      setUser(finalUserData);
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(finalUserData));
     } catch (error) {
-      console.error("AuthContext login 실패:", error);
-      sessionStorage.removeItem('mentoUser');
-      throw error; // Auth.js가 catch할 수 있도록 에러 다시 던지기
-    }
-  };
-
-  // 앱 로드 시, sessionStorage에 저장된 토큰으로 /auth/me 호출
-  useEffect(() => {
-    const verifyUser = async () => {
-      const storedUserJSON = sessionStorage.getItem('mentoUser');
-      
-      if (storedUserJSON) {
-        try {
-          // 1. /auth/me API 호출 (apiClient가 헤더를 붙여줌)
-          const response = await checkCurrentUser();
-          
-          if (response.success) {
-            const basicUser = response.data;
-            const storedUser = JSON.parse(storedUserJSON); // 기존 토큰 정보
-
-            // 3. (중요) /profile API를 호출하여 '확장 프로필' 정보를 가져옴
-            const profileResponse = await getUserProfile();
-            
-            const finalUserData = {
-              user: { 
-                ...basicUser, 
-                profileComplete: profileResponse.success 
-              },
-              tokens: storedUser.tokens // 기존 토큰
-            };
-
-            setUser(finalUserData);
-            sessionStorage.setItem('mentoUser', JSON.stringify(finalUserData));
-          } else {
-            throw new Error("Invalid token");
-          }
-        } catch (error) {
-          console.warn("verifyUser 실패:", error.message);
-          setUser(null);
-          sessionStorage.removeItem('mentoUser');
-        }
-      }
-      setLoading(false); // 로딩 완료
-    };
-    
-    verifyUser();
-  }, []);
-  
-  // [수정] completeProfile: API 호출 (saveUserProfile)
-  const completeProfile = async (profileData) => {
-    try {
-      const response = await saveUserProfile(profileData); 
-      if (response.success) {
-        const updatedUser = {
-          ...user,
-          user: { // user 객체 내부를 업데이트
-            ...user.user,
-            profileComplete: true 
-          }
-        };
-        setUser(updatedUser);
-        sessionStorage.setItem('mentoUser', JSON.stringify(updatedUser));
-      }
-    } catch (error) {
-      console.error("프로필 저장 실패:", error);
-      alert("프로필 저장에 실패했습니다.");
-    }
-  };
-
-  // 로그아웃 함수
-  const logout = async () => {
-    try {
-      await logoutUser(); 
-    } catch (error) {
-      console.error("백엔드 로그아웃 실패:", error);
-    } finally {
+      console.error("[AuthContext/login] 전체 로그인 플로우 실패:", error);
       setUser(null);
-      sessionStorage.removeItem('mentoUser');
+      sessionStorage.removeItem(STORAGE_KEY);
+      throw error;
     }
+  }, []);
+
+  /**
+   * 로그아웃: 상태 + 세션 초기화
+   */
+  const logout = useCallback(() => {
+    console.log("[AuthContext/logout] 로그아웃");
+    setUser(null);
+    sessionStorage.removeItem(STORAGE_KEY);
+  }, []);
+
+  /**
+   * 프로필 작성 완료 후, user 상태의 profileComplete 플래그만 true로 갱신
+   */
+  const completeProfile = useCallback(() => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = {
+        ...prev,
+        user: {
+          ...prev.user,
+          profileComplete: true,
+        },
+      };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  /**
+   * 앱 시작 / 새로고침 시 세션에서 유저 정보 복원
+   */
+  const verifyUser = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (!stored) {
+        console.log("[AuthContext/verifyUser] 저장된 세션 없음");
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      const storedUser = JSON.parse(stored);
+      console.log("[AuthContext/verifyUser] 저장된 세션 발견:", storedUser);
+
+      // accessToken이 실제로 유효한지 백엔드에 검증 시도
+      const meRes = await checkCurrentUser();
+      if (!meRes.success) {
+        // 여기서 바로 로그아웃 시키면 새로고침 때마다 풀려서,
+        // 일단은 "경고만 찍고 기존 토큰 유지" 방식으로 동작
+        console.warn(
+          "[AuthContext/verifyUser] /auth/me 실패, 기존 세션으로 계속 진행:",
+          meRes.error
+        );
+        setUser(storedUser);
+        setLoading(false);
+        return;
+      }
+
+      // meRes.data 에는 최소한 현재 사용자 기본 정보가 들어있다고 가정
+      const me = meRes.data;
+
+      // 프로필 확인 (있으면 완료, 없으면 isNewUser = true 라고 가정)
+      const profileRes = await getUserProfile();
+      const profileComplete =
+        profileRes.success && profileRes.isNewUser === false;
+
+      const finalUserData = {
+        user: {
+          ...storedUser.user,
+          ...me, // 백엔드에서 최신 정보가 온다면 덮어쓰기
+          profileComplete,
+        },
+        tokens: storedUser.tokens, // 토큰은 기존 저장된 것 사용
+      };
+
+      setUser(finalUserData);
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(finalUserData));
+    } catch (error) {
+      console.error("[AuthContext/verifyUser] 토큰 검증 중 에러:", error);
+      setUser(null);
+      sessionStorage.removeItem(STORAGE_KEY);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    verifyUser();
+  }, [verifyUser]);
+
+  const value = {
+    user,
+    loading, // 🔥 반드시 context에 넣어줘야 PrivateRoute/PublicRoute에서 사용 가능
+    login,
+    logout,
+    completeProfile,
+    profileComplete: user?.user?.profileComplete ?? false,
   };
 
-  if (loading) {
-    return <div>Loading...</div>; 
-  }
-
-  return (
-    <AuthContext.Provider value={{ user, login, logout, completeProfile, profileComplete: user?.user?.profileComplete }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export const useAuth = () => {
-  return useContext(AuthContext);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
