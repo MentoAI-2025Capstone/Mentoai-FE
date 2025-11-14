@@ -20,7 +20,7 @@ function OAuthCallback() {
     const profileComplete = searchParams.get('profileComplete') === 'true';
 
     // 2. 토큰과 유저 ID가 정상적으로 넘어왔는지 확인
-    if (accessToken && userId) {
+    if (accessToken) {
       
       // 3. AuthContext에 저장할 사용자 객체 생성
       const userData = {
