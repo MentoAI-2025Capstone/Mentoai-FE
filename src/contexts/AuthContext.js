@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-// [수정] getUserProfile도 임포트합니다.
+// [수정] getUserProfile 임포트 (이전과 동일)
 import { 
   checkCurrentUser, 
   saveUserProfile, 
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // [!!! 핵심 수정: useEffect !!!]
-  // 앱 로드 시, 기본 정보와 프로필 정보를 모두 가져오도록 수정
+  // Promise.all을 제거하고, 순차적/개별적으로 API를 호출합니다.
   useEffect(() => {
     const verifyUser = async () => {
       const storedUserJSON = sessionStorage.getItem('mentoUser');
@@ -63,26 +63,28 @@ export const AuthProvider = ({ children }) => {
           }
 
           // [수정됨]
-          // 2. 기본 정보와 프로필 정보를 *동시에* 병렬로 요청
-          const [userResponse, profileResponse] = await Promise.all([
-            checkCurrentUser(), // GET /users/{userId}
-            getUserProfile()    // GET /users/{userId}/profile
-          ]);
+          // 2. (필수) 기본 정보 가져오기 (GET /users/{userId})
+          const userResponse = await checkCurrentUser();
           
-          if (userResponse.success && profileResponse.success) {
-            // 3. 세 가지 정보를 모두 합침
-            // (토큰 정보, 기본 유저 정보, 프로필 정보)
-            const finalUserData = {
-              ...tokenData,        // accessToken, refreshToken, expiresAt 등
-              ...userResponse.data,  // name, email 등 기본 정보
-              ...profileResponse.data // profileComplete, interests 등 프로필 정보
-            };
-            setUser(finalUserData);
-            sessionStorage.setItem('mentoUser', JSON.stringify(finalUserData));
-          } else {
-            // 둘 중 하나라도 실패하면 로그인 실패 처리
-            throw new Error("Failed to fetch user or profile data");
+          if (!userResponse.success) {
+            throw new Error("Failed to fetch user data (checkCurrentUser)");
           }
+
+          // 3. (선택) 프로필 정보 가져오기 (GET /users/{userId}/profile)
+          const profileResponse = await getUserProfile();
+          
+          // 4. 세 가지 정보를 모두 합침
+          // (토큰 정보, 기본 유저 정보, 프로필 정보(실패 시 빈 객체))
+          const finalUserData = {
+            ...tokenData,
+            ...userResponse.data,
+            ...(profileResponse.success ? profileResponse.data : {}) // 프로필이 없어도(실패해도) 에러 아님
+          };
+
+          // 5. 최종 상태 저장
+          setUser(finalUserData);
+          sessionStorage.setItem('mentoUser', JSON.stringify(finalUserData));
+          
         } catch (error) {
           console.warn("verifyUser 실패:", error.message);
           setUser(null);
@@ -100,12 +102,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await saveUserProfile(profileData); 
       if (response.success) {
-        // [수정] 
-        // 프로필 저장 후, 백엔드가 반환한 최신 프로필 정보(response.data)와
-        // 기존 유저 정보(user)를 합침
         const updatedUser = {
           ...user,
-          ...response.data, // 백엔드가 UserProfile 스키마 반환
+          ...response.data, 
           profileComplete: true 
         };
         setUser(updatedUser);
@@ -113,7 +112,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("프로필 저장 실패:", error);
-      alert("프로필 저장에 실패했습니다."); // 사용자에게 피드백
+      alert("프로필 저장에 실패했습니다.");
     }
   };
 
