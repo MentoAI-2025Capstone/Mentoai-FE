@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'; // useEffect는 반드시 필요합니다.
+import React, { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Page.css'; // 로딩 스피너 등을 위한 CSS
@@ -9,18 +9,19 @@ function OAuthCallback() {
   const auth = useAuth();
 
   // [!!! 핵심 수정 !!!]
-  // 'if'문 밖, 컴포넌트 최상단에 단 하나의 useEffect만 사용합니다.
-  // 모든 로직은 이 useEffect 안에서 처리합니다.
+  // 1. useEffect는 하나만 존재합니다.
+  // 2. 모든 로직은 이 useEffect 안에 있습니다.
   useEffect(() => {
     
-    // 1. (레이스 컨디션 방지) 
-    //    URL 파싱이 덜 끝나서 쿼리 파라미터가 비어있으면,
-    //    아무것도 하지 않고 다음 렌더링을 기다립니다.
+    // 3. (레이스 컨디션 방지) 
+    //    1차 렌더링: searchParams.toString() === '' 이므로 return.
     if (searchParams.toString() === '') {
       return; 
     }
 
-    // 2. (이제 searchParams가 준비됨) 토큰을 추출합니다.
+    // 4. (URL 파싱 완료 후 2차 렌더링)
+    //    searchParams.toString()이 "?accessToken=..."이 되어
+    //    이 코드가 실행됩니다.
     const accessToken = searchParams.get('accessToken');
     const userId = searchParams.get('userId');
 
@@ -59,13 +60,9 @@ function OAuthCallback() {
     navigate('/login', { replace: true });
   }
 
-  // 3. 의존성 배열에 searchParams.toString()을 넣어,
-  //    내용이 바뀔 때마다 이 useEffect가 다시 실행되도록 보장합니다.
-  }, [searchParams, navigate, auth]); 
-  // ↑↑↑
-  // ESLint가 경고할 수 있으나, 이 방식이 searchParams의
-  // 내용 변경을 감지하는 가장 확실한 방법입니다.
-  // [searchParams, navigate, auth]로 해도 동작해야 합니다.
+  // [!!! 핵심 수정 !!!]
+  // 5. 의존성 배열에 searchParams.toString()을 넣습니다.
+  }, [searchParams.toString(), navigate, auth]); 
 
   // 로딩 스피너를 보여줍니다.
   return (
