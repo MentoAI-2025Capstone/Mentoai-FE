@@ -58,7 +58,7 @@ apiClient.interceptors.response.use(
         return new Promise(function(resolve, reject) {
           failedQueue.push({ resolve, reject });
         }).then(token => {
-          originalRequest.headers['Authorization'] = 'Bearer ' + token;
+          originalRequest.headers['Authorization'] = 'Bearer 'D + token;
           return axios(originalRequest);
         });
       }
@@ -96,7 +96,9 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         // 리프레시 실패 시 (리프레시 토큰 만료 등)
         console.error("Token refresh failed:", refreshError);
-        processQueue(err, null);
+        
+        // [오류 수정] err -> refreshError
+        processQueue(refreshError, null); 
         isRefreshing = false;
         
         sessionStorage.removeItem('mentoUser');
