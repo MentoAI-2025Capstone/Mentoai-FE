@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'; // [!!!] useState는 이제 필요 없습니다.
+import React, { useEffect, useState } from 'react'; // [!!!] useState 임포트
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Page.css'; 
@@ -7,9 +7,10 @@ function OAuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  // [!!! 핵심 수정 !!!]
-  // user 객체는 필요 없고, '고정된' login 함수만 가져옵니다.
+  // [!!!] AuthContext.js의 useCallback 수정안과
+  //       함께 작동하는 '잠금 장치'입니다.
   const { login } = useAuth();
+  const [hasRun, setHasRun] = useState(false);
 
   useEffect(() => {
     
@@ -17,41 +18,49 @@ function OAuthCallback() {
     if (searchParams.toString() === '') {
       return; 
     }
+    
+    // [!!!] 이미 한 번이라도 이 로직을 실행했다면,
+    //       (login 함수가 user 상태를 바꿔서 리렌더링이 되어도)
+    //       절대 다시 실행하지 않습니다.
+    if (hasRun) {
+      return;
+    }
 
-    // [!!! 핵심 수정 !!!]
-    // 'hasRun' 잠금 장치가 모두 제거되었습니다.
-    // 이 useEffect는 searchParams.toString()이 변할 때 딱 한 번 실행됩니다.
-    // (login 함수는 이제 '고정'되어 의존성 배열에 영향을 주지 않습니다.)
+  	const accessToken = searchParams.get('accessToken');
+  	const userId = searchParams.get('userId');
 
-    const accessToken = searchParams.get('accessToken');
-    const userId = searchParams.get('userId');
+  	if (accessToken && userId) {
+      // [!!!] "잠금"
+      setHasRun(true); 
 
-    if (accessToken && userId) {
-      const refreshToken = searchParams.get('refreshToken');
-      const name = searchParams.get('name');
-      const isNewUser = searchParams.get('isNewUser') === 'true'; 
-      const profileComplete = searchParams.get('profileComplete') === 'true';
+    	const refreshToken = searchParams.get('refreshToken');
+    	const name = searchParams.get('name');
+    	const isNewUser = searchParams.get('isNewUser') === 'true'; 
+    	const profileComplete = searchParams.get('profileComplete') === 'true';
 
-      const userData = {
-        userId: userId,
-        name: name,
-        isNewUser: isNewUser,
-        profileComplete: profileComplete,
-        accessToken: accessToken,
-        refreshToken: refreshToken
-      };
+    	const userData = {
+      	userId: userId,
+      	name: name,
+      	isNewUser: isNewUser,
+      	profileComplete: profileComplete,
+      	accessToken: accessToken,
+      	refreshToken: refreshToken
+    	};
       
-      // login 함수와 navigate 함수가 순서대로 실행됩니다.
-      login(userData);
+      // 상태 업데이트와 페이지 이동을 순차적으로 실행
+    	login(userData);
 
-      if (!profileComplete) {
-        navigate('/profile-setup', { replace: true });
-      } else {
-        navigate('/prompt', { replace: true });
-      }
+    	if (!profileComplete) {
+      	navigate('/profile-setup', { replace: true });
+    	} else {
+      	navigate('/prompt', { replace: true });
+    	}
       
   } else {
       // (백엔드가 userId나 accessToken을 주지 않은 경우)
+      // [!!!] "잠금"
+      setHasRun(true); 
+
       if (accessToken && !userId) {
         alert('[프론트엔드 감지] 백엔드가 accessToken은 보냈으나, userId를 누락했습니다.');
       } else if (!accessToken) {
@@ -60,21 +69,20 @@ function OAuthCallback() {
       navigate('/login', { replace: true });
   }
 
-// [!!! 핵심 수정 !!!]
-// 의존성 배열이 훨씬 단순해졌습니다.
-  }, [searchParams.toString(), navigate, login]); 
+  // [!!!] 의존성 배열에 'hasRun'을 추가하여 잠금 장치가 작동하도록 합니다.
+  }, [searchParams.toString(), navigate, login, hasRun]); 
 
   // 로딩 스피너
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h1 className="auth-logo">MentoAI</h1>
-        <div className="loading-container" style={{ padding: '40px 0' }}>
-          <div className="spinner"></div>
-          <p>로그인 정보를 처리 중입니다. 잠시만 기다려주세요...</p>
-        </div>
-      </div>
-    </div>
+  	<div className="auth-container">
+    	<div className="auth-card">
+      	<h1 className="auth-logo">MentoAI</h1>
+      	<div className="loading-container" style={{ padding: '40px 0' }}>
+        	<div className="spinner"></div>
+        	<p>로그인 정보를 처리 중입니다. 잠시만 기다려주세요...</p>
+      	</div>
+    	</div>
+  	</div>
   );
 }
 
