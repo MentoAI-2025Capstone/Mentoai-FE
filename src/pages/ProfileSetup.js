@@ -1,25 +1,18 @@
-// src/pages/ProfileSetup.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // [!!!]
-import axios from 'axios'; // [!!!]
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './Page.css';
 import CustomSelect from '../components/CustomSelect'; 
 
-// 백엔드 서버 주소
+// 백엔드 서버 실제 주소
 const API_BASE_URL = 'https://mentoai.onrender.com';
 
-const skillOptions = [
-  { value: '상', label: '상 (업무 활용)' },
-  { value: '중', label: '중 (토이 프로젝트)' },
-  { value: '하', label: '하 (학습 경험)' }
-];
-const experienceOptions = [
-  { value: 'PROJECT', label: '프로젝트' },
-  { value: 'INTERN', label: '인턴' }
-];
+// (옵션 정의...)
+const skillOptions = [{ value: '상', label: '상 (업무 활용)' }, { value: '중', label: '중 (토이 프로젝트)' }, { value: '하', label: '하 (학습 경험)' }];
+const experienceOptions = [{ value: 'PROJECT', label: '프로젝트' }, { value: 'INTERN', label: '인턴' }];
 
 /**
- * [!!!] sessionStorage에서 토큰과 userId를 직접 가져오는 헬퍼 함수
+ * sessionStorage에서 인증 정보를 가져오는 헬퍼
  */
 const getAuthDataFromStorage = () => {
   try {
@@ -33,9 +26,8 @@ const getAuthDataFromStorage = () => {
   }
 };
 
-
 function ProfileSetup() {
-  // (기존 state들은 그대로 사용)
+  // (State 정의...)
   const [education, setEducation] = useState({ school: '멘토대학교', major: '컴퓨터공학과', grade: 3 });
   const [careerGoal, setCareerGoal] = useState('AI 엔지니어');
   const [skills, setSkills] = useState([]);
@@ -45,93 +37,69 @@ function ProfileSetup() {
   const [evidence, setEvidence] = useState({ certifications: [] });
   const [currentCert, setCurrentCert] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  
-  // [!!!] Context 대신 useNavigate 임포트
   const navigate = useNavigate();
 
-  // (핸들러 함수들은 기존과 동일)
-  const handleAddSkill = () => {
-    if (currentSkill.name) {
-      setSkills([...skills, currentSkill]);
-      setCurrentSkill({ name: '', level: '중' });
-    }
-  };
+  // (이벤트 핸들러들...)
+  const handleAddSkill = () => { if (currentSkill.name) { setSkills([...skills, currentSkill]); setCurrentSkill({ name: '', level: '중' }); } };
   const handleRemoveSkill = (index) => setSkills(skills.filter((_, i) => i !== index));
-  const handleAddExperience = () => {
-    if (currentExperience.role && currentExperience.period) {
-      setExperiences([...experiences, currentExperience]);
-      setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '', url: '' });
-    }
-  };
+  const handleAddExperience = () => { if (currentExperience.role && currentExperience.period) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '', url: '' }); } };
   const handleRemoveExperience = (index) => setExperiences(experiences.filter((_, i) => i !== index));
-  const handleAddCert = () => {
-    if (currentCert) {
-      setEvidence({ ...evidence, certifications: [...evidence.certifications, currentCert] });
-      setCurrentCert('');
-    }
-  };
-  const handleRemoveCert = (index) => {
-    setEvidence({
-      ...evidence,
-      certifications: evidence.certifications.filter((_, i) => i !== index),
-    });
-  };
+  const handleAddCert = () => { if (currentCert) { setEvidence({ ...evidence, certifications: [...evidence.certifications, currentCert] }); setCurrentCert(''); } };
+  const handleRemoveCert = (index) => { setEvidence({ ...evidence, certifications: evidence.certifications.filter((_, i) => i !== index) }); };
 
-  // [!!!] Context.completeProfile() 대신 axios를 직접 호출
+  /**
+   * axios를 직접 사용하는 handleSubmit
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     
-    const profileData = {
-      education,
-      careerGoal,
-      skillFit: skills,
-      experienceFit: experiences,
-      evidenceFit: evidence
-    };
+    const profileData = { education, careerGoal, skillFit: skills, experienceFit: experiences, evidenceFit: evidence };
 
     try {
-      // 1. 스토리지에서 인증 정보 가져오기
       const { userId, token } = getAuthDataFromStorage();
       if (!userId || !token) {
         throw new Error("인증 정보가 없습니다. 다시 로그인해주세요.");
       }
 
-      // 2. axios로 직접 API 호출 (PUT /users/{userId}/profile)
+      // 백엔드 API 직접 호출 (PUT /users/{userId}/profile)
       await axios.put(
         `${API_BASE_URL}/users/${userId}/profile`, 
         profileData,
         {
-          headers: {
-            'Authorization': `Bearer ${token}` // 수동으로 토큰 주입
-          },
-          timeout: 30000 // 30초 대기
+          headers: { 'Authorization': `Bearer ${token}` }, // 토큰 수동 주입
+          timeout: 30000 
         }
       );
       
-      // 3. 성공 시, sessionStorage의 profileComplete 상태도 수동으로 업데이트
+      // sessionStorage의 profileComplete 상태 수동 업데이트
       const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
       storedUser.user.profileComplete = true;
       sessionStorage.setItem('mentoUser', JSON.stringify(storedUser));
       
-      // 4. 메인 페이지로 이동
-      navigate('/recommend', { replace: true });
+      // App.js가 라우팅을 새로고침하도록 페이지 강제 이동
+      window.location.href = '/recommend';
 
     } catch (error) {
       console.error("프로필 저장 실패:", error);
-      alert(`프로필 저장 중 오류가 발생했습니다: ${error.message}`);
+      const alertMessage = error.message || "알 수 없는 오류";
+      if (error.code === 'ERR_NETWORK' || alertMessage.includes('Network Error')) {
+        alert('프로필 저장에 실패했습니다. (Network Error / CORS 오류)');
+      } else {
+        alert(`프로필 저장 중 오류가 발생했습니다: ${alertMessage}`);
+      }
       setIsSaving(false);
     }
   };
 
-  // (이하 JSX는 기존과 동일)
+  // (JSX는 기존과 동일)
   return (
     <div className="profile-setup-container">
       <form className="profile-card" onSubmit={handleSubmit}>
         <h2 className="profile-card-title">📝 상세 프로필 설정</h2>
         <p className="profile-card-description">AI 추천 정확도를 높이기 위해 정보를 입력해주세요. (나중에 마이페이지에서 수정할 수 있습니다)</p>
-
-        {/* --- 1. 기본 정보 섹션 --- */}
+        
+        {/* --- 1. 기본 정보 섹션 --- */}
         <div className="form-section">
           <h3>기본 학력</h3>
           <div className="form-grid two-cols">
@@ -220,6 +188,7 @@ function ProfileSetup() {
             </ul>
           </div>
         </div>
+        {/* ... (폼 섹션 끝) ... */}
 
         <button type="submit" className="submit-button" disabled={isSaving}>
           {isSaving ? '저장 중...' : '설정 완료하고 시작하기'}

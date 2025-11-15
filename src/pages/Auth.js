@@ -1,60 +1,63 @@
-// src/pages/Auth.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
-import axios from 'axios'; // Context/apiClient 대신 axios를 직접 사용
+import axios from 'axios'; // axios를 이 파일에서 직접 사용
 import './Page.css'; // (기존 CSS 재활용)
 
-// 백엔드 서버 주소
+// 백엔드 서버 실제 주소 (CORS 오류가 발생할 지점)
 const API_BASE_URL = 'https://mentoai.onrender.com';
 
+/**
+ * 백엔드 POST /users API를 직접 호출하는 함수
+ */
+const loginToBackend = async (googleUserData) => {
+  try {
+    const payload = {
+      authProvider: "GOOGLE",
+      providerUserId: googleUserData.providerUserId, // Google 'sub'
+      email: googleUserData.email,
+      name: googleUserData.name,
+      nickname: googleUserData.name, // API 명세(스크린샷) 기반 'nickname' 필드 포함
+      profileImageUrl: googleUserData.profileImageUrl
+    };
+
+    // axios로 백엔드 API 직접 호출
+    const response = await axios.post(`${API_BASE_URL}/users`, payload, {
+      timeout: 60000 // Render 서버 콜드 스타트 60초 대기
+    });
+    
+    // { user, tokens } 객체 반환
+    return { success: true, data: response.data };
+
+  } catch (error) {
+    console.error("POST /users 로그인 실패:", error);
+    // 백엔드가 보낸 에러 메시지 또는 네트워크 에러 메시지
+    const message = error.response?.data?.message || error.message;
+    throw new Error(message);
+  }
+};
+
+/**
+ * Google 로그인 버튼이 있는 메인 페이지
+ */
 function AuthPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('로그인 중...');
 
   /**
-   * [A안] 백엔드 POST /users API를 직접 호출하는 함수
-   */
-  const loginToBackend = async (googleUserData) => {
-    try {
-      const payload = {
-        authProvider: "GOOGLE",
-        providerUserId: googleUserData.providerUserId,
-        email: googleUserData.email,
-        name: googleUserData.name,
-        nickname: googleUserData.name, // nickname 필드 포함
-        profileImageUrl: googleUserData.profileImageUrl
-      };
-
-      // axios 인스턴스(apiClient) 대신 axios를 직접 호출
-      const response = await axios.post(`${API_BASE_URL}/users`, payload, {
-        timeout: 60000 // Render 서버 콜드 스타트 60초 대기
-      });
-
-      // 성공 시 { user, tokens } 객체를 반환
-      return { success: true, data: response.data };
-
-    } catch (error) {
-      console.error("POST /users 로그인 실패:", error);
-      const message = error.response?.data?.message || error.message;
-      // AuthContext가 없으므로 에러를 직접 throw
-      throw new Error(message);
-    }
-  };
-
-  /**
    * Google 로그인 버튼 클릭 시 실행되는 메인 함수
    */
   const handleGoogleLogin = useGoogleLogin({
-    // 1. Google 로그인 성공
+    // 1. Google 로그인 팝업 성공
     onSuccess: async (googleTokenResponse) => {
       setIsLoading(true);
       setLoadingMessage('Google 인증 완료. MentoAI 서버에 로그인합니다...');
 
+      // Render 서버 응답 지연 시 메시지 변경용 타이머
       const timer = setTimeout(() => {
         setLoadingMessage('서버 응답을 기다리는 중입니다. (최대 1분 소요)');
-      }, 8000);
+      }, 8000); // 8초
 
       try {
         // 2. Google userinfo API 호출
@@ -72,18 +75,17 @@ function AuthPage() {
           profileImageUrl: picture
         });
         
-        clearTimeout(timer);
+        clearTimeout(timer); // 성공 시 타이머 제거
 
         // 4. 로그인 성공: { user, tokens }를 sessionStorage에 저장
         sessionStorage.setItem('mentoUser', JSON.stringify(response.data));
 
         // 5. 프로필 작성 여부에 따라 페이지 이동
         const profileComplete = response.data.user.profileComplete;
-        if (profileComplete) {
-          navigate('/recommend', { replace: true });
-        } else {
-          navigate('/profile-setup', { replace: true });
-        }
+        const destination = profileComplete ? '/recommend' : '/profile-setup';
+        
+        // navigate() 대신 window.location.href를 사용해 App.js가 라우팅을 갱신하도록 함
+        window.location.href = destination;
         
       } catch (error) {
         // 6. 모든 과정 중 실패 시
@@ -92,11 +94,13 @@ function AuthPage() {
         
         const alertMessage = error.message || "알 수 없는 오류";
         
-        if (error.code === 'ERR_NETWORK' || error.message.includes('CORS')) {
-          alert('로그인에 실패했습니다. (네트워크 오류 또는 CORS 설정 확인)');
+        // Network Error = 100% CORS 오류
+        if (error.code === 'ERR_NETWORK' || alertMessage.includes('Network Error')) {
+          alert('로그인에 실패했습니다. (Network Error / CORS 오류). 백엔드 서버가 Vercel 주소를 허용하는지 확인하세요.');
         } else if (error.code === 'ECONNABORTED') {
           alert('로그인에 실패했습니다. (서버 응답 시간 초과)');
         } else {
+          // (예: 400 Bad Request - 닉네임 중복 등)
           alert(`로그인에 실패했습니다. (${alertMessage})`);
         }
         
@@ -111,7 +115,7 @@ function AuthPage() {
     },
   });
 
-  // (이하 JSX는 기존과 동일)
+  // (JSX는 기존과 동일)
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -120,7 +124,6 @@ function AuthPage() {
           AI와 함께 당신의 진로를 설계하고<br />
           맞춤형 활동을 추천받아 보세요.
         </p>
-        
         <button 
           className="google-login-button" 
           onClick={() => !isLoading && handleGoogleLogin()} 
@@ -138,7 +141,6 @@ function AuthPage() {
             </>
           )}
         </button>
-
         <p className="auth-helper-text">
           계속 진행하면 MentoAI의 서비스 이용약관 및<br/>개인정보 처리방침에 동의하는 것으로 간주됩니다.
         </p>

@@ -1,72 +1,120 @@
-// src/App.js
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import AuthPage from './pages/Auth'; // 3번에서 만들 로그인 페이지
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import AuthPage from './pages/Auth'; 
 
-// --- (가정) ---
-// 이 아래 4개 컴포넌트는 이미 구현되어 있다고 가정합니다.
-// (로그인과 관련 없으므로, 기존 코드를 그대로 사용하시면 됩니다.)
+// --- (가정) 이 컴포넌트들은 이미 존재한다고 가정합니다 ---
 import Navbar from './components/Navbar';
 import ActivityRecommender from './pages/ActivityRecommender';
 import ProfileSetup from './pages/ProfileSetup';
-import PromptInput from './pages/PromptInput'; 
+import PromptInput from './pages/PromptInput';
+import ScheduleCalendar from './pages/ScheduleCalendar';
+import MyPage from './pages/MyPage';
+import './App.css'; 
 // ---
 
 /**
- * sessionStorage에서 토큰을 읽어 로그인 여부를 반환합니다.
+ * sessionStorage에서 인증 정보를 읽어옵니다.
+ * 이 정보는 App.js가 렌더링될 때마다 새로고침됩니다.
  */
-const isAuthenticated = () => {
+const getAuthInfo = () => {
   try {
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
-    // accessToken이 있으면 로그인한 것으로 간주합니다.
-    return !!storedUser?.tokens?.accessToken;
+    // accessToken이 있고, user 정보가 있으면 로그인 된 것입니다.
+    if (storedUser && storedUser.tokens?.accessToken && storedUser.user) {
+      return {
+        isAuthenticated: true,
+        profileComplete: storedUser.user.profileComplete || false
+      };
+    }
   } catch (e) {
-    return false;
+    // JSON 파싱 실패 시
   }
+  // 정보가 없으면 로그아웃 상태입니다.
+  return { isAuthenticated: false, profileComplete: false };
 };
 
 /**
- * (가정) 로그인 후에 보여줄 메인 앱 컴포넌트입니다.
- * (이 부분은 기존 코드를 그대로 사용하세요.)
+ * 로그인한 사용자만 접근 가능한 라우트
  */
-const YourAppComponents = () => (
-  <div className="App">
-    <Navbar />
-    <main className="content"> {/* 'content-full' 등 기존 로직이 있다면 그대로 사용하세요 */}
-      <Routes>
-        {/*          * (참고) 
-         * 실제로는 이 안에도 PrivateRoute/ProfileSetupRoute가 필요하지만,
-         * 지금은 '로그인' 기능 자체에만 집중하기 위해 단순화했습니다.
-         * /profile-setup 리디렉션은 Auth.js에서 직접 처리합니다.
-        */}
-        <Route path="/recommend" element={<ActivityRecommender />} />
-        <Route path="/profile-setup" element={<ProfileSetup />} />
-        <Route path="/prompt" element={<PromptInput />} />
-        {/* ... (기존의 다른 라우트들) ... */}
-        <Route path="*" element={<Navigate to="/recommend" replace />} />
-      </Routes>
-    </main>
-  </div>
-);
+const PrivateRoute = ({ children }) => {
+  const { isAuthenticated, profileComplete } = getAuthInfo();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!profileComplete) {
+    // 프로필이 미완성이면 /profile-setup으로 강제 이동
+    return <Navigate to="/profile-setup" replace />;
+  }
+  return children;
+};
 
+/**
+ * 프로필 설정 페이지만을 위한 라우트
+ */
+const ProfileSetupRoute = ({ children }) => {
+  const { isAuthenticated, profileComplete } = getAuthInfo();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  if (profileComplete) {
+    // 프로필이 완성됐으면 메인 페이지로 이동
+    return <Navigate to="/recommend" replace />;
+  }
+  return children;
+};
+
+/**
+ * 로그인 안 한 사용자만 접근 가능한 라우트
+ */
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated } = getAuthInfo();
+  
+  if (isAuthenticated) {
+    // 로그인한 사용자가 /login 접근 시 메인 페이지로 이동
+    return <Navigate to="/recommend" replace />;
+  }
+  return children;
+};
+
+// --- 메인 App 컴포넌트 ---
 function App() {
-  const isAuth = isAuthenticated();
+  const location = useLocation();
+  const { isAuthenticated, profileComplete } = getAuthInfo();
+
+  // Navbar는 로그인 및 프로필 작성이 완료된 경우에만 표시
+  const showNavbar = isAuthenticated && profileComplete;
+  
+  // (기존 CSS 클래스 로직)
+  const appClassName = showNavbar ? "App" : "App-unauthed";
+  const getContentClass = () => {
+    if (!showNavbar) { return "content-full"; }
+    if (location.pathname === '/prompt') { return "content-chat"; }
+    return "content";
+  };
 
   return (
-    <Routes>
-      <Route 
-        path="/login"
-        element={
-          isAuth ? <Navigate to="/recommend" replace /> : <AuthPage />
-        } 
-      />
-      <Route 
-        path="/*"
-        element={
-          isAuth ? <YourAppComponents /> : <Navigate to="/login" replace />
-        } 
-      />
-    </Routes>
+    <div className={appClassName}>
+      {showNavbar && <Navbar />}
+      <main className={getContentClass()}>
+        <Routes>
+          {/* 1. 로그인/프로필 경로 */}
+          <Route path="/login" element={<PublicRoute><AuthPage /></PublicRoute>} />
+          <Route path="/profile-setup" element={<ProfileSetupRoute><ProfileSetup /></ProfileSetupRoute>} />
+          
+          {/* 2. 메인 서비스 경로 */}
+          <Route path="/recommend" element={<PrivateRoute><ActivityRecommender /></PrivateRoute>} />
+          <Route path="/prompt" element={<PrivateRoute><PromptInput /></PrivateRoute>} />
+          <Route path="/schedule" element={<PrivateRoute><ScheduleCalendar /></PrivateRoute>} />
+          <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
+
+          {/* 3. 기본 경로 리디렉션 */}
+          <Route path="/" element={<Navigate to={isAuthenticated ? "/recommend" : "/login"} replace />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
 

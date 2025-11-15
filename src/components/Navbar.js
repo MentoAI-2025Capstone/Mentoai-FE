@@ -1,18 +1,14 @@
-// src/components/Navbar.js
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import './Navbar.css';
-// [!!!] useAuth는 더 이상 존재하지 않습니다.
 
 function Navbar() {
-  // [!!!] useNavigate 대신 window.location을 사용해야 App.js가 리프레시됩니다.
-  const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    // [!!!] Context가 없으므로 sessionStorage를 직접 비웁니다.
+  const handleLogout = () => {
+    // 1. sessionStorage에서 사용자 정보 삭제
     sessionStorage.removeItem('mentoUser');
     
-    // [!!!] App.js의 라우팅을 다시 검사하도록 페이지를 강제 리프레시합니다.
+    // 2. App.js가 라우팅을 다시 계산하도록 /login으로 강제 이동 및 새로고침
     window.location.href = '/login'; 
   };
 
