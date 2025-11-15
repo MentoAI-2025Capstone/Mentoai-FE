@@ -1,9 +1,6 @@
 // src/contexts/AuthContext.js
-import React, { createContext, useState, useContext, useEffect } from 'react';
-// [!!!] axios와 loginWithGoogle은 B안의 login()에서 더 이상 필요 없습니다.
-// import axios from 'axios'; 
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react'; // [!!!] useCallback 임포트
 import { 
-  // loginWithGoogle, // (삭제됨)
   checkCurrentUser, 
   saveUserProfile, 
   logoutUser, 
@@ -16,44 +13,35 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // [!!!] B안(서버 흐름)을 위한 새 'login' 함수
-  // OAuthCallback.js가 이 함수를 호출합니다.
-  const login = (authData) => {
-    // authData = { user: { userId, name, profileComplete, ... }, tokens: { accessToken, refreshToken } }
-    // (OAuthCallback.js에서 만든 객체 형식에 맞춰야 합니다)
+  // [!!!] B안(서버 흐름)을 위한 'login' 함수
+  // [!!!] useCallback으로 감싸서 함수가 재생성되는 것을 방지 (무한 루프 해결)
+  const login = useCallback((authData) => {
     try {
-      // 백엔드가 리디렉션으로 전달해준 토큰과 유저 정보를
-      // 그대로 sessionStorage와 state에 저장합니다.
       sessionStorage.setItem('mentoUser', JSON.stringify(authData));
       setUser(authData);
-
     } catch (error) {
       console.error("AuthContext login (B안) 실패:", error);
       sessionStorage.removeItem('mentoUser');
       throw error;
     }
-  };
+  }, []); // 종속성 배열이 비어있음
 
-  // [!!!] 이 함수는 A안, B안 공통으로 중요합니다. (수정 불필요, 이전 수정안 유지)
-  // 앱 로드 시, sessionStorage에 저장된 토큰으로 /auth/me 호출
+  // (verifyUser 로직은 기존과 동일)
   useEffect(() => {
     const verifyUser = async () => {
       const storedUserJSON = sessionStorage.getItem('mentoUser');
       
       if (storedUserJSON) {
         try {
-          // 1. /auth/me API 호출 (apiClient가 헤더를 붙여줌)
           const response = await checkCurrentUser();
-          
           if (response.success) {
-            const basicUser = response.data; // (user 객체에 profileComplete가 포함되어 있음)
-            const storedUser = JSON.parse(storedUserJSON); // 기존 토큰 정보
+            const basicUser = response.data; 
+            const storedUser = JSON.parse(storedUserJSON); 
 
             const finalUserData = {
-              user: basicUser, // /auth/me에서 받은 최신 user 객체
-              tokens: storedUser.tokens // 기존 토큰
+              user: basicUser, 
+              tokens: storedUser.tokens 
             };
-
             setUser(finalUserData);
             sessionStorage.setItem('mentoUser', JSON.stringify(finalUserData));
           } else {
@@ -65,15 +53,14 @@ export const AuthProvider = ({ children }) => {
           sessionStorage.removeItem('mentoUser');
         }
       }
-      setLoading(false); // 로딩 완료
+      setLoading(false); 
     };
     
     verifyUser();
-  }, []);
+  }, []); // (useEffect의 종속성 배열은 비어있는 것이 맞습니다)
   
-  // (이하 completeProfile, logout 함수는 기존 코드와 동일)
-
-  const completeProfile = async (profileData) => {
+  // [!!!] completeProfile도 useCallback으로 감싸줍니다.
+  const completeProfile = useCallback(async (profileData) => {
     try {
       const response = await saveUserProfile(profileData); 
       if (response.success) {
@@ -91,9 +78,10 @@ export const AuthProvider = ({ children }) => {
       console.error("프로필 저장 실패:", error);
       alert("프로필 저장에 실패했습니다.");
     }
-  };
+  }, [user]); // 'user' state를 참조하므로 종속성 배열에 'user' 추가
 
-  const logout = async () => {
+  // [!!!] logout도 useCallback으로 감싸줍니다.
+  const logout = useCallback(async () => {
     try {
       await logoutUser(); 
     } catch (error) {
@@ -102,13 +90,14 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       sessionStorage.removeItem('mentoUser');
     }
-  };
+  }, []); // 종속성 배열이 비어있음
 
   if (loading) {
     return <div>Loading...</div>; 
   }
 
   return (
+    // [!!!] value에 useCallback으로 감싼 함수들을 전달
     <AuthContext.Provider value={{ user, login, logout, completeProfile, profileComplete: user?.user?.profileComplete }}>
       {children}
     </AuthContext.Provider>
