@@ -60,7 +60,6 @@ function MyPage() {
         }
       } catch (error) {
         console.error("마이페이지 프로필 로드 실패:", error);
-        // (404 Not Found는 신규 유저이므로 에러 아님)
         if (error.response?.status !== 404) {
           alert(`프로필 로딩에 실패했습니다: ${error.message}`);
         }
@@ -115,7 +114,7 @@ function MyPage() {
     return <div className="page-container">프로필 정보를 불러오는 중...</div>;
   }
 
-  // (JSX는 기존과 동일)
+  // (JSX - 오타 수정됨)
   return (
     <div className="profile-card-container"> 
       <div className="profile-card mypage-card"> 
@@ -162,7 +161,7 @@ function MyPage() {
             {skills.map((skill, index) => (
               <li key={index} className="added-item">
                 {skill.name} ({skill.level})
-  _             <button type="button" className="remove-item-btn" onClick={() => handleRemoveSkill(index)}>×</button>
+                <button type="button" className="remove-item-btn" onClick={() => handleRemoveSkill(index)}>×</button>
               </li>
             ))}
           </ul>
@@ -180,7 +179,7 @@ function MyPage() {
             <input type="text" placeholder="역할 (예: 프론트엔드 개발)" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
             <input type="text" placeholder="기간 (예: 3개월)" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
             <input type="text" placeholder="사용 기술 (예: React, Spring)" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
-            <input type="text" placeholder="관련 URL (GitHub, 포트폴리오)" value={currentExperience.url} onChange={(e) => setCurrentExperience({ ...currentExperience, url: e.target.value })} />
+t           <input type="text" placeholder="관련 URL (GitHub, 포트폴리오)" value={currentExperience.url} onChange={(e) => setCurrentExperience({ ...currentExperience, url: e.target.value })} />
             <button type="button" className="add-item-btn" onClick={handleAddExperience}>추가</button>
           </div>
           <ul className="added-list">
@@ -207,7 +206,7 @@ function MyPage() {
                 <li key={index} className="added-item">
                   {cert}
                   <button type="button" className="remove-item-btn" onClick={() => handleRemoveCert(index)}>×</button>
-            _   </li>
+              </li>
               ))}
             </ul>
           </div>
@@ -222,7 +221,7 @@ function MyPage() {
       {showToast && (
         <div className="toast-message">
           ✅ 프로필이 저장되었습니다!
-t       </div>
+        </div>
       )}
     </div>
   );

@@ -183,7 +183,7 @@ function ProfileSetup() {
                 <li key={index} className="added-item">
                   {cert}
                   <button type="button" className="remove-item-btn" onClick={() => handleRemoveCert(index)}>×</button>
-                </li>
+              </li>
               ))}
             </ul>
           </div>

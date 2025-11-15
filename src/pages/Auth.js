@@ -4,7 +4,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios'; // axios를 이 파일에서 직접 사용
 import './Page.css'; // (기존 CSS 재활용)
 
-// 백엔드 서버 실제 주소 (CORS 오류가 발생할 지점)
+// 백엔드 서버 실제 주소
 const API_BASE_URL = 'https://mentoai.onrender.com';
 
 /**
@@ -17,7 +17,7 @@ const loginToBackend = async (googleUserData) => {
       providerUserId: googleUserData.providerUserId, // Google 'sub'
       email: googleUserData.email,
       name: googleUserData.name,
-      nickname: googleUserData.name, // API 명세(스크린샷) 기반 'nickname' 필드 포함
+      nickname: googleUserData.name, // API 명세 기반 'nickname' 필드 포함
       profileImageUrl: googleUserData.profileImageUrl
     };
 
@@ -31,7 +31,6 @@ const loginToBackend = async (googleUserData) => {
 
   } catch (error) {
     console.error("POST /users 로그인 실패:", error);
-    // 백엔드가 보낸 에러 메시지 또는 네트워크 에러 메시지
     const message = error.response?.data?.message || error.message;
     throw new Error(message);
   }
@@ -54,7 +53,6 @@ function AuthPage() {
       setIsLoading(true);
       setLoadingMessage('Google 인증 완료. MentoAI 서버에 로그인합니다...');
 
-      // Render 서버 응답 지연 시 메시지 변경용 타이머
       const timer = setTimeout(() => {
         setLoadingMessage('서버 응답을 기다리는 중입니다. (최대 1분 소요)');
       }, 8000); // 8초
@@ -84,7 +82,7 @@ function AuthPage() {
         const profileComplete = response.data.user.profileComplete;
         const destination = profileComplete ? '/recommend' : '/profile-setup';
         
-        // navigate() 대신 window.location.href를 사용해 App.js가 라우팅을 갱신하도록 함
+        // App.js가 라우팅을 갱신하도록 페이지 강제 새로고침
         window.location.href = destination;
         
       } catch (error) {
@@ -94,7 +92,7 @@ function AuthPage() {
         
         const alertMessage = error.message || "알 수 없는 오류";
         
-        // Network Error = 100% CORS 오류
+        // "Network Error"는 100% CORS 오류입니다.
         if (error.code === 'ERR_NETWORK' || alertMessage.includes('Network Error')) {
           alert('로그인에 실패했습니다. (Network Error / CORS 오류). 백엔드 서버가 Vercel 주소를 허용하는지 확인하세요.');
         } else if (error.code === 'ECONNABORTED') {
