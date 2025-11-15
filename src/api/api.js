@@ -12,7 +12,7 @@ const getAuthData = () => {
   try {
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
     return { 
-      // [수정] AuthResponse 스키마에 맞게 경로 변경
+      // AuthResponse 스키마에 맞게 경로 변경
       userId: storedUser ? storedUser.user.userId : null
     };
   } catch (e) {
@@ -22,21 +22,22 @@ const getAuthData = () => {
 
 // --- Auth APIs (인증) ---
 
-// [수정] POST /users (Google 토큰이 아닌, Google 사용자 정보로 MentoAI 로그인)
+// [!!!] A안(클라이언트 흐름)의 핵심 함수. POST /users 호출
 export const loginWithGoogle = async (googleUserData) => {
   try {
-    // 백엔드 UserUpsert 스키마에 맞게 데이터 가공
+    // 백엔드 UserUpsert 스키마(POST /users)에 맞게 데이터 가공
     const payload = {
       authProvider: "GOOGLE",
       providerUserId: googleUserData.providerUserId, // Google의 'sub' ID
       email: googleUserData.email,
       name: googleUserData.name,
+      // nickname: googleUserData.name, // (API 명세에 nickname이 있으나 Google은 안 줌)
       profileImageUrl: googleUserData.profileImageUrl // Google 프로필 사진
     };
 
     const response = await apiClient.post('/users', payload);
     
-    // AuthResponse 스키마 반환 (user, tokens)
+    // 백엔드가 /users 응답으로 { user, tokens } 객체를 준다고 가정
     return { success: true, data: response.data }; 
   } catch (error) {
     console.error("POST /users 로그인 실패:", error);
@@ -44,7 +45,7 @@ export const loginWithGoogle = async (googleUserData) => {
   }
 };
 
-// (GET /auth/me)
+// (GET /auth/me) - 이 함수는 verifyUser를 위해 *반드시* 필요합니다.
 export const checkCurrentUser = async () => {
   try {
     // apiClient가 헤더에 토큰을 자동으로 붙여서 요청합니다.
@@ -81,7 +82,6 @@ export const getUserProfile = async () => {
     return { success: true, data: response.data }; // UserProfile 스키마 반환
   } catch (error) {
     console.error("프로필 불러오기 실패:", error);
-    // [수정] AuthContext가 더 이상 404에 의존하지 않으므로 isNewUser 플래그 제거
     return { success: false, data: null };
   }
 };
@@ -163,7 +163,7 @@ export const getRecommendations = async (prompt) => {
 
     const response = await apiClient.post('/recommend', payload);
     
-    // [수정] RecommendResponse 스키마에 따라 AI의 텍스트 답변(reason)을 추출
+    // RecommendResponse 스키마에 따라 AI의 텍스트 답변(reason)을 추출
     // API 명세의 'reason'은 LLM 요약/근거입니다.
     const aiTextResponse = response.data.items
       .map(item => `**${item.activity.title}**\n${item.reason}`)
