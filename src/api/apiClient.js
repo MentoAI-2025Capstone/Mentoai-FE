@@ -1,4 +1,4 @@
-// src/api/apiClient.js
+// src/apiClient.js
 import axios from 'axios';
 
 // 백엔드 서버 주소
@@ -6,31 +6,29 @@ const API_BASE_URL = 'https://mentoai.onrender.com';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  // Bearer 토큰 방식을 사용하므로 쿠키 옵션(withCredentials)을 끕니다.
-  withCredentials: false,
-  // [신규] OnRender 서버가 잠자기 모드에서 깨어나는 시간(최대 1분)을 고려하여 타임아웃을 60초로 설정
-  timeout: 60000 
+  withCredentials: false, // Bearer 토큰 방식을 사용하므로 false
+  timeout: 60000 // Render.com 서버 콜드 스타트를 60초간 대기
 });
 
-// [신규] API 요청 인터셉터 (모든 요청에 'Authorization: Bearer' 헤더 자동 추가)
+// --- 1. API 요청 인터셉터 ---
+// (모든 요청에 'Authorization: Bearer' 헤더 자동 추가)
 apiClient.interceptors.request.use((config) => {
   try {
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
-    // [수정] 토큰 경로를 AuthResponse 스키마에 맞게 수정
     const token = storedUser ? storedUser.tokens.accessToken : null;
 
     if (token && !config.headers.Authorization) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
   } catch (e) {
-    // sessionStorage가 없거나 파싱에 실패해도 무시하고 요청을 계속합니다.
+    // sessionStorage가 없거나 파싱에 실패해도 무시
   }
   return config;
 }, (error) => {
   return Promise.reject(error);
 });
 
-// [신규] 401 오류 시 토큰 자동 갱신 로직 (API 명세서의 /auth/refresh)
+// --- 2. 401 오류 시 토큰 자동 갱신 로직 (API 명세서의 /auth/refresh) ---
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -54,7 +52,7 @@ apiClient.interceptors.response.use(
     
     // 401(Unauthorized) 오류이고, 재시도한 적이 없다면
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true; // 재시도 플래그 설정
+      originalRequest._retry = true; // 재시도 플래그
 
       if (isRefreshing) {
         return new Promise(function(resolve, reject) {
@@ -96,10 +94,7 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
 
       } catch (refreshError) {
-        // 리프레시 실패 시 (리프레시 토큰 만료 등)
         console.error("Token refresh failed:", refreshError);
-        
-        // [오류 수정] err -> refreshError
         processQueue(refreshError, null); 
         isRefreshing = false;
         
@@ -111,6 +106,5 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
 
 export default apiClient;

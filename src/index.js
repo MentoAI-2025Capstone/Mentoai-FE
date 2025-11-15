@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import { BrowserRouter } from 'react-router-dom';
-// [!!!] GoogleOAuthProvider를 다시 임포트합니다.
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -14,9 +13,11 @@ const googleClientId = '889023267942-jakh3qc9vgh71modlijsgd1p6brojr0r.apps.googl
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    {/* [!!!] App을 GoogleOAuthProvider로 다시 감쌉니다. */}
+    {/* 1. Google Provider 설정 */}
     <GoogleOAuthProvider clientId={googleClientId}>
+      {/* 2. Auth Provider 설정 */}
       <AuthProvider>
+        {/* 3. Router 설정 */}
         <BrowserRouter>
           <App />
         </BrowserRouter>

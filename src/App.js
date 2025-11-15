@@ -10,10 +10,9 @@ import ScheduleCalendar from './pages/ScheduleCalendar';
 import MyPage from './pages/MyPage';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
-// [!!!] B안(서버 흐름)의 OAuthCallback 컴포넌트를 삭제합니다.
-// import OAuthCallback from './pages/OAuthCallback'; 
+// (OAuthCallback은 B안이므로 임포트하지 않음)
 
-// (PrivateRoute, PublicRoute, ProfileSetupRoute는 기존 코드와 동일)
+// --- 인증 라우팅 (수정 불필요) ---
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) { return <div>로딩 중...</div>; }
@@ -43,6 +42,7 @@ function ProfileSetupRoute({ children }) {
   }
   return children;
 }
+// --- -------------------- ---
 
 function App() {
   const { user, loading } = useAuth();
@@ -53,14 +53,13 @@ function App() {
   }
 
   const showNavbar = user && user.user.profileComplete && 
-                     location.pathname !== '/login' && 
+                    Docation.pathname !== '/login' && 
                      location.pathname !== '/profile-setup';
-                     // [!!!] /oauth/callback 경로 삭제
   
   const appClassName = showNavbar ? "App" : "App-unauthed";
   const getContentClass = () => {
     if (!showNavbar) { return "content-full"; }
-    if (location.pathname === '/prompt') { return "content-chat"; }
+  if (location.pathname === '/prompt') { return "content-chat"; }
     return "content";
   };
 
@@ -69,19 +68,18 @@ function App() {
       {showNavbar && <Navbar />}
       <main className={getContentClass()}>
         <Routes>
-          {/* 1. 로그인/프로필 설정 경로 */}
+          {/* 1. 로그인/프로필 경로 */}
           <Route path="/login" element={<PublicRoute><AuthPage /></PublicRoute>} />
           <Route path="/profile-setup" element={<ProfileSetupRoute><ProfileSetup /></ProfileSetupRoute>} />
-
-          {/* [!!!] B안(서버 흐름)의 콜백 라우트를 삭제합니다. */}
+          {/* (B안의 /oauth/callback 경로는 당연히 없습니다) */}
           
-          {/* 2. 메인 서비스 경로 (기존과 동일) */}
+          {/* 2. 메인 서비스 경로 */}
           <Route path="/recommend" element={<PrivateRoute><ActivityRecommender /></PrivateRoute>} />
           <Route path="/prompt" element={<PrivateRoute><PromptInput /></PrivateRoute>} />
           <Route path="/schedule" element={<PrivateRoute><ScheduleCalendar /></PrivateRoute>} />
           <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
 
-          {/* 3. 기본 경로 리디렉션 (기존과 동일) */}
+          {/* 3. 기본 경로 리디렉션 */}
           <Route path="/" element={
             user ? 
               (user.user.profileComplete ? <Navigate to="/recommend" /> : <Navigate to="/profile-setup" />) : 

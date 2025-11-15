@@ -1,6 +1,5 @@
 // src/pages/Auth.js
 import React, { useState } from 'react';
-// [!!!] useGoogleLogin 훅을 다시 임포트합니다.
 import { useGoogleLogin } from '@react-oauth/google'; 
 import { useAuth } from '../contexts/AuthContext'; 
 import './Page.css';
@@ -10,43 +9,40 @@ function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('로그인 중...');
 
-  // [!!!] A안(클라이언트 흐름)을 위한 Google 로그인 훅
   const handleGoogleLogin = useGoogleLogin({
-    // Google 로그인 성공 시 실행되는 함수
     onSuccess: async (googleTokenResponse) => {
       setIsLoading(true);
       setLoadingMessage('Google 인증 완료. MentoAI 서버에 로그인합니다...');
 
-      // OnRender 서버가 잠자는 것을 대비한 타이머 (선택 사항)
       const timer = setTimeout(() => {
         setLoadingMessage('서버 응답을 기다리는 중입니다. (최대 1분 소요)');
       }, 8000); // 8초
 
       try {
-        // [!!!] AuthContext의 login 함수로 Google 토큰 응답을 넘깁니다.
+        // AuthContext의 login 함수 (A안) 호출
         await auth.login(googleTokenResponse);
-        clearTimeout(timer); // 성공 시 타이머 제거
-        
-        // (성공 시 AuthContext가 user 상태를 변경하고,
-        //  App.js의 PublicRoute가 자동으로 리디렉션함)
+        clearTimeout(timer); 
+        // (성공 시 App.js가 자동으로 리디렉션함)
 
       } catch (error) {
-        clearTimeout(timer); // 실패 시 타이머 제거
-        console.error("A안 로그인 처리 중 에러 발생:", error);
+        clearTimeout(timer);
+        console.error("로그인 처리 중 에러 발생:", error);
         
-        if (error.code === 'ERR_NETWORK') {
+        // 백엔드가 보낸 에러 메시지(예: 닉네임 중복) 또는 기본 메시지
+        const alertMessage = error.message || "알 수 없는 오류가 발생했습니다.";
+        
+        if (error.code === 'ERR_NETWORK' || error.message.includes('CORS')) {
           alert('로그인에 실패했습니다. (네트워크 오류 또는 CORS 설정 확인)');
         } else if (error.code === 'ECONNABORTED') {
           alert('로그인에 실패했습니다. (서버 응답 시간 초과)');
         } else {
-          alert(`로그인에 실패했습니다. (${error.message})`);
+          alert(`로그인에 실패했습니다. (${alertMessage})`);
         }
         
         setIsLoading(false); 
         setLoadingMessage('로그인 중...');
       }
     },
-    // Google 로그인 실패 시
     onError: (error) => {
       console.error('Google 로그인 실패:', error);
       alert('Google 로그인에 실패했습니다. 다시 시도해주세요.');
@@ -65,7 +61,6 @@ function AuthPage() {
         
         <button 
           className="google-login-button" 
-          // [!!!] B안의 handleBackendLogin이 아닌, A안의 handleGoogleLogin()을 호출
           onClick={() => !isLoading && handleGoogleLogin()} 
           disabled={isLoading} 
         >
