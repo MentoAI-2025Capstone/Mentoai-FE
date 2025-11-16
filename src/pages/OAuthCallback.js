@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '../api/apiClient'; // apiClient 임포트
+import apiClient from '../api/apiClient'; // [수정] apiClient 임포트
+// [삭제] import axios from 'axios';
 
 export default function OAuthCallback() {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ export default function OAuthCallback() {
   const [message, setMessage] = useState('로그인 처리 중...');
 
   useEffect(() => {
+    // [!!!] [수정] 전체 로직 수정
     const completeLogin = async () => {
       try {
         // 1) URL 해시(#)에서 토큰 파싱
@@ -24,11 +26,12 @@ export default function OAuthCallback() {
           throw new Error("URL에서 Access Token을 찾을 수 없습니다.");
         }
 
-        // 2) [!!!] App.js와 apiClient가 인식할 수 있도록 sessionStorage에 임시 저장
+        // 2) App.js가 읽을 수 있도록 sessionStorage에 임시 저장
+        // (이래야 /auth/me 호출 시 apiClient가 토큰을 헤더에 실어 보냅니다)
         const tempAuthData = {
-          tokens: { accessToken, refreshToken, tokenType, expiresIn }
+          tokens: { accessToken, refreshToken, tokenType, expiresIn },
+          user: null
         };
-        // [!!!] localStorage -> sessionStorage로 수정
         sessionStorage.setItem('mentoUser', JSON.stringify(tempAuthData));
         
         // 3) URL에서 토큰 정보 제거 (보안)
@@ -39,15 +42,14 @@ export default function OAuthCallback() {
         setMessage('사용자 정보를 가져오는 중...');
         const response = await apiClient.get('/auth/me'); 
         
-        // 5) [!!!] 완전한 { user, tokens } 객체를 sessionStorage에 저장
-        // (PrivateRoute가 이 객체를 사용합니다)
+        // 5) [!!!] App.js가 원하는 완전한 { user, tokens } 객체를 sessionStorage에 저장
         sessionStorage.setItem('mentoUser', JSON.stringify(response.data));
 
         // 6) 프로필 완성 여부에 따라 최종 목적지로 이동
         const profileComplete = response.data.user?.profileComplete;
         const destination = profileComplete ? '/recommend' : '/profile-setup';
         
-        // window.location.href를 사용해 페이지를 완전히 새로고침합니다.
+        // window.location.href를 사용해 App.js가 새 정보를 읽도록 새로고침
         window.location.href = destination;
       
       } catch (err) {
@@ -58,7 +60,7 @@ export default function OAuthCallback() {
     };
 
     completeLogin();
-  }, []); // 의존성 배열 비우기 (최초 1회만 실행)
+  }, []); // navigate 의존성 제거 (최초 1회만 실행)
 
   if (error) {
     return (
@@ -79,7 +81,6 @@ export default function OAuthCallback() {
       <div className="auth-card">
         <h1 className="auth-logo">MentoAI</h1>
         <p className="auth-subtitle">{message}</p>
-        {/* 간단한 로딩 스피너 */}
         <div style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #007bff', borderRadius: '50%', margin: '20px auto', animation: 'spin 1s linear infinite' }}></div>
       </div>
     </div>
