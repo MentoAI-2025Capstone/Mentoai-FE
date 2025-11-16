@@ -148,7 +148,7 @@
   font-size: 18px;
   color: #333;
   margin-top: 0;
-  margin-bottom: 15px; /* [!!!] [수정] h3와 폼필드 간의 간격 */
+  margin-bottom: 10px; /* [!!!] [수정] h3와 폼필드 간의 간격 */
 }
 /* [!!!] [추가] 그리드 안의 h3는 margin-bottom을 grid gap이 관리 */
 .form-grid h3 {
