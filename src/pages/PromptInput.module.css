@@ -2,6 +2,7 @@
 
 .chatPageContainer {
   /* page-container와 동일하지만, App.js에서 content-chat 클래스로 관리됨 */
+  height: 100%;
 }
 
 .chatLayout {
