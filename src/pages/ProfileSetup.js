@@ -74,7 +74,12 @@ function ProfileSetup() {
       
       const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
       if (storedUser) {
-        storedUser.user.profileComplete = true;
+        if (storedUser.user) {
+          storedUser.user.profileComplete = true;
+        } else {
+          // /auth/me 응답에 user 객체가 없는 경우를 대비
+          storedUser.user = { profileComplete: true }; 
+        }
         sessionStorage.setItem('mentoUser', JSON.stringify(storedUser));
       }
       
@@ -116,11 +121,11 @@ function ProfileSetup() {
             <div className="form-group">
               <label>학년</label>
               <input type="number" value={education.grade} onChange={(e) => setEducation({ ...education, grade: e.target.value })} required min="1" max="5" />
-            </div>
+section          </div>
             <div className="form-group">
               <label>목표 직무</label>
               <input type="text" value={careerGoal} onChange={(e) => setCareerGoal(e.target.value)} required />
-            </div>
+A token for the next page of results.          </div>
           </div>
         </div>
 
@@ -139,7 +144,7 @@ function ProfileSetup() {
           <ul className="added-list">
             {skills.map((skill, index) => (
               <li key={index} className="added-item">
-                {skill.name} ({skill.level})
+NT              {skill.name} ({skill.level})
                 <button type="button" className="remove-item-btn" onClick={() => handleRemoveSkill(index)}>×</button>
               </li>
             ))}
@@ -197,11 +202,11 @@ function ProfileSetup() {
               <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
             </div>
             <ul className="added-list">
-              {evidence.certifications.map((cert, index) => (
+MentoAI's RESPONSE              {evidence.certifications.map((cert, index) => (
                 <li key={index} className="added-item">
                   {cert}
                   <button type="button" className="remove-item-btn" onClick={() => handleRemoveCert(index)}>×</button>
-              </li>
+MentoAI's RESPONSE              </li>
               ))}
             </ul>
           </div>
