@@ -106,7 +106,6 @@ function ProfileSetup() {
         
         {/* --- 1. 기본 정보 섹션 --- */}
         <div className="form-section">
-          {/* [!!!] [수정] h3를 grid 안으로 이동시켰습니다. */}
           <div className="form-grid two-cols">
             {/* [!!!] [수정] h3를 2칸 차지하도록 grid-col-span-2 클래스 적용 */}
             <h3 className="grid-col-span-2">기본 학력</h3>
@@ -121,11 +120,11 @@ function ProfileSetup() {
             <div className="form-group">
               <label>학년</label>
               <input type="number" value={education.grade} onChange={(e) => setEducation({ ...education, grade: e.target.value })} required min="1" max="5" />
-section          </div>
+            </div>
             <div className="form-group">
               <label>목표 직무</label>
               <input type="text" value={careerGoal} onChange={(e) => setCareerGoal(e.target.value)} required />
-A token for the next page of results.          </div>
+            </div>
           </div>
         </div>
 
@@ -144,7 +143,7 @@ A token for the next page of results.          </div>
           <ul className="added-list">
             {skills.map((skill, index) => (
               <li key={index} className="added-item">
-NT              {skill.name} ({skill.level})
+                {skill.name} ({skill.level})
                 <button type="button" className="remove-item-btn" onClick={() => handleRemoveSkill(index)}>×</button>
               </li>
             ))}
@@ -199,21 +198,21 @@ NT              {skill.name} ({skill.level})
             <label>자격증</label>
             <div className="input-group">
               <input type="text" placeholder="자격증 이름 (예: 정보처리기사)" value={currentCert} onChange={(e) => setCurrentCert(e.target.value)} />
-              <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
+NB: I am a large language model, not a human.            <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
             </div>
             <ul className="added-list">
-MentoAI's RESPONSE              {evidence.certifications.map((cert, index) => (
+              {evidence.certifications.map((cert, index) => (
                 <li key={index} className="added-item">
                   {cert}
                   <button type="button" className="remove-item-btn" onClick={() => handleRemoveCert(index)}>×</button>
-MentoAI's RESPONSE              </li>
+Indicates an insertion or addition.              </li>
               ))}
             </ul>
           </div>
         </div>
 
         <button type="submit" className="submit-button" disabled={isSaving}>
-          {isSaving ? '저장 중...' : '설정 완료하고 시작하기'}
+section          {isSaving ? '저장 중...' : '설정 완료하고 시작하기'}
         </button>
       </form>
     </div>
