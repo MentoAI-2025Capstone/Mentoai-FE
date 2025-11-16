@@ -1,0 +1,199 @@
+/* src/pages/ScheduleCalendar.module.css */
+
+.calendarContainer {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.calendarHeader { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+.calendarTitle {
+  margin: 0; 
+  font-size: 28px;
+  font-weight: 700;
+}
+.calendarNav {
+  display: flex;
+  gap: 10px;
+  margin-left: auto; 
+  margin-right: 20px; 
+}
+.navBtn {
+  background: #f1f3f5;
+  border: 1px solid #dee2e6;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.navBtn:hover { background: #e9ecef; }
+.addEventBtn { 
+  padding: 10px 18px; 
+  font-size: 15px; 
+  font-weight: bold; 
+  color: white; 
+  background-color: #007bff; 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: background-color 0.2s;
+}
+.addEventBtn:hover { background-color: #0056b3; }
+.calendarGrid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.daysHeader { border-bottom: 1px solid #dee2e6; }
+.calendarDayHeader { 
+  text-align: center; 
+  font-weight: 600; 
+  padding: 12px 5px; 
+  background-color: #f8f9fa;
+  font-size: 14px;
+}
+.calendarGrid:not(.daysHeader) {
+  border-left: 1px solid #dee2e6;
+}
+.calendarDay {
+  min-height: 120px;
+  padding: 8px;
+  border-right: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 14px;
+  position: relative;
+  background-color: #fff;
+  transition: background-color 0.2s;
+}
+.calendarDay span { font-weight: 600; color: #555; }
+.calendarDay.otherMonth { background-color: #fdfdfd; }
+.calendarDay.otherMonth span { color: #ccc; }
+.calendarDay.dayToday {
+  background-color: #f7f9ff;
+}
+
+.calendarDay.dayToday span {
+  background-color: #007bff;
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.calendarEvent {
+  background-color: #e7f3ff;
+  color: #0056b3;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-top: 5px;
+  white-space: normal; 
+  word-break: break-all; 
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.calendarEvent:hover { background-color: #d0e7ff; }
+.calendarEvent.green { background-color: #e6f9f0; color: #087f5b; }
+.calendarEvent.green:hover { background-color: #c3fae2; }
+
+/* --- 모달 (Modal) --- */
+/* (캘린더 페이지에서만 모달을 사용하므로, 여기에 포함합니다) */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: modalFadeIn 0.2s;
+}
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.modalContent {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  transform: scale(0.95);
+  animation: modalZoomIn 0.2s forwards;
+}
+@keyframes modalZoomIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.modalContent h3 { margin-top: 0; }
+.modalActions {
+  display: flex;
+  justify-content: space-between; 
+  gap: 10px;
+  margin-top: 20px;
+}
+.modalActions button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modalActions .btnCancel {
+  background-color: #e9ecef;
+  color: #333;
+}
+.modalActions .btnCancel:hover { background-color: #dee2e6; }
+.modalActions .btnSave {
+  background-color: #007bff;
+  color: white;
+}
+.modalActions .btnSave:hover { background-color: #0056b3; }
+
+.modalActions .btnDelete {
+  background-color: #dc3545;
+  color: white;
+  margin-right: auto; 
+}
+.modalActions .btnDelete:hover {
+  background-color: #c82333;
+}
+
+/* 캘린더 모달 안의 .form-group을 위한 스타일 */
+/* (Page.css의 .form-group과 겹치지 않도록 여기에 정의) */
+.formGroup {
+  margin-bottom: 15px; /* 폼 그룹 사이 간격 */
+  text-align: left;
+}
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+.formGroup input {
+  width: 100%;
+  padding: 10px; 
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  box-sizing: border-box;
+  height: 37px;
+}

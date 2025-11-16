@@ -1,5 +1,8 @@
+// src/pages/ScheduleCalendar.js
+
 import React, { useState } from 'react';
-import './Page.css';
+// [수정] Page.css 대신 ScheduleCalendar.module.css를 import
+import styles from './ScheduleCalendar.module.css';
 
 function ScheduleCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date()); 
@@ -39,17 +42,17 @@ function ScheduleCalendar() {
 
   // --- 캘린더 헤더 ---
   const header = () => (
-    <div className="calendar-header">
-      <h3 className="calendar-title">
+    // [수정] className 적용
+    <div className={styles.calendarHeader}>
+      <h3 className={styles.calendarTitle}>
         {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
       </h3>
-      <div className="calendar-nav">
-        <button className="nav-btn" onClick={prevMonth}>&lt; 이전 달</button>
-        <button className="nav-btn" onClick={today}>오늘</button>
-        <button className="nav-btn" onClick={nextMonth}>다음 달 &gt;</button>
+      <div className={styles.calendarNav}>
+        <button className={styles.navBtn} onClick={prevMonth}>&lt; 이전 달</button>
+        <button className={styles.navBtn} onClick={today}>오늘</button>
+        <button className={styles.navBtn} onClick={nextMonth}>다음 달 &gt;</button>
       </div>
-      {/* [수정] onClick 이벤트 변경 */}
-      <button className="add-event-btn" onClick={openNewEventModal}>+ 새 활동 추가</button>
+      <button className={styles.addEventBtn} onClick={openNewEventModal}>+ 새 활동 추가</button>
     </div>
   );
 
@@ -57,9 +60,10 @@ function ScheduleCalendar() {
   const daysOfWeek = () => {
     const days = ['일', '월', '화', '수', '목', '금', '토'];
     return (
-      <div className="calendar-grid days-header">
+      // [수정] className 적용
+      <div className={`${styles.calendarGrid} ${styles.daysHeader}`}>
         {days.map(day => (
-          <div key={day} className="calendar-day-header">{day}</div>
+          <div key={day} className={styles.calendarDayHeader}>{day}</div>
         ))}
       </div>
     );
@@ -92,17 +96,23 @@ function ScheduleCalendar() {
 
         const dayEvents = getEventsForDate(formattedDate);
 
+        // [수정] className 적용
+        const dayClasses = `
+          ${styles.calendarDay} 
+          ${!isCurrentMonth ? styles.otherMonth : ''} 
+          ${isToday ? styles.dayToday : ''}
+        `;
+
         days.push(
           <div
-            className={`calendar-day ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'day-today' : ''}`}
+            className={dayClasses}
             key={day.toString()}
           >
             <span>{day.getDate()}</span>
             {dayEvents.map((event, index) => (
-              // [수정] onClick 이벤트 추가
               <div 
                 key={index} 
-                className="calendar-event"
+                className={styles.calendarEvent} // [수정]
                 onClick={() => handleEventClick(event)}
               >
                 {event.title}
@@ -112,7 +122,7 @@ function ScheduleCalendar() {
         );
         day.setDate(day.getDate() + 1);
       }
-      rows.push(<div className="calendar-grid" key={day.toString()}>{days}</div>);
+      rows.push(<div className={styles.calendarGrid} key={day.toString()}>{days}</div>); // [수정]
       days = [];
     }
     return <div>{rows}</div>;
@@ -162,20 +172,21 @@ function ScheduleCalendar() {
   };
 
   return (
+    // [수정] className 적용 (page-container는 공통 스타일이므로 유지)
     <div className="page-container">
-      <div className="calendar-container">
+      <div className={styles.calendarContainer}>
         {header()}
         {daysOfWeek()}
         {cells()}
       </div>
 
       {isModalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          {/* [수정] 모달 컨텐츠 클릭 시 버블링 방지 */}
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            {/* [수정] 모달 제목 변경 */}
+        // [수정] className 적용
+        <div className={styles.modalOverlay} onClick={closeModal}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <h3>{selectedEvent ? '활동 수정' : '새 활동 추가'}</h3>
-            <div className="form-group">
+            {/* [수정] className 적용 */}
+            <div className={styles.formGroup}>
               <label>활동 내용</label>
               <input
                 type="text"
@@ -183,7 +194,8 @@ function ScheduleCalendar() {
                 onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
               />
             </div>
-            <div className="form-group">
+            {/* [수정] className 적용 */}
+            <div className={styles.formGroup}>
               <label>날짜</label>
               <input
                 type="date"
@@ -191,14 +203,13 @@ function ScheduleCalendar() {
                 onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
               />
             </div>
-            <div className="modal-actions">
-              {/* [신규] 삭제 버튼 (수정 모드일 때만 보임) */}
+            {/* [수정] className 적용 */}
+            <div className={styles.modalActions}>
               {selectedEvent && (
-                <button className="btn-delete" onClick={handleDeleteEvent}>삭제하기</button>
+                <button className={styles.btnDelete} onClick={handleDeleteEvent}>삭제하기</button>
               )}
-              <button className="btn-cancel" onClick={closeModal}>취소</button>
-              {/* [수정] 버튼 텍스트 변경 */}
-              <button className="btn-save" onClick={handleAddOrUpdateEvent}>
+              <button className={styles.btnCancel} onClick={closeModal}>취소</button>
+              <button className={styles.btnSave} onClick={handleAddOrUpdateEvent}>
                 {selectedEvent ? '저장하기' : '추가하기'}
               </button>
             </div>

@@ -1,5 +1,8 @@
+// src/pages/PromptInput.js
+
 import React, { useState, useRef, useEffect } from 'react';
-import './Page.css';
+// [수정] Page.css 대신 PromptInput.module.css를 import
+import styles from './PromptInput.module.css';
 import { checkGuardrails } from '../utils/guardrails';
 // import { createFinalPrompt } from '../utils/prompt-engineering'; // (API 연동 시 주석 해제)
 
@@ -85,19 +88,20 @@ function PromptInput() {
   };
 
   return (
-    <div className="chat-page-container">
-      <div className="chat-layout">
+    // [수정] className 적용
+    <div className={styles.chatPageContainer}>
+      <div className={styles.chatLayout}>
         
         {/* 1. 채팅 히스토리 사이드바 */}
-        <div className="chat-history-sidebar">
-          <button className="new-chat-btn" onClick={handleNewChat}>
+        <div className={styles.chatHistorySidebar}>
+          <button className={styles.newChatBtn} onClick={handleNewChat}>
             + 새 채팅 시작
           </button>
-          <ul className="chat-history-list">
+          <ul className={styles.chatHistoryList}>
             {chatHistory.map(chat => (
               <li 
                 key={chat.id} 
-                className={chat.id === activeChatId ? 'active' : ''}
+                className={chat.id === activeChatId ? styles.active : ''}
                 onClick={() => setActiveChatId(chat.id)}
               >
                 {chat.title}
@@ -107,18 +111,19 @@ function PromptInput() {
         </div>
         
         {/* 2. 메인 채팅창 */}
-        <div className="chat-window">
+        <div className={styles.chatWindow}>
           
           {/* 2-1. 메시지 출력 영역 */}
-          <div className="chat-messages-area">
+          <div className={styles.chatMessagesArea}>
             {messages.map((msg, index) => (
-              <div key={index} className={`chat-message ${msg.role}`}>
+              <div key={index} className={`${styles.chatMessage} ${styles[msg.role]}`}>
                 {msg.role === 'ai' && msg.title ? (
-                  <div className="result-card-chat">
+                  <div className={styles.resultCardChat}>
                     <h4>{msg.title}</h4>
                     <p>{msg.content}</p>
-                    <div className="tags">
-                      {msg.tags?.map(tag => <span key={tag} className="tag">{tag}</span>)}
+                    <div className={styles.tags}>
+                      {/* [수정] 공통 .tag 클래스 대신 모듈 내 .tag 사용 */}
+                      {msg.tags?.map(tag => <span key={tag} className={styles.tag}>{tag}</span>)}
                     </div>
                   </div>
                 ) : (
@@ -128,11 +133,11 @@ function PromptInput() {
             ))}
             
             {isLoading && (
-              <div className="chat-message ai">
-                <div className="spinner-dots">
-                  <div className="dot"></div>
-                  <div className="dot"></div>
-                  <div className="dot"></div>
+              <div className={`${styles.chatMessage} ${styles.ai}`}>
+                <div className={styles.spinnerDots}>
+                  <div className={styles.dot}></div>
+                  <div className={styles.dot}></div>
+                  <div className={styles.dot}></div>
                 </div>
               </div>
             )}
@@ -140,10 +145,10 @@ function PromptInput() {
           </div>
           
           {/* 2-2. 메시지 입력 영역 (Gemini 스타일) */}
-          <div className="chat-input-area">
-            <div className="chat-input-wrapper"> {/* 👈 [신규] 래퍼 추가 */}
+          <div className={styles.chatInputArea}>
+            <div className={styles.chatInputWrapper}>
               <textarea
-                className="chat-textarea" // 👈 [수정] 클래스 이름 변경
+                className={styles.chatTextarea}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="AI 멘토에게 질문을 입력하세요..."
@@ -156,7 +161,7 @@ function PromptInput() {
                 rows={1}
               />
               <button 
-                className="chat-send-button" // 👈 [수정] 클래스 이름 변경
+                className={styles.chatSendButton}
                 onClick={handleRecommend} 
                 disabled={isLoading || !prompt.trim()}
               >
@@ -165,7 +170,7 @@ function PromptInput() {
                   viewBox="0 0 24 24" 
                   width="24" 
                   height="24" 
-                  className="send-icon"
+                  className={styles.sendIcon}
                 >
                   <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2 .01 7z"></path>
                 </svg>
