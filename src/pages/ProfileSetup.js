@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// [수정] axios 대신 apiClient 임포트
-import apiClient from '../api/apiClient';
+import apiClient from '../api/apiClient'; // [수정] apiClient 임포트
 import './Page.css';
 import CustomSelect from '../components/CustomSelect'; 
 
@@ -12,19 +11,23 @@ const skillOptions = [{ value: '상', label: '상 (업무 활용)' }, { value: '
 const experienceOptions = [{ value: 'PROJECT', label: '프로젝트' }, { value: 'INTERN', label: '인턴' }];
 
 /**
- * [수정] sessionStorage에서 'userId'만 가져오는 헬퍼
+ * [수정] sessionStorage/localStorage에서 'userId'를 가져오는 헬퍼
  */
-const getUserIdFromStorage = () => {
+const getAuthDataFromStorage = () => {
   try {
+    // 님의 Auth.js 로직(sessionStorage에 저장)을 따릅니다.
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
-    return storedUser ? storedUser.user.userId : null;
+    return { 
+      userId: storedUser?.user?.userId || null,
+      token: storedUser?.tokens?.accessToken || null // apiClient가 자동 처리하므로 사실상 불필요
+    };
   } catch (e) {
-    return null;
+    return { userId: null, token: null };
   }
 };
 
 function ProfileSetup() {
-  // (State 정의...)
+  // (State 정의... - API 명세 기반)
   const [education, setEducation] = useState({ school: '멘토대학교', major: '컴퓨터공학과', grade: 3 });
   const [careerGoal, setCareerGoal] = useState('AI 엔지니어');
   const [skills, setSkills] = useState([]);
@@ -45,22 +48,28 @@ function ProfileSetup() {
   const handleRemoveCert = (index) => { setEvidence({ ...evidence, certifications: evidence.certifications.filter((_, i) => i !== index) }); };
 
   /**
-   * [수정] apiClient를 사용하는 handleSubmit
+   * [수정] apiClient를 사용하는 handleSubmit (API 명세 기반)
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     
-    const profileData = { education, careerGoal, skillFit: skills, experienceFit: experiences, evidenceFit: evidence };
+    // API 명세의 PUT /users/{userId}/profile에 맞는 페이로드
+    const profileData = { 
+        education, 
+        careerGoal, 
+        skillFit: skills, 
+        experienceFit: experiences, 
+        evidenceFit: evidence 
+    };
 
     try {
-      // [수정] userId만 가져옴
-      const userId = getUserIdFromStorage();
+      const { userId } = getAuthDataFromStorage();
       if (!userId) {
-        throw new Error("인증 정보가 없습니다. 다시 로그인해주세요.");
+        throw new Error("인증 정보(userId)가 없습니다. 다시 로그인해주세요.");
       }
 
-      // [수정] apiClient 사용, 헤더(토큰) 및 타임아웃 자동 관리
+      // apiClient 사용 (토큰 자동 주입)
       await apiClient.put(
         `/users/${userId}/profile`, 
         profileData
@@ -68,8 +77,10 @@ function ProfileSetup() {
       
       // sessionStorage의 profileComplete 상태 수동 업데이트
       const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
-      storedUser.user.profileComplete = true;
-      sessionStorage.setItem('mentoUser', JSON.stringify(storedUser));
+      if (storedUser) {
+        storedUser.user.profileComplete = true;
+        sessionStorage.setItem('mentoUser', JSON.stringify(storedUser));
+      }
       
       // App.js가 라우팅을 새로고침하도록 페이지 강제 이동
       window.location.href = '/recommend';
@@ -86,7 +97,7 @@ function ProfileSetup() {
     }
   };
 
-  // (JSX)
+  // (JSX - UI 다듬기 및 쓰레기 텍스트 제거)
   return (
     <div className="profile-setup-container">
       <form className="profile-card" onSubmit={handleSubmit}>
@@ -138,21 +149,39 @@ function ProfileSetup() {
           </ul>
         </div>
 
-        {/* --- 3. 주요 경험 섹션 --- */}
+        {/* --- 3. 주요 경험 섹션 (UI 다듬기) --- */}
         <div className="form-section">
           <h3>주요 경험</h3>
-          <div className="input-group experience-group">
-            <CustomSelect
-              options={experienceOptions}
-              value={currentExperience.type}
-              onChange={(newValue) => setCurrentExperience({ ...currentExperience, type: newValue })}
-            />
-            <input type="text" placeholder="역할 (예: 프론트엔드 개발)" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
-MPlease respond in the same language as the user.          <input type="text" placeholder="기간 (예: 3개월)" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
-            <input type="text" placeholder="사용 기술 (예: React, Spring)" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
-            <input type="text" placeholder="관련 URL (GitHub, 포트폴리오)" value={currentExperience.url} onChange={(e) => setCurrentExperience({ ...currentExperience, url: e.target.value })} />
-            <button type="button" className="add-item-btn" onClick={handleAddExperience}>추가</button>
+        {/* [수정] 난잡한 UI를 그리드 레이아웃으로 변경 */}
+          <div className="form-grid experience-grid">
+          <div className="form-group">
+            <label>유형</label>
+            <CustomSelect
+              options={experienceOptions}
+              value={currentExperience.type}
+              onChange={(newValue) => setCurrentExperience({ ...currentExperience, type: newValue })}
+            />
+          </div>
+          <div className="form-group">
+            <label>역할</label>
+            <input type="text" placeholder="예: 프론트엔드 개발" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <label>기간</label>
+            <input type="text" placeholder="예: 3개월" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <label>사용 기술</label>
+            <input type="text" placeholder="예: React, Spring" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
+          </div>
+          <div className="form-group grid-col-span-2">
+            <label>관련 URL</label>
+            <input type="text" placeholder="예: GitHub, 포트폴리오" value={currentExperience.url} onChange={(e) => setCurrentExperience({ ...currentExperience, url: e.target.value })} />
+          </div>
+          <button type="button" className="add-item-btn grid-align-end" onClick={handleAddExperience}>추가</button>
           </div>
+        {/* [삭제] 텍스트 쓰레기 제거 */}
+        
           <ul className="added-list">
             {experiences.map((exp, index) => (
               <li key={index} className="added-item">
@@ -164,7 +193,7 @@ MPlease respond in the same language as the user.          <input type="tex
         </div>
 
         {/* --- 4. 증빙 자료 섹션 --- */}
-MentoAI's RESPONSE        <div className="form-section">
+        <div className="form-section">
           <h3>증빙 자료</h3>
           <div className="form-group">
             <label>자격증</label>
@@ -182,9 +211,9 @@ MentoAI's RESPONSE        <div className="form-section">
             </ul>
           </div>
         </div>
-        {/* ... (폼 섹션 끝) ... */}
+        {/* [삭제] 텍스트 쓰레기 제거 */}
 
-Indicates a deletion or removal.        <button type="submit" className="submit-button" disabled={isSaving}>
+        <button type="submit" className="submit-button" disabled={isSaving}>
           {isSaving ? '저장 중...' : '설정 완료하고 시작하기'}
         </button>
       </form>

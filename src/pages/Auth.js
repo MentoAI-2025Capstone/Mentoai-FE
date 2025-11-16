@@ -14,24 +14,17 @@ function AuthPage() {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
-
-        // [!!!] [수정] storedUser.tokens가 undefined일 수 있으므로 '?'를 추가합니다.
-        const accessToken = storedUser?.tokens?.accessToken;
-
+        // apiClient가 localStorage에서 토큰을 읽어 헤더에 자동 추가합니다.
+        const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
-            throw new Error("No access token found in sessionStorage");
+            throw new Error("No access token found in localStorage");
         }
         
-        // apiClient가 sessionStorage에서 토큰을 읽어 /auth/me 호출
         const response = await apiClient.get('/auth/me'); 
         const data = response.data;
         const user = data?.user;
 
         if (user) {
-          // [중요] /auth/me 응답(data)에 tokens 객체가 포함되지 않으면
-          // 이 코드가 sessionStorage의 토큰을 덮어써서 지워버릴 수 있습니다.
-          // (일단 님의 코드 로직을 따르되, 에러만 수정합니다.)
           sessionStorage.setItem('mentoUser', JSON.stringify(data));
           const profileComplete = user.profileComplete;
           const destination = profileComplete ? '/recommend' : '/profile-setup';
@@ -81,6 +74,7 @@ function AuthPage() {
             <span>Google로 이동 중...</span>
           ) : (
             <>
+              {/* [!!!] [수정] SVG 아이콘과 텍스트를 래핑하여 한 줄로 표시 */}
               <svg className="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
