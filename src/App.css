@@ -37,7 +37,7 @@ body {
   background-color: #ffffff;
   box-sizing: border-box;
   margin-top: 60px;
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 60px);
 }
 
 /* 채팅 페이지 전용 content 클래스 (위와 동일하게 수정) */
@@ -46,7 +46,7 @@ body {
   background-color: #ffffff;
   box-sizing: border-box;
   margin-top: 60px;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 60px);
 }
 
 /* [!!!] [수정] .content-full (헤더가 없는 전체 화면 페이지용)
