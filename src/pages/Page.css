@@ -114,7 +114,7 @@
   text-align: center;
 }
 .form-section {
-  display: block; /* [!!!] [수정] 레이아웃 깨짐 방지를 위해 block으로 강제 */
+  display: block; /* [!!!] [수정] 거대 공백(flex/grid) 오류 방지를 위해 block으로 강제 */
   width: 100%;
   margin-bottom: 20px; 
   border-bottom: 1px solid #eee;
@@ -137,12 +137,9 @@
 .form-grid.two-cols {
   display: grid;
   gap: 20px;
-  /* [!!!] [수정] 2열 고정 대신 반응형 그리드로 변경하고, 최대 너비 제한 */
+  /* [!!!] [수정] 님이 제안한 2x2 그리드 레이아웃 (최대 2열) */
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  max-width: 800px; 
-}
-@media (max-width: 640px) {
-  /* [삭제] two-cols의 미디어 쿼리는 위 auto-fit으로 대체됨 */
+  max-width: 800px; /* 폼이 너무 넓게 퍼지는 것을 방지 */
 }
 
 .form-group {
