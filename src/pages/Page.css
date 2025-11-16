@@ -46,7 +46,7 @@
   align-items: flex-start; /* [!!!] [수정] flex-start 유지 (상단 정렬) */
   width: 100%;
   min-height: 100vh;
-  padding: 40px 20px; /* 상단 여백 */
+  padding: 40px 20px; /* [!!!] [수정] 상단 여백 추가 */
   box-sizing: border-box;
   background-color: #ffffff; 
 }
@@ -185,11 +185,13 @@
   border-radius: 8px;
   font-size: 15px;
   box-sizing: border-box;
-  height: 37px; 
+  height: 37px; /* [!!!] [수정] CustomSelect(37px)와 높이를 맞춥니다. */
 }
+/* [!!!] [추가] CustomSelect 높이 강제 (높이 문제 해결) */
 .form-group .custom-select-wrapper {
   height: 37px;
 }
+
 .form-group textarea {
   height: auto;
 }
