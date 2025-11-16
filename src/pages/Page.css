@@ -1,101 +1,100 @@
 /* src/pages/Page.css */
 
 .profile-card-container {
-  margin: -30px; 
-  padding: 20px; 
-  box-sizing: border-box;
-  background-color: #f8f9fa;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 60px);
+  margin: -30px; 
+  padding: 20px; 
+  box-sizing: border-box;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 60px);
 }
 
 .page-container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 .page-container h2 {
-  font-size: 28px;
-  color: #333;
-  margin-bottom: 10px;
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 10px;
 }
 .page-container p {
-  font-size: 16px;
-  color: #666;
-  margin-bottom: 40px;
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 40px;
 }
 
 /* --- AuthPage & ProfileSetup --- */
 .auth-container, .profile-setup-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  min-height: 100vh;
-  padding: 40px 20px;
-  box-sizing: border-box;
-  background-color: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  background-color: #f8f9fa;
 }
 .auth-card {
-  width: 100%;
-  max-width: 420px;
-  padding: 50px;
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-  text-align: center;
-  box-sizing: border-box;
+  width: 100%;
+  max-width: 420px;
+  padding: 50px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  text-align: center;
+  box-sizing: border-box;
 }
 .profile-card {
-  width: 100%;
-  max-width: 1200px; 
-  padding: 25px 40px; 
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-  text-align: left;
-  box-sizing: border-box;
+  width: 100%;
+  max-width: 1200px; 
+  padding: 25px 40px; 
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  text-align: left;
+  box-sizing: border-box;
 }
 .profile-card.mypage-card {
-  max-width: 1200px;
-  margin-top: 0; 
+  max-width: 1200px;
+  margin-top: 0; 
 }
 
 .auth-logo {
-  font-size: 42px;
-  font-weight: 800;
-  color: #007bff;
-  margin: 0 0 15px 0;
-  text-align: center;
+  font-size: 42px;
+  font-weight: 800;
+  color: #007bff;
+  margin: 0 0 15px 0;
+  text-align: center;
 }
 .auth-subtitle { 
-  font-size: 17px; 
-  color: #555; 
-  margin-bottom: 40px; 
-  line-height: 1.6;
-  text-align: center;
+  font-size: 17px; 
+  color: #555; 
+  margin-bottom: 40px; 
+  line-height: 1.6;
+  text-align: center;
 }
 
-/* [수정] <a> 태그와 <button> 태그 모두에 적용되는 스타일 */
 .google-login-button {
-  width: 100%; 
-  padding: 14px; 
-  font-size: 16px; 
-  font-weight: 600;
-  background-color: #ffffff; 
-  color: #333; 
-  border: 1px solid #dee2e6;
-  border-radius: 8px; 
-  cursor: pointer; 
-  transition: all 0.2s ease-in-out;
-  display: flex; 
-  align-items: center; 
-  justify-content: center; /* 👈 이 속성이 텍스트를 중앙 정렬합니다. */
-  gap: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  box-sizing: border-box; 
+  width: 100%; 
+  padding: 14px; 
+  font-size: 16px; 
+  font-weight: 600;
+  background-color: #ffffff; 
+  color: #333; 
+  border: 1px solid #dee2e6;
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: all 0.2s ease-in-out;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-sizing: border-box; 
 }
 .google-login-button:hover { background-color: #f8f9fa; border-color: #ced4da; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 .google-icon { width: 22px; height: 22px; }
@@ -103,178 +102,178 @@
 
 /* --- ProfileSetup & MyPage Form --- */
 .profile-card-title {
-  text-align: center;
-  font-size: 24px;
-  margin-bottom: 10px;
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 10px;
 }
 .profile-card-description {
-  font-size: 15px; 
-  margin-bottom: 20px; 
-  color: #666;
-  text-align: center;
+  font-size: 15px; 
+  margin-bottom: 20px; 
+  color: #666;
+  text-align: center;
 }
 .form-section {
-  margin-bottom: 20px; 
-  border-bottom: 1px solid #eee;
-  padding-bottom: 20px; 
+  margin-bottom: 20px; 
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px; 
 }
 .form-section:last-of-type {
-  border-bottom: none;
-  padding-bottom: 10px;
+  border-bottom: none;
+  padding-bottom: 10px;
 }
 .form-section h3 {
-  font-size: 18px;
-  color: #333;
-  margin-bottom: 15px;
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 15px;
 }
 
 .form-grid {
-  display: grid;
-  gap: 20px;
+  display: grid;
+  gap: 20px;
 }
 .form-grid.two-cols {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr);
 }
 @media (max-width: 640px) {
-  .form-grid.two-cols {
-    grid-template-columns: 1fr;
-  }
+  .form-grid.two-cols {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-group {
-  margin-bottom: 10px; 
-  text-align: left;
+  margin-bottom: 10px; 
+  text-align: left;
 }
 .form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #333;
-  font-size: 14px;
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
 }
 .form-group input, .form-group select, .form-group textarea {
-  width: 100%;
-  padding: 10px; 
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 15px;
-  box-sizing: border-box;
+  width: 100%;
+  padding: 10px; 
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  box-sizing: border-box;
 }
 
 .input-group input {
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  padding: 10px; 
-  font-size: 15px;
-  box-sizing: border-box;
-  background-color: white;
-  height: 37px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 10px; 
+  font-size: 15px;
+  box-sizing: border-box;
+  background-color: white;
+  height: 37px;
 }
 
 .input-group select {
-  /* (사용 안 함) */
+  /* (사용 안 함) */
 }
 
 /* 동적 입력 UI (Skill, Experience 등) */
 .input-group {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-  align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
 }
 .input-group.experience-group {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr 1fr 1.5fr 2fr auto;
-  gap: 10px;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr 1.5fr 2fr auto;
+  gap: 10px;
+  align-items: center;
 }
 
 .input-group.skill-group {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 10px;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
 }
 .input-group.skill-group .custom-select-wrapper {
-  width: 200px;
+  width: 200px;
 }
 
 @media (max-width: 768px) {
-  .input-group.experience-group,
-  .input-group.skill-group {
-    display: flex;
-    flex-direction: column; 
-    align-items: stretch;
-  }
-  .input-group.skill-group .custom-select-wrapper {
-    width: 100%; 
-  }
+  .input-group.experience-group,
+  .input-group.skill-group {
+    display: flex;
+    flex-direction: column; 
+    align-items: stretch;
+  }
+  .input-group.skill-group .custom-select-wrapper {
+    width: 100%; 
+  }
 }
 
 .input-group input { flex-grow: 1; }
 .add-item-btn {
-  padding: 0 20px;
-  font-size: 14px;
-  font-weight: bold;
-  color: white;
-  background-color: #007bff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-  height: 37px; 
-  align-self: end;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  height: 37px; 
+  align-self: end;
 }
 .add-item-btn:hover { background-color: #0056b3; }
 
 .added-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 .added-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #f1f3f5;
-  padding: 8px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f1f3f5;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #333;
 }
 .remove-item-btn {
-  background: #ced4da;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  line-height: 20px;
-  text-align: center;
-  padding: 0;
+  background: #ced4da;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 20px;
+  text-align: center;
+  padding: 0;
 }
 .remove-item-btn:hover { background: #adb5bd; }
 
 
 .submit-button {
-  width: 100%;
-  padding: 15px;
-  margin-top: 10px;
-  font-size: 16px;
-  font-weight: bold;
-  color: white;
-  background-color: #007bff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  width: 100%;
+  padding: 15px;
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 .submit-button:hover { background-color: #0056b3; }
 .submit-button:disabled { background-color: #6c757d; }
@@ -283,9 +282,9 @@
 /* --- PromptInput (기존) --- */
 .loading-container { text-align: center; padding: 40px 0; }
 .spinner {
-  border: 4px solid #f3f3f3; border-top: 4px solid #007bff;
-  border-radius: 50%; width: 40px; height: 40px;
-  animation: spin 1s linear infinite; margin: 0 auto 15px auto;
+  border: 4px solid #f3f3f3; border-top: 4px solid #007bff;
+  border-radius: 50%; width: 40px; height: 40px;
+  animation: spin 1s linear infinite; margin: 0 auto 15px auto;
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .results-container { margin-top: 40px; }
@@ -300,23 +299,23 @@
 
 /* 토스트 팝업 */
 .toast-message {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #333;
-  color: white;
-  padding: 12px 25px;
-  border-radius: 30px;
-  font-size: 15px;
-  z-index: 1000;
-  animation: fadeInOut 3s forwards;
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 30px;
+  font-size: 15px;
+  z-index: 1000;
+  animation: fadeInOut 3s forwards;
 }
 @keyframes fadeInOut {
-  0% { opacity: 0; bottom: 0; }
-  20% { opacity: 1; bottom: 30px; }
-  80% { opacity: 1; bottom: 30px; }
-  100% { opacity: 0; bottom: 0; }
+  0% { opacity: 0; bottom: 0; }
+  20% { opacity: 1; bottom: 30px; }
+  80% { opacity: 1; bottom: 30px; }
+  100% { opacity: 0; bottom: 0; }
 }
 
 /* --- PortfolioCalendar (삭제된 페이지) --- */
@@ -325,8 +324,8 @@
 /* --- ActivityRecommender --- */
 .recommender-layout { display: flex; gap: 30px; align-items: flex-start; }
 .task-list-card {
-  width: 280px; flex-shrink: 0; background-color: #f8f9fa;
-  padding: 20px; border-radius: 8px; position: sticky; top: 30px;
+  width: 280px; flex-shrink: 0; background-color: #f8f9fa;
+  padding: 20px; border-radius: 8px; position: sticky; top: 30px;
 }
 .task-list-card h4 { margin-top: 0; font-size: 18px; }
 .task-list-card ul { list-style: none; padding: 0; }
@@ -346,107 +345,107 @@
 
 /* --- ScheduleCalendar (수정됨) --- */
 .calendar-container {
-  background: #fff;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 .calendar-header { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
 }
 .calendar-title {
-  margin: 0; 
-  font-size: 28px;
-  font-weight: 700;
+  margin: 0; 
+  font-size: 28px;
+  font-weight: 700;
 }
 .calendar-nav {
-  display: flex;
-  gap: 10px;
-  margin-left: auto; 
-  margin-right: 20px; 
+  display: flex;
+  gap: 10px;
+  margin-left: auto; 
+  margin-right: 20px; 
 }
 .nav-btn {
-  background: #f1f3f5;
-  border: 1px solid #dee2e6;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  background: #f1f3f5;
+  border: 1px solid #dee2e6;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 .nav-btn:hover { background: #e9ecef; }
 .add-event-btn { 
-  padding: 10px 18px; 
-  font-size: 15px; 
-  font-weight: bold; 
-  color: white; 
-  background-color: #007bff; 
-  border: none; 
-  border-radius: 8px; 
-  cursor: pointer; 
-  transition: background-color 0.2s;
+  padding: 10px 18px; 
+  font-size: 15px; 
+  font-weight: bold; 
+  color: white; 
+  background-color: #007bff; 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: background-color 0.2s;
 }
 .add-event-btn:hover { background-color: #0056b3; }
 .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
 .days-header { border-bottom: 1px solid #dee2e6; }
 .calendar-day-header { 
-  text-align: center; 
-  font-weight: 600; 
-  padding: 12px 5px; 
-  background-color: #f8f9fa;
-  font-size: 14px;
+  text-align: center; 
+  font-weight: 600; 
+  padding: 12px 5px; 
+  background-color: #f8f9fa;
+  font-size: 14px;
 }
 .calendar-grid:not(.days-header) {
-  border-left: 1px solid #dee2e6;
+  border-left: 1px solid #dee2e6;
 }
 .calendar-day {
-  min-height: 120px;
-  padding: 8px;
-  border-right: 1px solid #dee2e6;
-  border-bottom: 1px solid #dee2e6;
-  font-size: 14px;
-  position: relative;
-  background-color: #fff;
-  transition: background-color 0.2s;
+  min-height: 120px;
+  padding: 8px;
+  border-right: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 14px;
+  position: relative;
+  background-color: #fff;
+  transition: background-color 0.2s;
 }
 .calendar-day span { font-weight: 600; color: #555; }
 .calendar-day.other-month { background-color: #fdfdfd; }
 .calendar-day.other-month span { color: #ccc; }
 .calendar-day.day-today {
-  background-color: #f7f9ff;
+  background-color: #f7f9ff;
 }
 
 .calendar-day.day-today span {
-  background-color: #007bff;
-  color: white;
-  border-radius: 50%;
-  font-weight: 700;
-  padding: 0;
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
+  background-color: #007bff;
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .calendar-event {
-  background-color: #e7f3ff;
-  color: #0056b3;
-  padding: 5px 8px;
-  border-radius: 4px;
-  font-size: 13px;
-  margin-top: 5px;
-  white-space: normal; 
-  word-break: break-all; 
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  background-color: #e7f3ff;
+  color: #0056b3;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-top: 5px;
+  white-space: normal; 
+  word-break: break-all; 
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 .calendar-event:hover { background-color: #d0e7ff; }
 .calendar-event.green { background-color: #e6f9f0; color: #087f5b; }
@@ -454,69 +453,69 @@
 
 /* --- 모달 (Modal) --- */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  animation: modalFadeIn 0.2s;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: modalFadeIn 0.2s;
 }
 @keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .modal-content {
-  background-color: white;
-  padding: 30px;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 450px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  transform: scale(0.95);
-  animation: modalZoomIn 0.2s forwards;
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  transform: scale(0.95);
+  animation: modalZoomIn 0.2s forwards;
 }
 @keyframes modalZoomIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 .modal-content h3 { margin-top: 0; }
 .modal-actions {
-  display: flex;
-  justify-content: space-between; 
-  gap: 10px;
-  margin-top: 20px;
+  display: flex;
+  justify-content: space-between; 
+  gap: 10px;
+  margin-top: 20px;
 }
 .modal-actions button {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 .modal-actions .btn-cancel {
-  background-color: #e9ecef;
-  color: #333;
+  background-color: #e9ecef;
+  color: #333;
 }
 .modal-actions .btn-cancel:hover { background-color: #dee2e6; }
 .modal-actions .btn-save {
-  background-color: #007bff;
-  color: white;
+  background-color: #007bff;
+  color: white;
 }
 .modal-actions .btn-save:hover { background-color: #0056b3; }
 
 .modal-actions .btn-delete {
-  background-color: #dc3545;
-  color: white;
-  margin-right: auto; 
+  background-color: #dc3545;
+  color: white;
+  margin-right: auto; 
 }
 .modal-actions .btn-delete:hover {
-  background-color: #c82333;
+  background-color: #c82333;
 }
 
 
@@ -526,250 +525,250 @@
 .chat-page-container {
 }
 .chat-layout {
-  display: flex;
-  height: calc(100vh - 60px); 
+  display: flex;
+  height: calc(100vh - 60px); 
 }
 
 /* * 2. 왼쪽: 채팅 히스토리 사이드바
 */
 .chat-history-sidebar {
-  width: 260px;
-  background-color: #f8f9fa;
-  border-right: 1px solid #dee2e6;
-  padding: 20px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
+  width: 260px;
+  background-color: #f8f9fa;
+  border-right: 1px solid #dee2e6;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 .new-chat-btn {
-  width: 100%;
-  padding: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #007bff;
-  background-color: #fff;
-  border: 1px solid #007bff;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-bottom: 20px;
-  transition: all 0.2s;
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #007bff;
+  background-color: #fff;
+  border: 1px solid #007bff;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s;
 }
 .new-chat-btn:hover {
-  background-color: #f8f9fa;
+  background-color: #f8f9fa;
 }
 .chat-history-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  overflow-y: auto;
-  flex-grow: 1;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1;
 }
 .chat-history-list li {
-  padding: 12px 15px;
-  border-radius: 8px;
-  margin-bottom: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #333;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .chat-history-list li:hover {
-  background-color: #e9ecef;
+  background-color: #e9ecef;
 }
 .chat-history-list li.active {
-  background-color: #e7f3ff;
-  color: #007bff;
-  font-weight: 600;
+  background-color: #e7f3ff;
+  color: #007bff;
+  font-weight: 600;
 }
 
 
 /* * 3. 오른쪽: 메인 채팅창
 */
 .chat-window {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: #ffffff;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
 }
 
 /* 3-1. 메시지 출력 영역 */
 .chat-messages-area {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 .chat-message {
-  max-width: 70%;
-  padding: 12px 18px;
-  border-radius: 18px;
-  line-height: 1.6;
-  font-size: 15px;
+  max-width: 70%;
+  padding: 12px 18px;
+  border-radius: 18px;
+  line-height: 1.6;
+  font-size: 15px;
 }
 .chat-message p {
-  margin: 0;
+  margin: 0;
 }
 
 /* 사용자 메시지 (오른쪽 정렬) */
 .chat-message.user {
-  background-color: #007bff;
-  color: white;
-  align-self: flex-end;
-  border-bottom-right-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
 }
 
 /* AI 메시지 (왼쪽 정렬) */
 .chat-message.ai {
-  background-color: #f1f3f5;
-  color: #333;
-  align-self: flex-start;
-  border-bottom-left-radius: 5px;
+  background-color: #f1f3f5;
+  color: #333;
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
 }
 
 /* AI 메시지 - 카드 형태 (result-card 재활용) */
 .result-card-chat {
-  background: #fff;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 0;
-  margin: -5px;
-  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0;
+  margin: -5px;
+  overflow: hidden;
 }
 .result-card-chat h4 {
-  margin: 0;
-  padding: 15px 20px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
+  margin: 0;
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
 }
 .result-card-chat p {
-  padding: 15px 20px;
-  font-size: 14px;
+  padding: 15px 20px;
+  font-size: 14px;
 }
 .result-card-chat .tags {
-  padding: 0 20px 15px 20px;
-  margin-top: 0;
+  padding: 0 20px 15px 20px;
+  margin-top: 0;
 }
 
 /* AI 로딩 스피너 (점 3개) */
 .spinner-dots {
-  display: flex;
-  gap: 8px;
-  padding: 10px;
+  display: flex;
+  gap: 8px;
+  padding: 10px;
 }
 .spinner-dots .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: #adb5bd;
-  animation: bounce 1.2s infinite ease-in-out both;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #adb5bd;
+  animation: bounce 1.2s infinite ease-in-out both;
 }
 .spinner-dots .dot:nth-of-type(1) { animation-delay: -0.32s; }
 .spinner-dots .dot:nth-of-type(2) { animation-delay: -0.16s; }
 @keyframes bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1.0); }
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1.0); }
 }
 
 
 /* [수정] 3-2. 메시지 입력 영역 (Gemini 스타일) */
 .chat-input-area {
-  margin: 0 1.5rem 1.5rem 1.5rem;
-  padding: 0; 
-  border-top: none; 
-  background-color: transparent; 
-  border-radius: 0; 
-  display: flex;
-  align-items: flex-end; 
-  gap: 10px;
-  position: relative; 
-  box-shadow: none; 
+  margin: 0 1.5rem 1.5rem 1.5rem;
+  padding: 0; 
+  border-top: none; 
+  background-color: transparent; 
+  border-radius: 0; 
+  display: flex;
+  align-items: flex-end; 
+  gap: 10px;
+  position: relative; 
+  box-shadow: none; 
 }
 
 /* [신규] textarea와 button을 감싸는 래퍼 */
 .chat-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: flex-end; /* [수정] flex-start -> flex-end */
-  width: 100%;
-  
-  background-color: #f1f3f5; 
-  border-radius: 28px; /* 둥근 곡률 */
-  padding: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+  position: relative;
+  display: flex;
+  align-items: flex-end; /* [수정] flex-start -> flex-end */
+  width: 100%;
+  
+  background-color: #f1f3f5; 
+  border-radius: 28px; /* 둥근 곡률 */
+  padding: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
 }
 
 
 .chat-textarea {
-  flex-grow: 1; 
-  min-height: 24px;
-  max-height: 150px;
-  margin: 0;
-  padding: 12px 15px;
-  
-  /* [수정] 버튼 공간 확보 (버튼 너비 + gap) */
-  padding-right: 60px; /* 50px -> 60px로 여유 공간 */
-  
-  border: none; 
-  font-size: 16px;
-  resize: none; 
-  box-sizing: border-box; 
-  overflow-y: auto;
-  background-color: transparent; 
-  outline: none;
-  width: 100%;
-  line-height: 1.5;
-  font-family: inherit;
+  flex-grow: 1; 
+  min-height: 24px;
+  max-height: 150px;
+  margin: 0;
+  padding: 12px 15px;
+  
+  /* [수정] 버튼 공간 확보 (버튼 너비 + gap) */
+  padding-right: 60px; /* 50px -> 60px로 여유 공간 */
+  
+  border: none; 
+  font-size: 16px;
+  resize: none; 
+  box-sizing: border-box; 
+  overflow-y: auto;
+  background-color: transparent; 
+  outline: none;
+  width: 100%;
+  line-height: 1.5;
+  font-family: inherit;
 }
 .chat-textarea::-webkit-scrollbar {
-  width: 0;
-  background: transparent;
+  width: 0;
+  background: transparent;
 }
 
 
 .chat-send-button {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
 
-  width: 48px;  
-  height: 48px; 
-  padding: 0;
-  flex-shrink: 0; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background-color: #007bff;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  width: 48px;  
+  height: 48px; 
+  padding: 0;
+  flex-shrink: 0; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #007bff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .chat-send-button:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: #0056b3;
 }
 
 .chat-send-button:disabled {
-  background-color: #e9ecef; 
-  cursor: not-allowed;
+  background-color: #e9ecef; 
+  cursor: not-allowed;
 }
 
 .send-icon {
-  fill: white; 
+  fill: white; 
 }
 
 .chat-send-button:disabled .send-icon {
-  fill: #adb5bd; 
+  fill: #adb5bd; 
 }
 
 /* --- [신규] ProfileSetup '주요 경험' 그리드 UI --- */
 .form-grid.experience-grid {
-  /* 3개 컬럼: 1fr 1.5fr auto (버튼 크기) */
-  grid-template-columns: 1fr 1.5fr auto;
+  /* [수정] 3개 컬럼 -> 2개 컬럼 */
+  grid-template-columns: 1fr 1.5fr; 
   gap: 15px 20px;
   align-items: end; /* 요소들을 하단에 정렬 */
 }
@@ -782,8 +781,10 @@
 /* 그리드 내의 버튼을 오른쪽 하단에 정렬 */
 .grid-align-end {
   align-self: end;
-  width: 100%; /* 버튼이 컬럼을 꽉 채우도록 */
+  width: auto; /* 버튼이 컬럼을 꽉 채우지 않도록 auto로 변경 */
   height: 37px; /* input과 높이 맞춤 */
+  grid-column: 2 / 3; /* [수정] 2번째 컬럼으로 이동 */
+  justify-self: end; /* [신규] 컬럼 내에서 오른쪽 정렬 */
 }
 
 /* '주요 경험' 그리드 반응형 (모바일) */
@@ -795,6 +796,8 @@
     grid-column: span 1 / span 1; /* 1열로 변경 */
   }
   .grid-align-end {
-    height: 42px; /* 모바일에서 버튼 높이 살짝 키움 */
+    grid-column: span 1 / span 1; /* 1열로 변경 */
+    width: 100%; /* 모바일에선 꽉 채움 */
+    height: 42px; 
   }
 }
