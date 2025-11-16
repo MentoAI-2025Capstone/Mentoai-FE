@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './PromptInput.module.css';
 import { checkGuardrails } from '../utils/guardrails';
-import apiClient from '../api/apiClient'; // [신규] apiClient 임포트
+import apiClient from '../api/apiClient';
 
 // [신규] sessionStorage에서 userId를 가져오는 헬퍼
 const getUserIdFromStorage = () => {
@@ -15,11 +15,6 @@ const getUserIdFromStorage = () => {
   }
 };
 
-// [삭제] 가짜 AI 응답 데이터 (sampleResults)
-
-// [삭제] 가짜 채팅 히스토리 데이터
-// const mockChatHistory = [ ... ];
-
 function PromptInput() {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +23,6 @@ function PromptInput() {
     { role: 'ai', content: '안녕하세요! AI 멘토입니다. 진로 설계에 대해 무엇이든 물어보세요.' }
   ]);
 
-  // [수정] 기본 채팅방 삭제
   const [chatHistory, setChatHistory] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
 
@@ -39,7 +33,6 @@ function PromptInput() {
 
   useEffect(scrollToBottom, [messages]);
 
-  // [수정] 백엔드 API 연동
   const handleRecommend = async () => {
     if (isLoading || !prompt.trim()) return;
 
@@ -49,11 +42,23 @@ function PromptInput() {
       return;
     }
 
-    // 1. 사용자 메시지 UI에 즉시 추가
     setMessages(prev => [...prev, { role: 'user', content: prompt }]);
-    const currentPrompt = prompt; // state가 비동기로 비워지기 전, 현재 프롬프트를 변수에 저장
+    const currentPrompt = prompt;
     setPrompt(''); 
     setIsLoading(true);
+
+    // [신규] '새 채팅'인 경우, 첫 메시지를 채팅방 제목으로 설정
+    const activeChat = chatHistory.find(chat => chat.id === activeChatId);
+    if (activeChat && activeChat.title === '새 채팅') {
+      // currentPrompt에서 제목만 간단히 추출 (예: 20자)
+      const newTitle = currentPrompt.length > 20 ? currentPrompt.substring(0, 20) + '...' : currentPrompt;
+      
+      setChatHistory(prevHistory => 
+        prevHistory.map(chat => 
+          chat.id === activeChatId ? { ...chat, title: newTitle } : chat
+        )
+      );
+    }
 
     try {
       const userId = getUserIdFromStorage();
@@ -61,34 +66,29 @@ function PromptInput() {
         throw new Error("사용자 ID를 찾을 수 없습니다. (sessionStorage)");
       }
 
-      // 2. API 요청 객체 생성 (API 명세서 RecommendRequest 참고)
       const requestBody = {
         userId: userId,
         query: currentPrompt,
-        useProfileHints: true // 사용자 프로필 반영
+        useProfileHints: true 
       };
 
-      // 3. API 호출
       const response = await apiClient.post('/recommend', requestBody);
 
-      // 4. API 응답 처리 (API 명세서 RecommendResponse 참고)
-      // [수정] API 명세서의 Tag 객체 스키마를 다시 확인 (tags가 객체 배열이 아닐 수 있음)
       if (response.data && response.data.items && response.data.items.length > 0) {
         
         const aiResponses = response.data.items.map(item => {
           let tags = [];
-          // [수정] item.activity.tags가 문자열 배열인지 객체 배열인지 확인
           if (item.activity.tags && item.activity.tags.length > 0) {
             if (typeof item.activity.tags[0] === 'string') {
-              tags = item.activity.tags; // 문자열 배열인 경우
+              tags = item.activity.tags;
             } else if (typeof item.activity.tags[0] === 'object' && item.activity.tags[0].tagName) {
-              tags = item.activity.tags.map(tag => tag.tagName); // 객체 배열인 경우
+              tags = item.activity.tags.map(tag => tag.tagName);
             }
           }
 
           return {
             role: 'ai',
-            content: item.reason || item.activity.summary, // LLM 요약(reason)을 우선 사용
+            content: item.reason || item.activity.summary,
             title: item.activity.title,
             tags: tags
           };
@@ -97,7 +97,6 @@ function PromptInput() {
         setMessages(prev => [...prev, ...aiResponses]);
 
       } else {
-        // 추천 결과가 없는 경우
         setMessages(prev => [
           ...prev, 
           { role: 'ai', content: '관련 활동을 찾지 못했습니다. 질문을 조금 더 구체적으로 해주시겠어요?' }
@@ -116,7 +115,6 @@ function PromptInput() {
   };
   
   const handleNewChat = () => {
-    // [수정] ID 생성 방식 변경 (임시)
     const newId = (chatHistory.length > 0 ? Math.max(...chatHistory.map(c => c.id)) : 0) + 1;
     setChatHistory(prev => [...prev, { id: newId, title: '새 채팅' }]);
     setActiveChatId(newId);
@@ -171,7 +169,6 @@ function PromptInput() {
             {isLoading && (
               <div className={`${styles.chatMessage} ${styles.ai}`}>
                 <div className={styles.spinnerDots}>
-                  {/* [오타 수정] className.dot -> className={styles.dot} */}
                   <div className={styles.dot}></div>
                   <div className={styles.dot}></div>
                   <div className={styles.dot}></div>
@@ -187,7 +184,7 @@ function PromptInput() {
               <textarea
                 className={styles.chatTextarea}
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={(e) => setPrompt(e.gAet.value)}
                 placeholder="AI 멘토에게 질문을 입력하세요..."
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {

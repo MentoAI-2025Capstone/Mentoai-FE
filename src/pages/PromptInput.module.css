@@ -6,7 +6,6 @@
 
 .chatLayout {
   display: flex;
-  /* [수정] calc(100vh - 60px) -> 100% */
   height: 100%; 
 }
 
@@ -167,8 +166,9 @@
 
 /* 3-2. 메시지 입력 영역 (Gemini 스타일) */
 .chatInputArea {
-  margin: 0 1.5rem 1.5rem 1.5rem;
-  padding: 0; 
+  /* [수정] margin -> padding으로 변경 (스크롤 문제 해결) */
+  padding: 0 1.5rem 1.5rem 1.5rem; 
+  margin: 0;
   border-top: none; 
   background-color: transparent; 
   border-radius: 0; 
@@ -235,6 +235,7 @@
 .chatSendButton:hover:not(:disabled) {
   background-color: #0056b3;
 }
+
 .chatSendButton:disabled {
   background-color: #e9ecef; 
   cursor: not-allowed;
