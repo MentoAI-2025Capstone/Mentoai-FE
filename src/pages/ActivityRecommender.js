@@ -126,7 +126,7 @@ function ActivityRecommender() {
         backgroundColor: '#f8f9fa',
         border: '1px solid #dee2e6',
         borderRadius: '8px',
-        marginBottom: '20px', // [수정] UI 스크롤 문제 해결 (40px -> 20px)
+        marginBottom: '0', // [수정] UI 스크롤 문제 해결 (40px -> 20px)
         textAlign: 'center'
       }}>
         <h3 style={{ margin: '0', color: '#343a40', fontSize: '1.25rem' }}>
