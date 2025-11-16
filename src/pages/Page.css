@@ -131,6 +131,7 @@
   text-align: center;
 }
 .form-section {
+  display: block !important; /* [!!!] [수정] 거대 공백 오류 방지를 위해 block으로 강제 */
   width: 100%;
   margin-bottom: 15px; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
   border-bottom: 1px solid #eee;
@@ -188,8 +189,9 @@
   border-radius: 8px;
   font-size: 15px;
   box-sizing: border-box;
-  height: 37px; 
+  height: 37px; /* [!!!] [수정] CustomSelect(37px)와 높이를 맞춥니다. */
 }
+/* [!!!] [추가] CustomSelect 높이 강제 (높이 문제 해결) */
 .form-group .custom-select-wrapper {
   height: 37px;
 }
@@ -206,15 +208,17 @@
   max-width: 900px; 
 }
 
+/* [!!!] [수정] 기술 스택 섹션 그리드 레이아웃 */
 .form-grid.skill-grid {
-  grid-template-columns: 1fr auto auto; 
-  row-gap: 10px; 
-  column-gap: 15px; 
+  grid-template-columns: 1fr auto auto; /* Input (1fr), Select (auto), Button (auto) */
+  row-gap: 10px; /* [!!!] [수정] 상하 간격 */
+  column-gap: 15px; /* [!!!] [수정] 좌우 간격 */
   align-items: end;
   max-width: 900px; 
 }
 
 @media (max-width: 768px) {
+  /* [!!!] [수정] 기술 스택 모바일 레이아웃 */
   .form-grid.skill-grid {
     grid-template-columns: 1fr;
   }
