@@ -1,3 +1,5 @@
+// src/pages/ActivityRecommender.js
+
 import React, { useState, useEffect } from 'react'; // [수정] useState, useEffect 임포트
 import './Page.css';
 import apiClient from '../api/apiClient'; // [신규] apiClient 임포트
@@ -95,17 +97,13 @@ function ActivityRecommender() {
         // GET /users/{userId} API 호출
         const response = await apiClient.get(`/users/${userId}`);
         
-        // (가정) 백엔드 응답이 { ..., score: 70 } 형태라고 가정합니다.
+        // [수정] API 명세서에 'score' 필드가 없으므로, 있는지 확인
         if (response.data && response.data.score !== undefined) {
           setUserScore(response.data.score);
         } else {
-          // (혹시 /profile API에 점수가 있다면 이쪽을 사용)
-          // const profileResponse = await apiClient.get(`/users/${userId}/profile`);
-          // setUserScore(profileResponse.data.score);
-          
-          // 임시: API에 score 필드가 없을 경우
-          console.warn("API 응답에 'score' 필드가 없습니다.");
-          setUserScore(0); // 임시로 0점 표시
+          // [수정] 'score' 필드가 없다는 경고를 콘솔에 출력
+          console.warn("API 응답(GET /users/{userId})에 'score' 필드가 없습니다. 백엔드 명세를 확인하세요.");
+          setUserScore(0); // 임시로 0점 표시 (스크린샷의 0점)
         }
         
       } catch (error) {
@@ -131,7 +129,6 @@ function ActivityRecommender() {
         marginBottom: '20px', // [수정] UI 스크롤 문제 해결 (40px -> 20px)
         textAlign: 'center'
       }}>
-        {/* [멘트 수정] */}
         <h3 style={{ margin: '0', color: '#343a40', fontSize: '1.25rem' }}>
           {/* [수정] userScore state와 연동, 로딩 중일 땐 '...' 표시 */}
           현재 점수는 
@@ -140,7 +137,6 @@ function ActivityRecommender() {
           </span> 
           입니다.
         </h3>
-        {/* [멘트 수정] */}
         <p style={{ margin: '10px 0 0', color: '#495057', fontSize: '1rem' }}>
           아래 '추천 항목'을 확인하고 목표 달성을 시작해 보세요!
         </p>
@@ -168,7 +164,7 @@ function ActivityRecommender() {
             
             <div className="activity-section" dangerouslySetInnerHTML={{ __html: selectedActivity.content }} />
             
-            <div className="activity-section recommendation" dangerouslySetInnerHTML={{ __html: selectedActivity.recommendation }} />
+            <div className="activity-section recommendation" dangerouslySetInnerHTML={{ __html: selectedD.recommendation }} />
             
             <div className="activity-links">
               {selectedActivity.links.map(link => (
