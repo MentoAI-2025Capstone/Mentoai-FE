@@ -105,6 +105,7 @@ function ProfileSetup() {
         
         {/* --- 1. 기본 정보 섹션 --- */}
         <div className="form-section">
+          {/* [!!!] [수정] h3를 grid 안으로 이동시켰습니다. */}
           <div className="form-grid two-cols">
             {/* [!!!] [수정] h3를 2칸 차지하도록 grid-col-span-2 클래스 적용 */}
             <h3 className="grid-col-span-2">기본 학력</h3>
@@ -144,6 +145,7 @@ function ProfileSetup() {
                 onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
               />
             </div>
+            {/* [!!!] [수정] 버튼을 수준 오른쪽에 배치하기 위해 grid-align-end 클래스 사용 */}
             <button type="button" className="add-item-btn grid-align-end" onClick={handleAddSkill}>추가</button>
           </div>
           <ul className="added-list">
