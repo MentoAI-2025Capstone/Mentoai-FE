@@ -116,7 +116,7 @@ function ProfileSetup() {
             <div className="form-group">
               <label>전공</label>
               <input type="text" value={education.major} onChange={(e) => setEducation({ ...education, major: e.target.value })} required />
-            </div>
+section          </div>
             <div className="form-group">
               <label>학년</label>
               <input type="number" value={education.grade} onChange={(e) => setEducation({ ...education, grade: e.target.value })} required min="1" max="5" />
