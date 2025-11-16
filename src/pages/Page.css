@@ -46,7 +46,7 @@
   align-items: flex-start; /* [!!!] [수정] flex-start (상단 정렬) */
   width: 100%;
   min-height: 100vh;
-  padding: 20px; /* [!!!] [수정] 상단 여백 추가 */
+  padding: 20px !important; /* [!!!] [수정] 상단 여백 추가 */
   box-sizing: border-box;
   background-color: #ffffff; 
 }
@@ -84,9 +84,9 @@
   text-align: center;
 }
 .auth-subtitle { 
-  font-size: 16px; 
-  color: #6c757d; 
-  margin-bottom: 30px; 
+  font-size: 16px !important; 
+  color: #6c757d !important; 
+  margin-bottom: 30px !important; 
   line-height: 1.6;
   text-align: center; 
 }
@@ -133,9 +133,9 @@
 .form-section {
   display: block !important; /* [!!!] [수정] 거대 공백 오류 방지를 위해 block으로 강제 */
   width: 100%;
-  margin-bottom: 10px; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
+  margin-bottom: 10px !important; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
   border-bottom: 1px solid #eee;
-  padding-bottom: 10px; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
+  padding-bottom: 10px !important; /* [!!!] [수정] 20px -> 15px (공백 줄임) */
 }
 .form-section:last-of-type {
   border-bottom: none;
@@ -160,9 +160,9 @@
   gap: 20px;
 }
 .form-grid.two-cols {
-  display: grid;
-  gap: 15px 20px; 
-  grid-template-columns: repeat(2, 1fr); 
+  display: grid !important;
+  gap: 15px 20px !important; 
+  grid-template-columns: repeat(2, 1fr) !important; 
   max-width: 900px; 
   align-items: end;
 }
@@ -834,30 +834,4 @@
   .form-grid.skill-grid .grid-align-end {
     grid-column: span 1 / span 1;
   }
-}
-
-.auth-subtitle { 
-  font-size: 16px !important;
-  color: #6c757d !important;
-  margin-bottom: 30px !important;
-}
-
-/* 2. 프로필 설정: 상단 공백 최소화 */
-.profile-setup-container {
-  /* 상단 40px -> 20px로 강제 수정 */
-  padding: 20px !important; 
-}
-
-/* 3. 프로필 설정: 섹션 간 간격 축소 */
-.form-section {
-  /* 15px -> 10px로 강제 수정 */
-  margin-bottom: 10px !important;
-  padding-bottom: 10px !important;
-}
-
-/* 4. 프로필 설정: '기본 학력' 2x2 그리드 강제 적용 */
-.form-grid.two-cols {
-  display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 15px 20px !important;
 }
