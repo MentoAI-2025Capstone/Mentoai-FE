@@ -835,3 +835,29 @@
     grid-column: span 1 / span 1;
   }
 }
+
+.auth-subtitle { 
+  font-size: 16px !important;
+  color: #6c757d !important;
+  margin-bottom: 30px !important;
+}
+
+/* 2. 프로필 설정: 상단 공백 최소화 */
+.profile-setup-container {
+  /* 상단 40px -> 20px로 강제 수정 */
+  padding: 20px !important; 
+}
+
+/* 3. 프로필 설정: 섹션 간 간격 축소 */
+.form-section {
+  /* 15px -> 10px로 강제 수정 */
+  margin-bottom: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+/* 4. 프로필 설정: '기본 학력' 2x2 그리드 강제 적용 */
+.form-grid.two-cols {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 15px 20px !important;
+}
