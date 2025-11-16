@@ -1,14 +1,9 @@
 // src/pages/Auth.js
 
-import React, { useState, useEffect } from 'react'; // [수정] useEffect 추가
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// [주석] 님이 주신 코드(11:25:21)에 이 라인이 있었으나, 리디렉션 방식에선 불필요하여 주석 처리합니다.
-// import { useGoogleLogin } from '@react-oauth/google'; 
 import apiClient from '../api/apiClient'; // MentoAI 백엔드 요청용
-// [삭제] import axios from 'axios'; // apiClient로 통합
 import './Page.css';
-
-// [삭제] const API_BASE_URL = '...'; // apiClient로 통합
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -19,21 +14,18 @@ function AuthPage() {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        // [수정] 님이 주신 코드의 로직(localStorage)을 따르며, apiClient를 사용합니다.
         // apiClient가 localStorage에서 토큰을 읽어 헤더에 자동 추가합니다.
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
             throw new Error("No access token found in localStorage");
         }
         
-        const response = await apiClient.get('/auth/me'); // [수정] axios.get -> apiClient.get
+        const response = await apiClient.get('/auth/me'); 
         const data = response.data;
         const user = data?.user;
 
         if (user) {
-          // [중요] 님이 주신 OAuthCallback.js는 'mentoUser' 객체를 저장하지 않습니다.
-          // 따라서 이 코드는 App.js의 PrivateRoute와 충돌할 수 있습니다.
-          // (일단 님의 코드를 기반으로 컴파일 오류만 수정합니다.)
+          // (참고: 이 로직은 App.js의 PrivateRoute와 충돌할 수 있습니다)
           sessionStorage.setItem('mentoUser', JSON.stringify(data));
           const profileComplete = user.profileComplete;
           const destination = profileComplete ? '/recommend' : '/profile-setup';
@@ -42,7 +34,8 @@ function AuthPage() {
         }
       } catch (error) {
         console.error('GET /auth/me failed (Not logged in):', error.message);
-section      } finally {
+      // [!!!] 'section'이라는 텍스트가 이 근처(45라인)에 있었습니다. 제거했습니다.
+      } finally {
         setIsChecking(false);
       }
     };
@@ -55,7 +48,7 @@ section      } finally {
     // 콜백 전용 페이지로 돌아오게 설정
     const redirectUri = `${window.location.origin}/oauth/callback`;
 
-    // [수정] apiClient.defaults.baseURL에서 통합된 URL을 가져옵니다.
+    // apiClient.defaults.baseURL에서 통합된 URL을 가져옵니다.
     const loginUrl = `${apiClient.defaults.baseURL}/auth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`;
     
     window.location.href = loginUrl;
