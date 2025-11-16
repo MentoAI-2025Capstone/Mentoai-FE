@@ -1,33 +1,24 @@
 // src/pages/PromptInput.js
 
 import React, { useState, useRef, useEffect } from 'react';
-// [수정] Page.css 대신 PromptInput.module.css를 import
 import styles from './PromptInput.module.css';
 import { checkGuardrails } from '../utils/guardrails';
-// import { createFinalPrompt } from '../utils/prompt-engineering'; // (API 연동 시 주석 해제)
+import apiClient from '../api/apiClient'; // [신규] apiClient 임포트
 
-// 가짜 AI 응답 데이터
-const sampleResults = [
-  {
-    activityId: 1,
-    title: "AI 데이터 분석 전문가 양성과정",
-    summary: "Python과 머신러닝을 활용한 실전 데이터 분석 프로젝트를 경험하고, 현업 전문가의 멘토링을 받을 수 있는 기회입니다.",
-    tags: ["AI", "데이터 분석", "머신러닝"],
-  },
-  {
-    activityId: 2,
-    title: "대한민국 AI 경진대회 (K-AI Challenge)",
-    summary: "자연어 처리, 이미지 인식 등 다양한 AI 분야의 문제를 해결하고 자신의 실력을 증명해보세요. 수상 시 채용 연계 혜택 제공.",
-    tags: ["경진대회", "자연어 처리", "포트폴리오"],
+// [신규] sessionStorage에서 userId를 가져오는 헬퍼
+const getUserIdFromStorage = () => {
+  try {
+    const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+    return storedUser ? storedUser.user.userId : null;
+  } catch (e) {
+    return null;
   }
-];
+};
 
-// 가짜 채팅 히스토리 데이터
-const mockChatHistory = [
-  { id: 1, title: 'AI 분야 취업 스펙' },
-  { id: 2, title: '3학년 여름방학 계획' },
-  { id: 3, title: '데이터 분석가 로드맵' },
-];
+// [삭제] 가짜 AI 응답 데이터 (sampleResults)
+
+// [삭제] 가짜 채팅 히스토리 데이터
+// const mockChatHistory = [ ... ];
 
 function PromptInput() {
   const [prompt, setPrompt] = useState('');
@@ -37,8 +28,9 @@ function PromptInput() {
     { role: 'ai', content: '안녕하세요! AI 멘토입니다. 진로 설계에 대해 무엇이든 물어보세요.' }
   ]);
 
-  const [chatHistory, setChatHistory] = useState(mockChatHistory);
-  const [activeChatId, setActiveChatId] = useState(1);
+  // [수정] 기본 채팅방 삭제
+  const [chatHistory, setChatHistory] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(null);
 
   const messagesEndRef = useRef(null);
   const scrollToBottom = () => {
@@ -47,7 +39,8 @@ function PromptInput() {
 
   useEffect(scrollToBottom, [messages]);
 
-  const handleRecommend = () => {
+  // [수정] 백엔드 API 연동
+  const handleRecommend = async () => {
     if (isLoading || !prompt.trim()) return;
 
     const guardrailResult = checkGuardrails(prompt);
@@ -56,30 +49,75 @@ function PromptInput() {
       return;
     }
 
+    // 1. 사용자 메시지 UI에 즉시 추가
     setMessages(prev => [...prev, { role: 'user', content: prompt }]);
+    const currentPrompt = prompt; // state가 비동기로 비워지기 전, 현재 프롬프트를 변수에 저장
     setPrompt(''); 
     setIsLoading(true);
 
-    console.log("RAG 프롬프트 생성 (시뮬레이션)");
+    try {
+      const userId = getUserIdFromStorage();
+      if (!userId) {
+        throw new Error("사용자 ID를 찾을 수 없습니다. (sessionStorage)");
+      }
 
-    setTimeout(() => {
-      const aiResponse = sampleResults[Math.floor(Math.random() * sampleResults.length)];
-      
+      // 2. API 요청 객체 생성 (API 명세서 RecommendRequest 참고)
+      const requestBody = {
+        userId: userId,
+        query: currentPrompt,
+        useProfileHints: true // 사용자 프로필 반영
+      };
+
+      // 3. API 호출
+      const response = await apiClient.post('/recommend', requestBody);
+
+      // 4. API 응답 처리 (API 명세서 RecommendResponse 참고)
+      // [수정] API 명세서의 Tag 객체 스키마를 다시 확인 (tags가 객체 배열이 아닐 수 있음)
+      if (response.data && response.data.items && response.data.items.length > 0) {
+        
+        const aiResponses = response.data.items.map(item => {
+          let tags = [];
+          // [수정] item.activity.tags가 문자열 배열인지 객체 배열인지 확인
+          if (item.activity.tags && item.activity.tags.length > 0) {
+            if (typeof item.activity.tags[0] === 'string') {
+              tags = item.activity.tags; // 문자열 배열인 경우
+            } else if (typeof item.activity.tags[0] === 'object' && item.activity.tags[0].tagName) {
+              tags = item.activity.tags.map(tag => tag.tagName); // 객체 배열인 경우
+            }
+          }
+
+          return {
+            role: 'ai',
+            content: item.reason || item.activity.summary, // LLM 요약(reason)을 우선 사용
+            title: item.activity.title,
+            tags: tags
+          };
+        });
+        
+        setMessages(prev => [...prev, ...aiResponses]);
+
+      } else {
+        // 추천 결과가 없는 경우
+        setMessages(prev => [
+          ...prev, 
+          { role: 'ai', content: '관련 활동을 찾지 못했습니다. 질문을 조금 더 구체적으로 해주시겠어요?' }
+        ]);
+      }
+
+    } catch (error) {
+      console.error("AI 추천 API 호출 실패:", error);
       setMessages(prev => [
         ...prev, 
-        { 
-          role: 'ai', 
-          content: aiResponse.summary,
-          title: aiResponse.title,
-          tags: aiResponse.tags,
-        }
+        { role: 'ai', content: `오류가 발생했습니다: ${error.message}` }
       ]);
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
   
   const handleNewChat = () => {
-    const newId = chatHistory.length + 1;
+    // [수정] ID 생성 방식 변경 (임시)
+    const newId = (chatHistory.length > 0 ? Math.max(...chatHistory.map(c => c.id)) : 0) + 1;
     setChatHistory(prev => [...prev, { id: newId, title: '새 채팅' }]);
     setActiveChatId(newId);
     setMessages([
@@ -88,7 +126,6 @@ function PromptInput() {
   };
 
   return (
-    // [수정] className 적용
     <div className={styles.chatPageContainer}>
       <div className={styles.chatLayout}>
         
@@ -122,7 +159,6 @@ function PromptInput() {
                     <h4>{msg.title}</h4>
                     <p>{msg.content}</p>
                     <div className={styles.tags}>
-                      {/* [수정] 공통 .tag 클래스 대신 모듈 내 .tag 사용 */}
                       {msg.tags?.map(tag => <span key={tag} className={styles.tag}>{tag}</span>)}
                     </div>
                   </div>
@@ -135,6 +171,7 @@ function PromptInput() {
             {isLoading && (
               <div className={`${styles.chatMessage} ${styles.ai}`}>
                 <div className={styles.spinnerDots}>
+                  {/* [오타 수정] className.dot -> className={styles.dot} */}
                   <div className={styles.dot}></div>
                   <div className={styles.dot}></div>
                   <div className={styles.dot}></div>

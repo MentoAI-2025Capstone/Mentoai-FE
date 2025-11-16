@@ -6,8 +6,8 @@
 
 .chatLayout {
   display: flex;
-  /* Navbar(60px)를 제외한 전체 높이 */
-  height: calc(100vh - 60px); 
+  /* [수정] calc(100vh - 60px) -> 100% */
+  height: 100%; 
 }
 
 /* * 2. 왼쪽: 채팅 히스토리 사이드바
