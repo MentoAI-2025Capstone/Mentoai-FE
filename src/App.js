@@ -91,7 +91,7 @@ function App() {
   const appClassName = showNavbar ? "App" : "App-unauthed";
   const getContentClass = () => {
     // [수정] 콜백 페이지도 전체 화면(content-full)을 사용하도록 조건 추가
-    if (!isAuthenticated || location.pathname === '/oauth/callback') { 
+    if (!isAuthenticated || location.pathname === '/oauth/callback' || location.pathname === '/profile-setup') { 
       return "content-full"; 
     }
     if (location.pathname === '/prompt') { return "content-chat"; }
