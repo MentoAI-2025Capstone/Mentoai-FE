@@ -118,6 +118,7 @@
   text-align: center;
 }
 .form-section {
+  display: block !important; /* [!!!] [수정] 거대 공백 오류 방지를 위해 block으로 강제 */
   width: 100%;
   margin-bottom: 20px; 
   border-bottom: 1px solid #eee;
@@ -127,15 +128,17 @@
   border-bottom: none;
   padding-bottom: 10px;
 }
-/* [!!!] [수정] h3가 grid 안에 있을 때를 대비해 margin-bottom 제거 */
+/* [!!!] [수정] h3가 grid 안에 있거나 바깥에 있어도 모두 처리 */
+.form-section h3,
 .form-grid h3 {
   font-size: 18px;
   color: #333;
-  margin: 0; /* [!!!] 불필요한 마진 제거 */
+  margin-top: 0;
+  margin-bottom: 15px; /* [!!!] [수정] h3와 폼필드 간의 간격 */
 }
-/* [!!!] [추가] h3가 grid 바깥에 있을 때(증빙자료 등)의 스타일 */
-.form-section > h3 {
-  margin-bottom: 15px;
+/* [!!!] [추가] 그리드 안의 h3는 margin-bottom을 grid gap이 관리 */
+.form-grid h3 {
+  margin-bottom: 0;
 }
 
 .form-grid {
@@ -144,9 +147,9 @@
 }
 .form-grid.two-cols {
   display: grid;
-  gap: 15px 20px; /* [수정] 간격 조정 */
-  grid-template-columns: repeat(2, 1fr); /* 2x2 그리드 레이아웃 */
-  max-width: 900px; /* 폼이 너무 넓게 퍼지는 것을 방지 */
+  gap: 15px 20px; 
+  grid-template-columns: repeat(2, 1fr); 
+  max-width: 900px; 
   align-items: end;
 }
 /* 2x2 그리드 모바일 반응형 */
@@ -157,7 +160,7 @@
 }
 
 .form-group {
-  margin-bottom: 0; /* [!!!] [수정] 그리드 gap으로 간격을 관리하므로 margin 제거 */
+  margin-bottom: 0; 
   text-align: left;
 }
 .form-group label {
@@ -774,9 +777,11 @@
 
 /* --- [!!!] [수정] ProfileSetup '주요 경험' 그리드 UI --- */
 .form-grid.experience-grid {
-  grid-template-columns: 1fr 1.5fr; 
+  /* [!!!] [수정] URL 삭제에 맞춰 2x2 그리드로 변경 */
+  grid-template-columns: repeat(2, 1fr); 
   gap: 15px 20px;
   align-items: end;
+  max-width: 900px; /* [!!!] [추가] 너비 통일 */
 }
 
 /* 2칸을 차지하는 CSS 클래스 */
