@@ -130,7 +130,6 @@ function ProfileSetup() {
 
         {/* --- 2. 기술 스택 섹션 --- */}
         <div className="form-section">
-          {/* [!!!] [수정] 기술 스택도 그리드 레이아웃으로 통일합니다. */}
           <div className="form-grid skill-grid">
             <h3 className="grid-col-span-3">기술 스택</h3>
             <div className="form-group">
@@ -145,7 +144,6 @@ function ProfileSetup() {
                 onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
               />
             </div>
-            {/* [!!!] [수정] 버튼을 수준 오른쪽에 배치하기 위해 grid-align-end 클래스 사용 */}
             <button type="button" className="add-item-btn grid-align-end" onClick={handleAddSkill}>추가</button>
           </div>
           <ul className="added-list">
