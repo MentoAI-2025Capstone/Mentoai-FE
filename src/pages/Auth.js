@@ -14,7 +14,6 @@ function AuthPage() {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        // apiClient가 localStorage에서 토큰을 읽어 헤더에 자동 추가합니다.
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
             throw new Error("No access token found in localStorage");
