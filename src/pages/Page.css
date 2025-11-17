@@ -2,12 +2,12 @@
 
 .profile-card-container {
   margin: 0 auto; 
-  padding: 80px 24px 80px; 
+  padding: 100px 24px 120px; 
   box-sizing: border-box;
   background-color: #f8f9fa;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   min-height: calc(100vh - 60px);
   max-width: 1200px;
 }
@@ -15,9 +15,12 @@
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 80px 24px 80px;
+  padding: 100px 24px 120px;
   min-height: calc(100vh - 60px);
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .page-container h2 {
   font-size: 28px;
@@ -33,10 +36,10 @@
 .profile-setup-container {
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* [!!!] [수정] flex-start (상단 정렬) */
+  align-items: center;
   width: 100%;
   min-height: calc(100vh - 60px);
-  padding: 80px 20px 80px;
+  padding: 100px 20px 120px;
   box-sizing: border-box;
   background-color: #ffffff; 
 }
