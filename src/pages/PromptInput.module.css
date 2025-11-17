@@ -2,10 +2,11 @@
 
 .chatPageContainer {
   /* page-container와 동일하지만, App.js에서 content-chat 클래스로 관리됨 */
-  height: 100%;
+  height: calc(100vh - 60px);
   width: 100%;
   background-color: #ffffff;
   padding: 0;
+  margin: 0;
 }
 
 .chatLayout {
@@ -13,6 +14,7 @@
   height: 100%;
   width: 100%;
   min-height: calc(100vh - 60px);
+  align-items: stretch;
 }
 
 /* * 2. 왼쪽: 채팅 히스토리 사이드바 (Gemini 스타일)
@@ -28,6 +30,7 @@
   min-height: calc(100vh - 60px);
   position: sticky;
   top: 60px;
+  left: 0;
 }
 .newChatBtn {
   width: 100%; /* 전체 너비 사용 */
@@ -101,7 +104,6 @@
   align-items: flex-start;
   scroll-behavior: smooth;
   background-color: #ffffff; /* 흰색 배경 유지 */
-  min-height: calc(100vh - 136px);
 }
 .chatMessage {
   max-width: 85%; /* Gemini 스타일로 더 넓게 */
