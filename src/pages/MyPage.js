@@ -8,6 +8,13 @@ import CustomSelect from '../components/CustomSelect';
 // (옵션 정의...)
 const skillOptions = [{ value: '상', label: '상 (업무 활용)' }, { value: '중', label: '중 (토이 프로젝트)' }, { value: '하', label: '하 (학습 경험)' }];
 const experienceOptions = [{ value: 'PROJECT', label: '프로젝트' }, { value: 'INTERN', label: '인턴' }];
+const gradeOptions = [
+  { value: '1', label: '1학년' },
+  { value: '2', label: '2학년' },
+  { value: '3', label: '3학년' },
+  { value: '4', label: '4학년' },
+  { value: '5', label: '5학년 이상' }
+];
 
 // sessionStorage에서 'userId'만 가져오는 헬퍼 (토큰은 apiClient가 관리)
 const getUserIdFromStorage = () => {
@@ -21,12 +28,12 @@ const getUserIdFromStorage = () => {
 
 function MyPage() {
   // (State 정의...)
-  const [education, setEducation] = useState({ school: '', major: '', grade: 1 });
+  const [education, setEducation] = useState({ school: '', major: '', grade: '' });
   const [careerGoal, setCareerGoal] = useState('');
   const [skills, setSkills] = useState([]);
   const [currentSkill, setCurrentSkill] = useState({ name: '', level: '중' });
   const [experiences, setExperiences] = useState([]);
-  const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', period: '', techStack: '', url: '' });
+  const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', period: '', techStack: '' });
   const [evidence, setEvidence] = useState({ certifications: [] });
   const [currentCert, setCurrentCert] = useState('');
   
@@ -48,7 +55,12 @@ function MyPage() {
         
         const profile = response.data;
         if (profile) {
-          setEducation(profile.education || { school: '', major: '', grade: 1 });
+          // grade를 문자열로 변환 (CustomSelect 사용을 위해)
+          const edu = profile.education || { school: '', major: '', grade: '' };
+          if (edu.grade && typeof edu.grade === 'number') {
+            edu.grade = String(edu.grade);
+          }
+          setEducation(edu);
           setCareerGoal(profile.careerGoal || '');
           setSkills(profile.skillFit || []);
           setExperiences(profile.experienceFit || []);
@@ -69,7 +81,7 @@ function MyPage() {
   // (이벤트 핸들러들...)
   const handleAddSkill = () => { if (currentSkill.name) { setSkills([...skills, currentSkill]); setCurrentSkill({ name: '', level: '중' }); } };
   const handleRemoveSkill = (index) => setSkills(skills.filter((_, i) => i !== index));
-  const handleAddExperience = () => { if (currentExperience.role && currentExperience.period) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '', url: '' }); } };
+  const handleAddExperience = () => { if (currentExperience.role && currentExperience.period) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '' }); } };
   const handleRemoveExperience = (index) => setExperiences(experiences.filter((_, i) => i !== index));
   const handleAddCert = () => { if (currentCert) { setEvidence({ ...evidence, certifications: [...evidence.certifications, currentCert] }); setCurrentCert(''); } };
   const handleRemoveCert = (index) => { setEvidence({ ...evidence, certifications: evidence.certifications.filter((_, i) => i !== index) }); };
@@ -77,7 +89,19 @@ function MyPage() {
   // apiClient를 사용하는 handleSave
   const handleSave = async () => {
     setIsSaving(true);
-    const profileData = { education, careerGoal, skillFit: skills, experienceFit: experiences, evidenceFit: evidence };
+    // experienceFit에서 url 필드 제거 (API 명세에 맞게)
+    const profileData = { 
+      education, 
+      careerGoal, 
+      skillFit: skills, 
+      experienceFit: experiences.map(exp => ({
+        type: exp.type,
+        role: exp.role,
+        period: exp.period,
+        techStack: exp.techStack
+      })), 
+      evidenceFit: evidence 
+    };
 
     try {
       const userId = getUserIdFromStorage();
@@ -107,112 +131,136 @@ function MyPage() {
   };
 
   if (isLoading) {
-    return <div className="page-container">프로필 정보를 불러오는 중...</div>;
+    return <div className="profile-setup-container"><div className="profile-card">프로필 정보를 불러오는 중...</div></div>;
   }
 
   // (JSX)
-  return (
-    <div className="profile-card-container"> 
-      <div className="profile-card mypage-card"> 
-        <p className="profile-card-description">
-          AI 추천 정확도를 높이기 위해 프로필 정보를 최신으로 유지해주세요.
-        </p>
-        
-        {/* --- 1. 기본 정보 섹션 --- */}
-        <div className="form-section">
-          <h3>기본 학력</h3>
-          <div className="form-grid two-cols">
-            <div className="form-group">
-              <label>학교</label>
-              <input type="text" value={education.school} onChange={(e) => setEducation({ ...education, school: e.target.value })} required />
-            </div>
-            <div className="form-group">
-              <label>전공</label>
-              <input type="text" value={education.major} onChange={(e) => setEducation({ ...education, major: e.target.value })} required />
-            </div>
-            <div className="form-group">
-              <label>학년</label>
-              <input type="number" value={education.grade} onChange={(e) => setEducation({ ...education, grade: e.target.value })} required min="1" max="5" />
-MentoAI's RESPONSE          </div>
-            <div className="form-group">
-              <label>목표 직무</label>
-              <input type="text" value={careerGoal} onChange={(e) => setCareerGoal(e.target.value)} required />
-            </div>
-          </div>
-        </div>
+  return (
+    <div className="profile-setup-container"> 
+      <div className="profile-card"> 
+        <h2 className="profile-card-title">📝 프로필 수정</h2>
+        <p className="profile-card-description">
+          AI 추천 정확도를 높이기 위해 프로필 정보를 최신으로 유지해주세요.
+        </p>
+        
+        {/* --- 1. 기본 정보 섹션 --- */}
+        <div className="form-section">
+          <h3>기본 학력</h3>
+          <div className="form-grid two-cols">
+            <div className="form-group">
+              <label>학교</label>
+              <input type="text" value={education.school} onChange={(e) => setEducation({ ...education, school: e.target.value })} required placeholder="예: 경희대학교" />
+            </div>
+            <div className="form-group">
+              <label>전공</label>
+              <input type="text" value={education.major} onChange={(e) => setEducation({ ...education, major: e.target.value })} required placeholder="예: 컴퓨터공학과" />
+            </div>
+            <div className="form-group">
+              <label>학년</label>
+              <CustomSelect
+                options={gradeOptions}
+                value={education.grade}
+                onChange={(newValue) => setEducation({ ...education, grade: newValue })}
+              />
+            </div>
+            <div className="form-group">
+              <label>목표 직무</label>
+              <input type="text" value={careerGoal} onChange={(e) => setCareerGoal(e.target.value)} required placeholder="예: AI 엔지니어" />
+            </div>
+          </div>
+        </div>
 
-        {/* --- 2. 기술 스택 섹션 --- */}
-        <div className="form-section">
-          <h3>기술 스택</h3>
-          <div className="input-group skill-group">
-            <input type="text" placeholder="기술 이름 (예: React)" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
-            <CustomSelect
-              options={skillOptions}
-              value={currentSkill.level}
-              onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
-            />
-            <button type="button" className="add-item-btn" onClick={handleAddSkill}>추가</button>
-          </div>
-          <ul className="added-list">
-            {skills.map((skill, index) => (
-              <li key={index} className="added-item">
-                {skill.name} ({skill.level})
-                <button type="button" className="remove-item-btn" onClick={() => handleRemoveSkill(index)}>×</button>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* --- 2. 기술 스택 섹션 --- */}
+        <div className="form-section">
+          <h3>기술 스택</h3>
+          <div className="form-grid skill-grid">
+            <div className="form-group">
+              <label>기술 이름</label>
+              <input type="text" placeholder="예: React" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>수준</label>
+              <CustomSelect
+                options={skillOptions}
+                value={currentSkill.level}
+                onChange={(newValue) => setCurrentSkill({ ...currentSkill, level: newValue })}
+              />
+            </div>
+            <button type="button" className="add-item-btn grid-align-end" onClick={handleAddSkill}>추가</button>
+          </div>
+          <ul className="added-list">
+            {skills.map((skill, index) => (
+              <li key={index} className="added-item">
+                {skill.name} ({skill.level})
+                <button type="button" className="remove-item-btn" onClick={() => handleRemoveSkill(index)}>×</button>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        {/* --- 3. 주요 경험 섹션 --- */}
-      S   <div className="form-section">
-          <h3>주요 경험</h3>
-          <div className="input-group experience-group">
-            <CustomSelect
-              options={experienceOptions}
-              value={currentExperience.type}
-  S           onChange={(newValue) => setCurrentExperience({ ...currentExperience, type: newValue })}
-            />
-            <input type="text" placeholder="역할 (예: 프론트엔드 개발)" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
-            <input type="text" placeholder="기간 (예: 3개월)" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
-            <input type="text" placeholder="사용 기술 (예: React, Spring)" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
-            <input type="text" placeholder="관련 URL (GitHub, 포트폴리오)" value={currentExperience.url} onChange={(e) => setCurrentExperience({ ...currentExperience, url: e.target.value })} />
-            <button type="button" className="add-item-btn" onClick={handleAddExperience}>추가</button>
-          </div>
-          <ul className="added-list">
-            {experiences.map((exp, index) => (
-              <li key={index} className="added-item">
-                [{exp.type}] {exp.role} ({exp.period}) - {exp.techStack} {exp.url && `(${exp.url})`}
-                <button type="button" className="remove-item-btn" onClick={() => handleRemoveExperience(index)}>×</button>
-            a   </li>
-            ))}
-          </ul>
-        </div>
+        {/* --- 3. 주요 경험 섹션 --- */}
+        <div className="form-section">
+          <h3>주요 경험</h3>
+          <div className="form-grid two-cols">
+            <div className="form-group">
+              <label>유형</label>
+              <CustomSelect
+                options={experienceOptions}
+                value={currentExperience.type}
+                onChange={(newValue) => setCurrentExperience({ ...currentExperience, type: newValue })}
+              />
+            </div>
+            <div className="form-group">
+              <label>역할</label>
+              <input type="text" placeholder="예: 프론트엔드 개발" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>기간</label>
+              <input type="text" placeholder="예: 3개월" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>사용 기술</label>
+              <input type="text" placeholder="예: React, Spring" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
+            </div>
+            <div className="form-group grid-col-span-2 grid-align-end">
+              <button type="button" className="add-item-btn" onClick={handleAddExperience}>추가</button>
+            </div>
+          </div>
+          <ul className="added-list">
+            {experiences.map((exp, index) => (
+              <li key={index} className="added-item">
+                [{exp.type}] {exp.role} ({exp.period}) - {exp.techStack}
+                <button type="button" className="remove-item-btn" onClick={() => handleRemoveExperience(index)}>×</button>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        {/* --- 4. 증빙 자료 섹션 --- */}
-        <div className="form-section">
-          <h3>증빙 자료</h3>
-          <div className="form-group">
-            <label>자격증</label>
-            <div className="input-group">
-              <input type="text" placeholder="자격증 이름 (예: 정보처리기사)" value={currentCert} onChange={(e) => setCurrentCert(e.target.value)} />
-              <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
-            </div>
-  S         <ul className="added-list">
-              {evidence.certifications.map((cert, index) => (
-                <li key={index} className="added-item">
-                  {cert}
-                  <button type="button" className="remove-item-btn" onClick={() => handleRemoveCert(index)}>×</button>
-              </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        {/* ... (폼 섹션 끝) ... */}
+        {/* --- 4. 증빙 자료 섹션 --- */}
+        <div className="form-section">
+          <h3>증빙 자료</h3>
+          <div className="form-group">
+            <label>자격증</label>
+            <div className="input-group">
+              <input type="text" placeholder="자격증 이름 (예: 정보처리기사)" value={currentCert} onChange={(e) => setCurrentCert(e.target.value)} />
+              <button type="button" className="add-item-btn" onClick={handleAddCert}>추가</button>
+            </div>
+            <ul className="added-list">
+              {evidence.certifications.map((cert, index) => (
+                <li key={index} className="added-item">
+                  {cert}
+                  <button type="button" className="remove-item-btn" onClick={() => handleRemoveCert(index)}>×</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        {/* ... (폼 섹션 끝) ... */}
 
-        <button onClick={handleSave} className="submit-button" disabled={isSaving}>
-          {isSaving ? '저장 중...' : '프로필 저장'}
-        </button>
-      </div>
+        <button onClick={handleSave} className="submit-button" disabled={isSaving}>
+          {isSaving ? '저장 중...' : '프로필 저장'}
+        </button>
+      </div>
 
       {showToast && (
         <div className="toast-message">

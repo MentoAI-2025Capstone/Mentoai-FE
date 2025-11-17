@@ -38,6 +38,8 @@
   position: absolute; /* 절대 위치로 중앙 배치 */
   left: 50%;
   transform: translateX(-50%); /* 정확한 중앙 정렬 */
+  white-space: nowrap; /* 한 줄로 표시 */
+  flex-wrap: nowrap; /* 줄바꿈 방지 */
 }
 
 .navbar-menu li {
@@ -53,6 +55,8 @@
   padding: 10px 15px;
   border-radius: 5px;
   transition: background-color 0.2s;
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  flex-shrink: 0; /* 축소 방지 */
 }
 
 .navbar-menu a:hover {
