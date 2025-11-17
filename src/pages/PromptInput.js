@@ -136,9 +136,9 @@ function PromptInput() {
         
         {/* 1. 채팅 히스토리 사이드바 */}
         <div className={styles.chatHistorySidebar}>
-          <button className={styles.newChatBtn} onClick={handleNewChat}>
-            + 새 채팅 시작
-          </button>
+          <button className={styles.newChatBtn} onClick={handleNewChat}>
+            + 새 채팅
+          </button>
           <ul className={styles.chatHistoryList}>
             {chatHistory.map(chat => (
               <li 

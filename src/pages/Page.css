@@ -16,6 +16,7 @@
   margin: 0 auto;
   padding: 0 24px 40px;
   min-height: calc(100vh - 60px);
+  box-sizing: border-box;
 }
 .page-container h2 {
   font-size: 28px;
