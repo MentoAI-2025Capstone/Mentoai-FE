@@ -61,6 +61,7 @@
   background-color: #0056b3;
   font-weight: bold;
   color: white;
+  line-height: 16px;
 }
 
 .logout-button {
