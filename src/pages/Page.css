@@ -1,20 +1,21 @@
 /* src/pages/Page.css */
 
 .profile-card-container {
-  margin: 0; 
-  padding: 100px 24px 60px; 
+  margin: 0 auto; 
+  padding: 80px 24px 80px; 
   box-sizing: border-box;
   background-color: #f8f9fa;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: calc(100vh - 60px);
+  max-width: 1200px;
 }
 
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 100px 24px 60px;
+  padding: 80px 24px 80px;
   min-height: calc(100vh - 60px);
   box-sizing: border-box;
 }
@@ -35,7 +36,7 @@
   align-items: flex-start; /* [!!!] [수정] flex-start (상단 정렬) */
   width: 100%;
   min-height: calc(100vh - 60px);
-  padding: 100px 20px 60px;
+  padding: 80px 20px 80px;
   box-sizing: border-box;
   background-color: #ffffff; 
 }

@@ -14,6 +14,7 @@ body {
   background-color: #ffffff;
   overflow-y: auto;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
 /* [!!!] [수정] .App을 Flex 컨테이너로 변경
@@ -41,7 +42,7 @@ body {
   - 불필요한 스크롤바를 만들었던 'min-height'와 'margin-top'을 제거합니다.
 */
 .content {
-  padding: 80px 0 40px 0;
+  padding: 80px 0 80px 0;
   background-color: #ffffff;
   box-sizing: border-box;
   min-height: calc(100vh - 60px);
@@ -50,13 +51,18 @@ body {
 
 /* 채팅 페이지 전용 content 클래스 */
 .content-chat {
-  padding: 60px 0 0 0; 
+  padding: 80px 0 40px 0; 
   background-color: #ffffff;
   box-sizing: border-box;
   min-height: calc(100vh - 60px);
   width: 100%;
+  display: flex;
+  justify-content: flex-start;
 }
 
+.content-chat > * {
+  width: 100%;
+}
 /* [!!!] [수정] .content-full (헤더가 없는 전체 화면 페이지용)
   - 'flex-grow: 1'을 사용해 부모(.App)의 전체 높이를 채우도록 합니다.
 */
