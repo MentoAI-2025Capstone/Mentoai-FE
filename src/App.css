@@ -12,6 +12,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #ffffff;
+  overflow: hidden; /* body 레벨에서 스크롤 방지 */
 }
 
 /* [!!!] [수정] .App을 Flex 컨테이너로 변경
@@ -41,8 +42,9 @@ body {
   background-color: #ffffff;
   box-sizing: border-box;
   margin-top: 60px;
-  min-height: calc(100vh - 60px);
+  height: calc(100vh - 60px);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* 채팅 페이지 전용 content 클래스 (위와 동일하게 수정) */
@@ -65,4 +67,6 @@ body {
   box-sizing: border-box;
   /* 'min-height: 100vh'는 부모가 이미 100vh이므로 중복되어 제거해도 됩니다. */
   height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }

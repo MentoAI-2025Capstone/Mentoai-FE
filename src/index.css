@@ -3,6 +3,7 @@ html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
+  overflow: hidden; /* html, body 레벨에서 스크롤 방지 */
 }
 
 body {

@@ -9,7 +9,7 @@
   display: flex;
   flex-direction: row; /* 수평 정렬 */
   align-items: center; /* 세로 중앙 정렬 */
-  justify-content: flex-start; /* 왼쪽부터 정렬 */
+  justify-content: space-between; /* 로고, 메뉴, 로그아웃 버튼 사이 공간 분배 */
   box-sizing: border-box;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   
@@ -23,9 +23,9 @@
 .navbar-logo {
   font-size: 24px;
   font-weight: bold;
-  margin-right: 40px; /* 로고와 메뉴 사이 간격 */
   color: white; /* 👈 [추가] 색상 직접 지정 */
   text-decoration: none; /* 👈 [추가] 밑줄 제거 */
+  flex-shrink: 0; /* 로고 크기 고정 */
 }
 
 .navbar-menu {
@@ -35,6 +35,9 @@
   display: flex;
   flex-direction: row;
   gap: 15px;
+  position: absolute; /* 절대 위치로 중앙 배치 */
+  left: 50%;
+  transform: translateX(-50%); /* 정확한 중앙 정렬 */
 }
 
 .navbar-menu li {
@@ -75,8 +78,7 @@
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.2s;
-  
-  margin-left: auto; 
+  flex-shrink: 0; /* 로그아웃 버튼 크기 고정 */
 }
 
 .logout-button:hover {
