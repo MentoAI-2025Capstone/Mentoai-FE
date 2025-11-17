@@ -6,8 +6,7 @@
   width: 100%;
   background-color: #ffffff;
   padding: 0;
-  margin: 0 auto;
-  max-width: 1200px;
+  margin: 0;
 }
 
 .chatLayout {
@@ -24,18 +23,19 @@
   width: 280px; /* Gemini 스타일로 약간 넓게 */
   background-color: #f8f9fa; /* 연한 회색 배경 */
   border-right: 1px solid #e8eaed; /* Gemini 스타일 테두리 */
-  padding: 100px 0 120px 0;
+  padding: 80px 0 80px 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 60px);
   position: sticky;
-  top: 0;
+  top: 60px;
+  left: 0;
 }
 .newChatBtn {
-  width: calc(100% - 32px); /* 좌우 padding 고려 */
-  margin: 0 16px 12px; 
-  padding: 12px 16px;
+  width: calc(100% - 24px);
+  margin: 0 12px 12px;
+  padding: 10px 16px;
   font-size: 14px;
   font-weight: 500;
   color: #1a73e8; /* Gemini 파란색 */
