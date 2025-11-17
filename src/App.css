@@ -12,7 +12,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #ffffff;
-  overflow: hidden; /* body 레벨에서 스크롤 방지 */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* [!!!] [수정] .App을 Flex 컨테이너로 변경
@@ -38,24 +39,20 @@ body {
   - 불필요한 스크롤바를 만들었던 'min-height'와 'margin-top'을 제거합니다.
 */
 .content {
-  padding: 60px 0 0 0;
+  padding: 80px 0 40px 0;
   background-color: #ffffff;
   box-sizing: border-box;
-  height: 100vh;
-  min-height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  min-height: calc(100vh - 60px);
+  width: 100%;
 }
 
 /* 채팅 페이지 전용 content 클래스 */
 .content-chat {
   padding: 60px 0 0 0; 
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   box-sizing: border-box;
-  height: 100vh;
-  min-height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  min-height: calc(100vh - 60px);
+  width: 100%;
 }
 
 /* [!!!] [수정] .content-full (헤더가 없는 전체 화면 페이지용)

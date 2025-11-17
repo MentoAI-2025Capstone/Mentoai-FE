@@ -4,7 +4,7 @@
   /* page-container와 동일하지만, App.js에서 content-chat 클래스로 관리됨 */
   height: 100%;
   width: 100%;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   padding: 0;
 }
 
@@ -26,6 +26,8 @@
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 60px);
+  position: sticky;
+  top: 60px;
 }
 .newChatBtn {
   width: 100%; /* 전체 너비 사용 */
@@ -34,7 +36,7 @@
   font-size: 14px;
   font-weight: 500;
   color: #1a73e8; /* Gemini 파란색 */
-  background-color: #f8f9fa;
+  background-color: transparent;
   border: none; /* 테두리 제거 */
   border-radius: 0; /* Gemini 스타일 - 직각 */
   cursor: pointer;
@@ -43,11 +45,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  opacity: 0.6; /* 커서 올리기 전에는 흐리게 */
 }
 .newChatBtn:hover {
-  background-color: #e1e3e7;
-  opacity: 1;
+  background-color: #e8eaed;
 }
 .chatHistoryList {
   list-style: none;
@@ -87,6 +87,7 @@
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
+  min-height: calc(100vh - 60px);
 }
 
 /* 3-1. 메시지 출력 영역 (Gemini 스타일) */
@@ -100,7 +101,7 @@
   align-items: flex-start;
   scroll-behavior: smooth;
   background-color: #ffffff; /* 흰색 배경 유지 */
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 136px);
 }
 .chatMessage {
   max-width: 85%; /* Gemini 스타일로 더 넓게 */
@@ -194,7 +195,7 @@
   padding: 16px 24px 16px 24px; /* 위아래 패딩 줄임 */
   margin: 0;
   border-top: none; /* 구분선 제거 */
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   display: flex;
   align-items: center; /* 중앙 정렬 */
   gap: 0;
