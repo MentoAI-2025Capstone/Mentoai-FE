@@ -204,14 +204,6 @@ function ActivityRecommender() {
         <p style={{ margin: '10px 0 0', color: '#495057', fontSize: '1rem' }}>
           아래 '추천 항목'을 확인하고 목표 달성을 시작해 보세요!
         </p>
-        {roleFitData && roleFitData.breakdown && (
-          <div style={{ marginTop: '15px', fontSize: '0.9rem', color: '#6c757d' }}>
-            <div>스킬 적합도: {(roleFitData.breakdown.skillFit * 100).toFixed(1)}%</div>
-            <div>경험 적합도: {(roleFitData.breakdown.experienceFit * 100).toFixed(1)}%</div>
-            <div>학력 적합도: {(roleFitData.breakdown.educationFit * 100).toFixed(1)}%</div>
-            <div>증빙 적합도: {(roleFitData.breakdown.evidenceFit * 100).toFixed(1)}%</div>
-          </div>
-        )}
         {improvements.length > 0 && (
           <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#e7f3ff', borderRadius: '4px' }}>
             <h4 style={{ margin: '0 0 10px 0', fontSize: '0.95rem' }}>개선 제안</h4>

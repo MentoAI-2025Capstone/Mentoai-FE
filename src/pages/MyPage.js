@@ -476,65 +476,6 @@ function MyPage() {
         <button onClick={handleSave} className="submit-button" disabled={isSaving}>
           {isSaving ? '저장 중...' : '프로필 저장'}
         </button>
-
-        {/* 일괄 계산 및 시뮬레이션 섹션 */}
-        <div style={{ marginTop: '30px', padding: '20px', border: '1px solid #dee2e6', borderRadius: '8px' }}>
-          <h3 style={{ marginTop: '0' }}>📊 추가 기능</h3>
-          
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-            <button 
-              onClick={handleBatchRoleFit} 
-              disabled={isCalculatingBatch}
-              style={{ 
-                padding: '10px 20px', 
-                backgroundColor: '#007bff', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '4px',
-                cursor: isCalculatingBatch ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {isCalculatingBatch ? '계산 중...' : '여러 직무 일괄 계산'}
-            </button>
-            
-            <button 
-              onClick={handleSimulateRoleFit} 
-              disabled={isSimulating || !careerGoal}
-              style={{ 
-                padding: '10px 20px', 
-                backgroundColor: '#28a745', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '4px',
-                cursor: (isSimulating || !careerGoal) ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {isSimulating ? '시뮬레이션 중...' : '점수 변화 시뮬레이션'}
-            </button>
-          </div>
-
-          {batchResults.length > 0 && (
-            <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
-              <h4>일괄 계산 결과:</h4>
-              {batchResults.map((result, idx) => (
-                <div key={idx} style={{ marginBottom: '10px' }}>
-                  <strong>{result.target}:</strong> {result.roleFitScore?.toFixed(1)}점
-                </div>
-              ))}
-            </div>
-          )}
-
-          {simulationResult && (
-            <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#e7f3ff', borderRadius: '4px' }}>
-              <h4>시뮬레이션 결과:</h4>
-              <div>현재 점수: {simulationResult.baseScore?.toFixed(1)}점</div>
-              <div>예상 점수: {simulationResult.newScore?.toFixed(1)}점</div>
-              <div style={{ color: simulationResult.delta > 0 ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
-                변화: {simulationResult.delta > 0 ? '+' : ''}{simulationResult.delta?.toFixed(1)}점
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       {showToast && (
