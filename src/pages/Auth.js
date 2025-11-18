@@ -39,6 +39,7 @@ function AuthPage() {
       } catch (error) {
         console.error('GET /auth/me failed (Not logged in):', error.message);
       } finally {
+        console.log("finally");
         setIsChecking(false);
       }
     };
