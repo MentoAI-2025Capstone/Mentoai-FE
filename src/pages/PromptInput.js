@@ -57,6 +57,9 @@ function PromptInput() {
     setPrompt(''); 
     setIsLoading(true);
 
+    console.log('[PromptInput] ===== API 요청 시작 =====');
+    console.log('[PromptInput] 사용자 입력:', currentPrompt);
+
     // '새 채팅'인 경우, 첫 메시지를 채팅방 제목으로 설정
     const activeChat = chatHistory.find(chat => chat.id === activeChatId);
     if (activeChat && activeChat.title === '새 채팅') {
@@ -71,6 +74,8 @@ function PromptInput() {
 
     try {
       const userId = getUserIdFromStorage();
+      console.log('[PromptInput] sessionStorage에서 가져온 userId:', userId);
+      
       if (!userId) {
         throw new Error("사용자 ID를 찾을 수 없습니다. (sessionStorage)");
       }
@@ -83,9 +88,21 @@ function PromptInput() {
         useProfileHints: true 
       };
 
+      console.log('[PromptInput] API 엔드포인트: POST /recommend');
+      console.log('[PromptInput] 요청 본문 (requestBody):', requestBody);
+      console.log('[PromptInput] 요청 URL:', `${apiClient.defaults.baseURL}/recommend`);
+
       const response = await apiClient.post('/recommend', requestBody);
 
+      console.log('[PromptInput] ===== API 응답 수신 =====');
+      console.log('[PromptInput] 전체 응답 객체:', response);
+      console.log('[PromptInput] 응답 데이터 (response.data):', response.data);
+      console.log('[PromptInput] 응답 상태 코드:', response.status);
+      console.log('[PromptInput] 응답 헤더:', response.headers);
+
       if (response.data && response.data.items && response.data.items.length > 0) {
+        console.log('[PromptInput] 추천된 활동 개수:', response.data.items.length);
+        console.log('[PromptInput] 추천된 활동 목록:', response.data.items);
         
         const aiResponses = response.data.items.map(item => {
           let tags = [];
@@ -97,31 +114,50 @@ function PromptInput() {
             }
           }
 
-          return {
+          const aiResponse = {
             role: 'ai',
             content: item.reason || item.activity.summary,
             title: item.activity.title,
             tags: tags
           };
+          
+          console.log('[PromptInput] 처리된 AI 응답:', aiResponse);
+          return aiResponse;
         });
         
+        console.log('[PromptInput] 모든 AI 응답 처리 완료:', aiResponses);
         setMessages(prev => [...prev, ...aiResponses]);
 
       } else {
+        console.log('[PromptInput] 추천된 활동이 없습니다.');
+        console.log('[PromptInput] 응답 데이터 구조:', response.data);
         setMessages(prev => [
           ...prev, 
           { role: 'ai', content: '관련 활동을 찾지 못했습니다. 질문을 조금 더 구체적으로 해주시겠어요?' }
         ]);
       }
 
+      console.log('[PromptInput] ===== API 요청 완료 =====');
+
     } catch (error) {
-      console.error("AI 추천 API 호출 실패:", error);
+      console.error('[PromptInput] ===== API 호출 실패 =====');
+      console.error('[PromptInput] 에러 객체:', error);
+      console.error('[PromptInput] 에러 메시지:', error.message);
+      console.error('[PromptInput] 에러 응답:', error.response);
+      if (error.response) {
+        console.error('[PromptInput] 에러 응답 데이터:', error.response.data);
+        console.error('[PromptInput] 에러 응답 상태:', error.response.status);
+        console.error('[PromptInput] 에러 응답 헤더:', error.response.headers);
+      }
+      console.error('[PromptInput] 에러 요청 설정:', error.config);
+      
       setMessages(prev => [
         ...prev, 
         { role: 'ai', content: `오류가 발생했습니다: ${error.message}` }
       ]);
     } finally {
       setIsLoading(false);
+      console.log('[PromptInput] 로딩 상태 종료');
     }
   };
   
