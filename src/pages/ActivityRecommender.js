@@ -29,17 +29,29 @@ function ActivityRecommender() {
     try {
       // sessionStorage에서 먼저 확인
       const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+      console.log('[ActivityRecommender] sessionStorage 전체 데이터:', storedUser);
+      console.log('[ActivityRecommender] storedUser?.user:', storedUser?.user);
+      console.log('[ActivityRecommender] storedUser?.user?.interestDomains:', storedUser?.user?.interestDomains);
+      
       if (storedUser?.user?.interestDomains?.[0]) {
+        console.log('[ActivityRecommender] ✅ sessionStorage에서 목표 직무 발견:', storedUser.user.interestDomains[0]);
         return storedUser.user.interestDomains[0];
       }
       
       // 없으면 프로필 API 호출
       if (userId) {
+        console.log('[ActivityRecommender] 프로필 API 호출하여 목표 직무 가져오기');
         const profileResponse = await apiClient.get(`/users/${userId}/profile`);
+        console.log('[ActivityRecommender] 프로필 API 응답:', profileResponse.data);
+        console.log('[ActivityRecommender] 프로필 API interestDomains:', profileResponse.data?.interestDomains);
+        
         if (profileResponse.data?.interestDomains?.[0]) {
+          console.log('[ActivityRecommender] ✅ 프로필 API에서 목표 직무 발견:', profileResponse.data.interestDomains[0]);
           return profileResponse.data.interestDomains[0];
         }
       }
+      
+      console.warn('[ActivityRecommender] ⚠️ 목표 직무를 찾을 수 없습니다.');
       return null;
     } catch (e) {
       console.error('[ActivityRecommender] 목표 직무 가져오기 실패:', e);
