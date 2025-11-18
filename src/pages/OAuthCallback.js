@@ -37,7 +37,11 @@ export default function OAuthCallback() {
 
         // 4) /auth/me API 호출 (apiClient가 임시 토큰 사용)
         setMessage('사용자 정보를 가져오는 중...');
-        const meResponse = await apiClient.get('/auth/me'); 
+        const meResponse = await apiClient.get('/auth/me');
+        console.log('[OAuthCallback.js] GET /auth/me - Full response:', meResponse);
+        console.log('[OAuthCallback.js] GET /auth/me - response.data:', meResponse.data);
+        console.log('[OAuthCallback.js] GET /auth/me - response.data.user:', meResponse.data?.user);
+        console.log('[OAuthCallback.js] GET /auth/me - profileComplete:', meResponse.data?.user?.profileComplete); 
         
         // 5) [!!!] [수정] 덮어쓰지 않고, 기존 tokens와 새 user 정보를 합칩니다.
         const finalAuthData = {

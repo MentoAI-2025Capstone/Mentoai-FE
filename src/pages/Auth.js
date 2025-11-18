@@ -27,6 +27,10 @@ function AuthPage() {
         
         // 토큰이 있으면 /auth/me 호출하여 최신 사용자 정보 가져오기
         const response = await apiClient.get('/auth/me'); 
+        console.log('[Auth.js] GET /auth/me - Full response:', response);
+        console.log('[Auth.js] GET /auth/me - response.data:', response.data);
+        console.log('[Auth.js] GET /auth/me - response.data.user:', response.data?.user);
+        console.log('[Auth.js] GET /auth/me - profileComplete:', response.data?.user?.profileComplete);
         const data = response.data;
         const user = data?.user;
 
