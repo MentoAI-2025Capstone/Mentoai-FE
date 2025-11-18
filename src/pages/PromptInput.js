@@ -57,25 +57,14 @@ function PromptInput() {
     setPrompt(''); 
     setIsLoading(true);
 
-    // activeChatId가 없으면 새 채팅 생성
-    let sessionId = activeChatId;
-    if (!sessionId) {
-      const newId = (chatHistory.length > 0 ? Math.max(...chatHistory.map(c => c.id)) : 0) + 1;
-      setChatHistory(prev => [...prev, { id: newId, title: '새 채팅' }]);
-      setActiveChatId(newId);
-      sessionId = newId;
-    }
-
     // '새 채팅'인 경우, 첫 메시지를 채팅방 제목으로 설정
-    const activeChat = chatHistory.find(chat => chat.id === sessionId);
-    const chatTitle = activeChat?.title === '새 채팅' 
-      ? (currentPrompt.length > 20 ? currentPrompt.substring(0, 20) + '...' : currentPrompt)
-      : (activeChat?.title || 'New Chat');
-    
+    const activeChat = chatHistory.find(chat => chat.id === activeChatId);
     if (activeChat && activeChat.title === '새 채팅') {
+      const newTitle = currentPrompt.length > 20 ? currentPrompt.substring(0, 20) + '...' : currentPrompt;
+      
       setChatHistory(prevHistory => 
         prevHistory.map(chat => 
-          chat.id === sessionId ? { ...chat, title: chatTitle } : chat
+          chat.id === activeChatId ? { ...chat, title: newTitle } : chat
         )
       );
     }
@@ -86,29 +75,16 @@ function PromptInput() {
         throw new Error("사용자 ID를 찾을 수 없습니다. (sessionStorage)");
       }
 
-      // 현재 메시지들을 API 형식으로 변환
-      const messagesForApi = messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-      // 사용자 메시지 추가
-      messagesForApi.push({
-        role: 'user',
-        content: currentPrompt
-      });
-
       const requestBody = {
-        sessionId: sessionId,
         userId: userId,
-        title: chatTitle,
-        messages: messagesForApi,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        query: currentPrompt,
+        topK: 5,
+        preferTags: [], // 필요시 추출 가능
+        useProfileHints: true 
       };
 
-      const response = await apiClient.post(`/chat/sessions/${sessionId}/messages`, requestBody);
+      const response = await apiClient.post('/recommend', requestBody);
 
-      // 응답 처리 (백엔드 응답 구조에 따라 조정 필요)
       if (response.data && response.data.items && response.data.items.length > 0) {
         
         const aiResponses = response.data.items.map(item => {
@@ -139,7 +115,7 @@ function PromptInput() {
       }
 
     } catch (error) {
-      console.error("채팅 메시지 전송 실패:", error);
+      console.error("AI 추천 API 호출 실패:", error);
       setMessages(prev => [
         ...prev, 
         { role: 'ai', content: `오류가 발생했습니다: ${error.message}` }
