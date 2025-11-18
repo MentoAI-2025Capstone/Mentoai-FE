@@ -70,11 +70,13 @@ body {
   background-color: #ffffff; 
   margin: 0;
   box-sizing: border-box;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
   padding: 60px 0;
   overflow-y: auto;
+  overflow-x: hidden;
 }
