@@ -3,9 +3,8 @@
 .calendarPageWrapper {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 24px 80px;
-  height: 100%;
-  overflow: hidden; /* [추가] 캘린더는 스크롤 불필요 */
+  padding: 40px 24px 40px; /* [수정] 캘린더는 하단 여백 줄임 */
+  min-height: 100%;
   box-sizing: border-box;
 }
 

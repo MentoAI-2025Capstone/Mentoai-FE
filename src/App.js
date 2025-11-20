@@ -1,6 +1,6 @@
 // src/App.js
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AuthPage from './pages/Auth'; 
 
@@ -85,6 +85,7 @@ const PublicRoute = ({ children }) => {
 function App() {
   const location = useLocation();
   const { isAuthenticated, profileComplete } = getAuthInfo();
+  const contentRef = useRef(null);
 
   const showNavbar = isAuthenticated && profileComplete;
   
@@ -98,10 +99,17 @@ function App() {
     return "content";
   };
 
+  // [추가] 라우트 변경 시 스크롤을 항상 맨 위로 초기화
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [location.pathname]);
+
   return (
     <div className={appClassName}>
       {showNavbar && <Navbar />}
-      <main key={location.pathname} className={getContentClass()}>
+      <main ref={contentRef} key={location.pathname} className={getContentClass()}>
         <Routes>
           {/* 1. 로그인/프로필 경로 */}
           <Route path="/login" element={<PublicRoute><AuthPage /></PublicRoute>} />

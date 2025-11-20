@@ -36,8 +36,7 @@ body {
 }
 
 /* [!!!] [수정] .content 클래스 (헤더가 있는 페이지용)
-  - 각 페이지가 자체적으로 스크롤을 관리합니다.
-  - 여기서는 스크롤을 관리하지 않습니다.
+  - 화면 오른쪽에 스크롤바가 생기도록 여기서 스크롤을 관리합니다.
 */
 .content {
   margin-top: 60px; /* [수정] Navbar 아래로 이동 */
@@ -45,7 +44,8 @@ body {
   box-sizing: border-box;
   height: calc(100vh - 60px); /* [수정] Navbar 제외한 높이 */
   width: 100%;
-  overflow: hidden; /* [수정] 스크롤 제거 - 각 페이지가 관리 */
+  overflow-y: auto; /* [수정] 화면 오른쪽에 스크롤바 생성 */
+  overflow-x: hidden;
 }
 
 /* 채팅 페이지 전용 content 클래스 */
@@ -64,20 +64,18 @@ body {
   width: 100%;
 }
 /* [!!!] [수정] .content-full (헤더가 없는 전체 화면 페이지용)
-  - 로그인/프로필 설정 페이지용
-  - 내용이 짧으면 스크롤 없음, 길면 스크롤 생성
+  - 로그인/프로필 설정 페이지용 - 정중앙 배치
 */
 .content-full {
-  flex-grow: 1;
   background-color: #ffffff; 
   margin: 0;
   box-sizing: border-box;
-  min-height: 100vh; /* [수정] 최소 높이만 지정 */
+  height: 100vh; /* [수정] 고정 높이 - 정중앙 배치를 위해 */
   display: flex;
   flex-direction: column;
   justify-content: center; /* [수정] 정중앙 배치 */
   align-items: center;
-  padding: 60px 0;
+  padding: 0;
   overflow-y: auto; /* 내용이 길면 스크롤 */
   overflow-x: hidden;
 }
