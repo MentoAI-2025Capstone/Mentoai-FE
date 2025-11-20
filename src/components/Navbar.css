@@ -11,8 +11,9 @@
   align-items: center; /* 세로 중앙 정렬 */
   justify-content: space-between; /* 로고, 메뉴, 로그아웃 버튼 사이 공간 분배 */
   box-sizing: border-box;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* [수정] 더 얇은 그림자 */
-  border-bottom: 1px solid #eee; /* [추가] 하단 구분선 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* [수정] 그림자 약간 강화 */
+  border-bottom: 1px solid #eee;
+  border-top: 3px solid var(--primary-color); /* [추가] 상단 포인트 라인 */
   
   position: fixed; 
   top: 0;
@@ -27,11 +28,12 @@
 /* [수정] NavLink(a태그) 자체에 스타일 적용 */
 .navbar-logo {
   font-size: 24px;
-  font-weight: bold;
-  color: var(--primary-color); /* 👈 [수정] 메인 컬러 사용 */
-  text-decoration: none; /* 👈 [추가] 밑줄 제거 */
-  flex-shrink: 0; /* 로고 크기 고정 */
-  margin-right: auto; /* 왼쪽에 고정 */
+  font-weight: 800; /* [수정] 폰트 더 굵게 */
+  color: var(--primary-color);
+  text-decoration: none;
+  flex-shrink: 0;
+  margin-right: auto;
+  letter-spacing: -0.5px; /* [추가] 자간 조정으로 단단한 느낌 */
 }
 
 .navbar-menu {
