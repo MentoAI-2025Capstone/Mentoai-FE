@@ -1,6 +1,6 @@
 // src/App.js
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AuthPage from './pages/Auth'; 
 
@@ -83,26 +83,34 @@ const PublicRoute = ({ children }) => {
 
 // --- 메인 App 컴포넌트 ---
 function App() {
-  const location = useLocation();
-  const { isAuthenticated, profileComplete } = getAuthInfo();
+  const location = useLocation();
+  const { isAuthenticated, profileComplete } = getAuthInfo();
+  const contentRef = useRef(null);
 
-  const showNavbar = isAuthenticated && profileComplete;
-  
-  const appClassName = showNavbar ? "App" : "App-unauthed";
-  const getContentClass = () => {
+  const showNavbar = isAuthenticated && profileComplete;
+  
+  const appClassName = showNavbar ? "App" : "App-unauthed";
+  const getContentClass = () => {
     // [수정] 콜백 페이지도 전체 화면(content-full)을 사용하도록 조건 추가
-    if (!isAuthenticated || location.pathname === '/oauth/callback' || location.pathname === '/profile-setup') { 
+    if (!isAuthenticated || location.pathname === '/oauth/callback' || location.pathname === '/profile-setup') { 
       return "content-full"; 
     }
-    if (location.pathname === '/prompt') { return "content-chat"; }
-    return "content";
-  };
+    if (location.pathname === '/prompt') { return "content-chat"; }
+    return "content";
+  };
 
-  return (
-    <div className={appClassName}>
-      {showNavbar && <Navbar />}
-      <main className={getContentClass()}>
-        <Routes>
+  // [추가] 라우트 변경 시 스크롤 위치를 상단으로 초기화
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [location.pathname]);
+
+  return (
+    <div className={appClassName}>
+      {showNavbar && <Navbar />}
+      <main ref={contentRef} className={getContentClass()}>
+        <Routes>
           {/* 1. 로그인/프로필 경로 */}
           <Route path="/login" element={<PublicRoute><AuthPage /></PublicRoute>} />
           <Route path="/profile-setup" element={<ProfileSetupRoute><ProfileSetup /></ProfileSetupRoute>} />

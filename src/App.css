@@ -76,7 +76,7 @@ body {
   min-height: 100vh; /* [수정] 최소 높이만 지정 */
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center; /* [수정] 정중앙 배치 */
   align-items: center;
   padding: 60px 0;
   overflow-y: auto; /* 내용이 길면 스크롤 */
