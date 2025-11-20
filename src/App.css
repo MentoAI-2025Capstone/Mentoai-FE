@@ -36,16 +36,17 @@ body {
 }
 
 /* [!!!] [수정] .content 클래스 (헤더가 있는 페이지용)
-  - 'height'를 고정하여 전체 레이아웃을 잡습니다.
-  - 스크롤은 각 페이지 내부 컴포넌트(예: .page-container)에서 담당합니다.
+  - 'height'를 고정하고 여기서 스크롤을 담당합니다.
+  - 스크롤바가 화면 제일 오른쪽에 생깁니다.
 */
 .content {
-  padding: 60px 0 0 0; /* [수정] 상단 패딩을 Navbar 높이(60px)에 맞춤 */
+  padding-top: 60px; /* [수정] 상단 패딩을 Navbar 높이(60px)에 맞춤 */
   background-color: #ffffff;
   box-sizing: border-box;
   height: 100vh; /* [수정] 전체 화면 높이 */
   width: 100%;
-  overflow: hidden; /* [수정] App 레벨에서는 스크롤 금지 */
+  overflow-y: auto; /* [수정] 여기서 스크롤 발생 (화면 오른쪽에) */
+  overflow-x: hidden;
 }
 
 /* 채팅 페이지 전용 content 클래스 */
@@ -64,20 +65,20 @@ body {
   width: 100%;
 }
 /* [!!!] [수정] .content-full (헤더가 없는 전체 화면 페이지용)
-  - 'flex-grow: 1'을 사용해 부모(.App)의 전체 높이를 채우도록 합니다.
+  - 로그인/프로필 설정 페이지용
+  - 내용이 짧으면 스크롤 없음, 길면 스크롤 생성
 */
 .content-full {
   flex-grow: 1;
   background-color: #ffffff; 
   margin: 0;
   box-sizing: border-box;
-  height: 100vh;
-  max-height: 100vh;
+  min-height: 100vh; /* [수정] 최소 높이만 지정 */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
   padding: 60px 0;
-  overflow-y: auto;
+  overflow-y: auto; /* 내용이 길면 스크롤 */
   overflow-x: hidden;
 }
