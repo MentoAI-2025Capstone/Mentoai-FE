@@ -29,10 +29,14 @@ function PromptInput() {
   const [editingTitle, setEditingTitle] = useState('');
 
   const messagesEndRef = useRef(null);
+  const messagesAreaRef = useRef(null); // 메시지 영역 ref 추가
   const prevMessagesLength = useRef(0); // 스크롤 로직을 위한 ref
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // scrollIntoView 대신 직접 scrollTop 조작 (부모 스크롤 간섭 방지)
+    if (messagesAreaRef.current) {
+      messagesAreaRef.current.scrollTop = messagesAreaRef.current.scrollHeight;
+    }
   };
 
   // 새 메시지가 "추가"될 때만 스크롤 실행
@@ -247,7 +251,7 @@ function PromptInput() {
         <div className={styles.chatWindow}>
 
           {/* 2-1. 메시지 출력 영역 */}
-          <div className={styles.chatMessagesArea}>
+          <div ref={messagesAreaRef} className={styles.chatMessagesArea}>
 
             {messages.map((msg, index) => (
               <div key={index} className={`${styles.chatMessage} ${styles[msg.role]}`}>
