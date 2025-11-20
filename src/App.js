@@ -2,7 +2,12 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import AuthPage from './pages/Auth'; 
+import AuthPage from './pages/Auth';
+
+// 브라우저 스크롤 복원 비활성화
+if ('scrollRestoration' in window.history) {
+  window.history.scrollRestoration = 'manual';
+} 
 
 // --- (컴포넌트 임포트) ---
 import Navbar from './components/Navbar';
@@ -99,17 +104,22 @@ function App() {
     return "content";
   };
 
-  // [추가] 라우트 변경 시 스크롤을 항상 맨 위로 초기화
+  // [추가] 라우트 변경 시 스크롤을 항상 맨 위로 강제 초기화
   useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.scrollTop = 0;
-    }
+    // setTimeout으로 DOM 업데이트 후 실행 보장
+    setTimeout(() => {
+      if (contentRef.current) {
+        contentRef.current.scrollTop = 0;
+      }
+      // window 스크롤도 초기화 (이중 보장)
+      window.scrollTo(0, 0);
+    }, 0);
   }, [location.pathname]);
 
   return (
     <div className={appClassName}>
       {showNavbar && <Navbar />}
-      <main ref={contentRef} key={location.pathname} className={getContentClass()}>
+      <main ref={contentRef} className={getContentClass()}>
         <Routes>
           {/* 1. 로그인/프로필 경로 */}
           <Route path="/login" element={<PublicRoute><AuthPage /></PublicRoute>} />
