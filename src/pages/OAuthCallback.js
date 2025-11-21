@@ -77,7 +77,7 @@ export default function OAuthCallback() {
   if (error) {
     return (
       <div className={styles.authContainer}>
-        <div className={styles.authCard}>
+        <div className={styles.authLoadingCard}>
           <h1 className={styles.authLogo} style={{ color: '#dc3545' }}>Error</h1>
           <p className={styles.authSubtitle}>{error}</p>
           <button className={styles.googleLoginButton} onClick={() => window.location.href = '/login'}>
@@ -90,10 +90,10 @@ export default function OAuthCallback() {
 
   return (
     <div className={styles.authContainer}>
-      <div className={styles.authCard}>
+      <div className={styles.authLoadingCard}>
         <h1 className={styles.authLogo}>MentoAI</h1>
         <p className={styles.authSubtitle}>{message}</p>
-        <div style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #007bff', borderRadius: '50%', margin: '20px auto', animation: 'spin 1s linear infinite' }}></div>
+        <div className={styles.loadingSpinner}></div>
       </div>
     </div>
   );

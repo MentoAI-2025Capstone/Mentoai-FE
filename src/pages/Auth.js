@@ -107,11 +107,11 @@ function AuthPage() {
           <ul className={styles.featureList}>
             <li className={styles.featureItem}>
               <div className={styles.featureIcon}>🎯</div>
-              <span>데이터 기반 맞춤형 진로 추천</span>
+              <span>데이터 기반 맞춤형 활동 추천</span>
             </li>
             <li className={styles.featureItem}>
               <div className={styles.featureIcon}>📅</div>
-              <span>공모전/자격증 스마트 일정 관리</span>
+              <span>공모전 일정 관리</span>
             </li>
             <li className={styles.featureItem}>
               <div className={styles.featureIcon}>💬</div>
