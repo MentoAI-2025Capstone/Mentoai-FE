@@ -493,6 +493,7 @@ function ActivityRecommender() {
             </div>
           )}
         </div>
+        </>
       )}
     </div>
   );
