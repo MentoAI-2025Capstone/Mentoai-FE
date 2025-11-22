@@ -19,12 +19,58 @@ function ActivityRecommender() {
   const [activities, setActivities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(''); // [신규] 검색어 상태
+
   // [신규] 사용자 점수를 저장할 state (초기값 null)
   const [userScore, setUserScore] = useState(null);
   const [roleFitData, setRoleFitData] = useState(null);
   const [improvements, setImprovements] = useState([]);
 
-  // sessionStorage에서 목표 직무 가져오기 (프로필 API에서 가져온 정보 사용)
+  // ... (getCareerGoalFromStorage 등 함수들은 그대로 유지)
+
+  // [신규] 검색 핸들러
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      alert('검색어를 입력해주세요.');
+      return;
+    }
+
+    try {
+      console.log('[ActivityRecommender] ===== 의미 기반 검색 시작 =====');
+      console.log('[ActivityRecommender] 검색어:', searchQuery);
+      // GET /search 호출
+      const response = await apiClient.get('/search', {
+        params: {
+          q: searchQuery,
+          topK: 10
+        }
+      });
+
+      console.log('[ActivityRecommender] 검색 결과:', response.data);
+      
+      // 검색 결과로 활동 목록 업데이트 (SemanticSearchResponse 구조: { queryEmbedding, results: [{ activity, score }, ...] })
+      if (response.data && response.data.results) {
+         // results 배열에서 activity 객체만 추출하여 activities 상태 업데이트
+         const searchResults = response.data.results.map(item => item.activity);
+         setActivities(searchResults);
+         
+         if (searchResults.length > 0) {
+           setActiveTab(searchResults[0].activityId);
+         } else {
+           alert('검색 결과가 없습니다.');
+         }
+      }
+    } catch (error) {
+      console.error('[ActivityRecommender] 검색 실패:', error);
+      alert('검색 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
   const getCareerGoalFromStorage = async (userId) => {
     try {
       // sessionStorage에서 먼저 확인
@@ -331,7 +377,43 @@ function ActivityRecommender() {
       {isLoading ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>활동 목록을 불러오는 중...</div>
       ) : (
-        <div className="recommender-layout">
+        <>
+          {/* [신규] 검색바 추가 */}
+          <div style={{ marginBottom: '20px', padding: '0 10px' }}>
+            <div style={{ display: 'flex', gap: '10px', maxWidth: '600px', margin: '0 auto' }}>
+              <input
+                type="text"
+                placeholder="관심 있는 활동을 검색해보세요 (의미 기반 검색)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid #ddd',
+                  fontSize: '16px'
+                }}
+              />
+              <button
+                onClick={handleSearch}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#1a73e8',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  fontWeight: 'bold'
+                }}
+              >
+                검색
+              </button>
+            </div>
+          </div>
+
+          <div className="recommender-layout">
           <div className="task-list-card">
             <h4>활동 목록</h4>
             <ul>

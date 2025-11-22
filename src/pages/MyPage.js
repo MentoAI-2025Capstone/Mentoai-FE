@@ -52,61 +52,90 @@ function MyPage() {
         const userId = getUserIdFromStorage();
         if (!userId) throw new Error("No auth data");
 
-        // apiClient 사용 (헤더 자동 주입)
-        const response = await apiClient.get(
-          `/users/${userId}/profile`
-        );
+        // [신규] 추가 API 연동 확인 (태그, 직무, 메타데이터) - 병렬 호출
+        const [profileResponse, tagsResponse, rolesResponse, metaSkillsResponse] = await Promise.allSettled([
+          apiClient.get(`/users/${userId}/profile`),
+          apiClient.get('/tags'),
+          apiClient.get('/roles'),
+          apiClient.get('/meta/skills')
+        ]);
 
-        const profile = response.data;
-        if (profile) {
-          // OpenAPI UserProfile 스펙에서 기존 형식으로 변환
-          if (profile.university) {
-            setEducation({
-              school: profile.university.universityName || '',
-              major: profile.university.major || '',
-              grade: profile.university.grade ? String(profile.university.grade) : ''
-            });
+        // 1. 프로필 응답 처리
+        if (profileResponse.status === 'fulfilled') {
+          const profile = profileResponse.value.data;
+          if (profile) {
+            // OpenAPI UserProfile 스펙에서 기존 형식으로 변환
+            if (profile.university) {
+              setEducation({
+                school: profile.university.universityName || '',
+                major: profile.university.major || '',
+                grade: profile.university.grade ? String(profile.university.grade) : ''
+              });
+            }
+
+            // interestDomains의 첫 번째 항목을 careerGoal로 사용
+            setCareerGoal(profile.interestDomains && profile.interestDomains.length > 0
+              ? profile.interestDomains[0]
+              : '');
+
+            // techStack을 skills 형식으로 변환
+            if (profile.techStack) {
+              setSkills(profile.techStack.map(skill => ({
+                name: skill.name,
+                level: skill.level === 'ADVANCED' ? '상' :
+                  skill.level === 'INTERMEDIATE' ? '중' :
+                    skill.level === 'EXPERT' ? '상' : '하'
+              })));
+            }
+
+            // experiences를 기존 형식으로 변환
+            if (profile.experiences) {
+              setExperiences(profile.experiences.map(exp => ({
+                type: exp.type,
+                role: exp.role,
+                period: exp.startDate && exp.endDate
+                  ? `${exp.startDate} ~ ${exp.endDate}`
+                  : exp.startDate || '',
+                techStack: exp.techStack ? exp.techStack.join(', ') : ''
+              })));
+            }
+
+            // certifications을 기존 형식으로 변환
+            if (profile.certifications) {
+              setEvidence({
+                certifications: profile.certifications.map(cert => cert.name)
+              });
+            }
           }
-
-          // interestDomains의 첫 번째 항목을 careerGoal로 사용
-          setCareerGoal(profile.interestDomains && profile.interestDomains.length > 0
-            ? profile.interestDomains[0]
-            : '');
-
-          // techStack을 skills 형식으로 변환
-          if (profile.techStack) {
-            setSkills(profile.techStack.map(skill => ({
-              name: skill.name,
-              level: skill.level === 'ADVANCED' ? '상' :
-                skill.level === 'INTERMEDIATE' ? '중' :
-                  skill.level === 'EXPERT' ? '상' : '하'
-            })));
-          }
-
-          // experiences를 기존 형식으로 변환
-          if (profile.experiences) {
-            setExperiences(profile.experiences.map(exp => ({
-              type: exp.type,
-              role: exp.role,
-              period: exp.startDate && exp.endDate
-                ? `${exp.startDate} ~ ${exp.endDate}`
-                : exp.startDate || '',
-              techStack: exp.techStack ? exp.techStack.join(', ') : ''
-            })));
-          }
-
-          // certifications을 기존 형식으로 변환
-          if (profile.certifications) {
-            setEvidence({
-              certifications: profile.certifications.map(cert => cert.name)
-            });
+        } else {
+          console.error("마이페이지 프로필 로드 실패:", profileResponse.reason);
+          if (profileResponse.reason?.response?.status !== 404) {
+             // 404는 프로필이 없는 경우이므로 무시, 그 외 에러는 알림
+             console.warn(`프로필 로딩 실패: ${profileResponse.reason.message}`);
           }
         }
+
+        // 2. [신규] 추가 API 로그 출력
+        if (tagsResponse.status === 'fulfilled') {
+          console.log('[MyPage] GET /tags 응답:', tagsResponse.value.data);
+        } else {
+          console.warn('[MyPage] GET /tags 실패:', tagsResponse.reason);
+        }
+
+        if (rolesResponse.status === 'fulfilled') {
+          console.log('[MyPage] GET /roles 응답:', rolesResponse.value.data);
+        } else {
+          console.warn('[MyPage] GET /roles 실패:', rolesResponse.reason);
+        }
+
+        if (metaSkillsResponse.status === 'fulfilled') {
+          console.log('[MyPage] GET /meta/skills 응답:', metaSkillsResponse.value.data);
+        } else {
+          console.warn('[MyPage] GET /meta/skills 실패:', metaSkillsResponse.reason);
+        }
+
       } catch (error) {
-        console.error("마이페이지 프로필 로드 실패:", error);
-        if (error.response?.status !== 404) {
-          alert(`프로필 로딩에 실패했습니다: ${error.message}`);
-        }
+        console.error("마이페이지 초기화 중 오류:", error);
       } finally {
         setIsLoading(false);
       }

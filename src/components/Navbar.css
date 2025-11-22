@@ -80,6 +80,40 @@
   line-height: 16px;
 }
 
+/* 알림 아이콘 스타일 */
+.notification-container {
+  position: relative;
+  margin-right: 15px; /* 로그아웃 버튼과 간격 */
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  margin-left: auto; /* 오른쪽 정렬을 위해 */
+}
+
+.notification-container:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.notification-icon {
+  font-size: 20px;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #ff4d4f; /* 빨간색 뱃지 */
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 1px solid #fff;
+  min-width: 14px;
+  text-align: center;
+}
+
 .logout-button {
   width: auto;
   padding: 8px 16px;
@@ -92,7 +126,7 @@
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
-  margin-left: auto;
+  margin-left: 0; /* 알림 아이콘이 auto를 가져감 */
 }
 
 .logout-button:hover {
