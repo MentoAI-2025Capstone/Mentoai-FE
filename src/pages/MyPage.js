@@ -453,7 +453,8 @@ function MyPage() {
         ...base,
         margin: 0,
         padding: 0,
-        color: '#333'
+        color: '#333',
+        caretColor: 'transparent' // [수정] 커서 숨김
     }),
     indicatorSeparator: () => ({
         display: 'none'
@@ -492,8 +493,11 @@ function MyPage() {
                 loadOptions={loadSchoolOptions}
                 onChange={(selected) => setEducation({ ...education, school: selected ? selected.value : '' })}
                 value={education.school ? { label: education.school, value: education.school } : null}
-                placeholder="학교 검색 (예: 경희대학교)"
-                styles={selectStyles}
+                placeholder="학교 검색" // [수정] Placeholder 변경
+                styles={{
+                    ...selectStyles,
+                    input: (base) => ({ ...base, margin: 0, padding: 0, color: '#333', caretColor: 'auto' }) // [수정] 학교 검색은 커서 유지
+                }}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 required
               />
@@ -508,6 +512,7 @@ function MyPage() {
                 styles={selectStyles}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 required
+                isSearchable={false} // [수정] 검색 비활성화
               />
             </div>
             <div className="form-group">
@@ -516,6 +521,7 @@ function MyPage() {
                 options={gradeOptions}
                 value={education.grade}
                 onChange={(newValue) => setEducation({ ...education, grade: newValue })}
+                placeholder="학년 선택" // [수정] Placeholder 추가
               />
             </div>
             <div className="form-group">
@@ -528,6 +534,7 @@ function MyPage() {
                 styles={selectStyles}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 required
+                isSearchable={false}
               />
             </div>
           </div>
@@ -543,9 +550,10 @@ function MyPage() {
                 options={skillOptions}
                 onChange={(selected) => setCurrentSkill({ ...currentSkill, name: selected ? selected.value : '' })}
                 value={currentSkill.name ? { label: currentSkill.name, value: currentSkill.name } : null}
-                placeholder="기술 선택 (예: React)"
+                placeholder="기술 선택" // [수정] Placeholder 변경
                 styles={selectStyles}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
+                isSearchable={false}
               />
             </div>
             <div className="form-group">

@@ -27,6 +27,10 @@
   text-overflow: ellipsis;
 }
 
+.custom-select-trigger .placeholder {
+  color: #888; /* placeholder 색상 */
+}
+
 .custom-arrow {
   position: absolute;
   top: 50%;
