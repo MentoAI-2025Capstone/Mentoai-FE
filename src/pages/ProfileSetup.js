@@ -219,8 +219,7 @@ function ProfileSetup() {
     control: (base, state) => ({
       ...base,
       minHeight: '40px', // 최소 높이
-      // [수정] height 고정 제거 - flex items center로 중앙 정렬 유도, wrap 시 늘어나도록
-      // height: '40px', 
+      height: '40px', // [수정] 높이 강제 고정
       borderRadius: '8px',
       borderColor: state.isFocused ? '#1a73e8' : '#ccc',
       boxShadow: state.isFocused ? '0 0 0 2px rgba(26, 115, 232, 0.2)' : 'none',
@@ -232,10 +231,8 @@ function ProfileSetup() {
     }),
     valueContainer: (base) => ({
       ...base,
-      padding: '2px 12px', // 패딩 조정
-      // [수정] 높이 강제 제거
-      // height: '40px',
-      minHeight: '38px', // control border 고려
+      padding: '0 12px', // 패딩 조정 (상하 패딩 제거)
+      height: '38px', // control height - borders (2px)
       display: 'flex',
       alignItems: 'center'
     }),

@@ -124,7 +124,7 @@
 }
 .form-group input, .form-group select, .form-group textarea {
   width: 100%;
-  padding: 10px 12px; 
+  padding: 0 12px; 
   border: 1px solid var(--border-color); /* [수정] 변수 사용 */
   border-radius: 8px;
   font-size: 15px;
@@ -146,13 +146,14 @@
 
 .form-group textarea {
   height: auto;
+  padding: 10px 12px;
 }
 
 .input-group {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
-  align-items: center;
+  align-items: stretch; /* [수정] 자식 요소들의 높이를 동일하게 */
   max-width: 900px; 
 }
 
@@ -184,8 +185,8 @@
   cursor: pointer;
   transition: background-color 0.2s;
   white-space: nowrap;
-  height: 40px; /* [수정] 높이 40px */
-  align-self: end;
+  height: 40px; /* [수정] 높이 40px 명시 */
+  /* align-self: end; // 제거: stretch 되도록 */
 }
 .add-item-btn:hover { background-color: var(--primary-hover); }
 
@@ -300,7 +301,7 @@
 .grid-align-end {
   align-self: end;
   width: auto; 
-  height: 37px;
+  height: 40px; /* [수정] 37px -> 40px */
   justify-self: end;
 }
 /* 2x2 그리드 내의 버튼은 너비를 100%로 설정 */
