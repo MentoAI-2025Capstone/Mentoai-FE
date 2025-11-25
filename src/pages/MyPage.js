@@ -423,7 +423,7 @@ function MyPage() {
               <label>기술 이름</label>
               <input type="text" placeholder="예: React" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
             </div>
-            <div className="form-group" style={{ flex: 2 }}>
+            <div className="form-group" style={{ flex: 1 }}>
               <label>수준</label>
               <CustomSelect
                 options={skillOptions}
@@ -435,7 +435,7 @@ function MyPage() {
               type="button" 
               className="add-item-btn" 
               onClick={handleAddSkill}
-              style={{ height: '46px', marginBottom: '1px', flex: '0 0 80px' }} 
+              style={{ height: '44px', marginBottom: '1px', flex: '0 0 80px', borderRadius: '4px' }} 
             >
               추가
             </button>
@@ -497,13 +497,13 @@ function MyPage() {
               placeholder="자격증 이름 (예: 정보처리기사)" 
               value={currentCert} 
               onChange={(e) => setCurrentCert(e.target.value)} 
-              style={{ flex: 1 }}
+              style={{ flex: 1, borderRadius: '4px' }}
             />
             <button 
               type="button" 
               className="add-item-btn" 
               onClick={handleAddCert}
-              style={{ height: '46px', flex: '0 0 80px' }}
+              style={{ height: '46px', flex: '0 0 80px', borderRadius: '4px' }}
             >
               추가
             </button>
