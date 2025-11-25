@@ -61,15 +61,12 @@ function ActivityRecommender() {
           setCareerGoal(targetRole);
 
           // 1-2. 공고 검색 (GET /job-postings)
-          // targetRole이 단순 텍스트라면 keyword로 검색하거나, 
-          // 백엔드가 targetRoleId를 요구한다면 추가 로직 필요.
-          // 일단 keyword로 검색 시도.
+          // 명세서에 따라 targetRoleId 파라미터 사용
           const jobResponse = await apiClient.get('/job-postings', {
             params: {
-              keyword: targetRole, // 또는 백엔드 스펙에 따라 targetRoleId 사용
+              targetRoleId: targetRole, // 명세서의 targetRoleId 파라미터
               page: 1,
-              size: 20,
-              sort: 'deadline,asc' // 마감일 임박순 예시
+              size: 20
             }
           });
 
