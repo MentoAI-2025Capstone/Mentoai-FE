@@ -419,7 +419,7 @@ function MyPage() {
         <div className="form-section">
           <h3>기술 스택</h3>
           <div className="form-grid skill-grid" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
-            <div className="form-group" style={{ flex: 3 }}>
+            <div className="form-group" style={{ flex: 4 }}>
               <label>기술 이름</label>
               <input type="text" placeholder="예: React" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
             </div>
@@ -435,7 +435,7 @@ function MyPage() {
               type="button" 
               className="add-item-btn" 
               onClick={handleAddSkill}
-              style={{ height: '44px', marginBottom: '1px', flex: '0 0 80px', borderRadius: '4px' }} 
+              style={{ height: '40px', marginBottom: '1px', flex: '0 0 80px', borderRadius: '8px' }} 
             >
               추가
             </button>
@@ -497,13 +497,13 @@ function MyPage() {
               placeholder="자격증 이름 (예: 정보처리기사)" 
               value={currentCert} 
               onChange={(e) => setCurrentCert(e.target.value)} 
-              style={{ flex: 1, borderRadius: '4px' }}
+              style={{ flex: 1, height: '40px', borderRadius: '8px', border: '1px solid #ccc', padding: '0 12px' }}
             />
             <button 
               type="button" 
               className="add-item-btn" 
               onClick={handleAddCert}
-              style={{ height: '46px', flex: '0 0 80px', borderRadius: '4px' }}
+              style={{ height: '40px', flex: '0 0 80px', borderRadius: '8px' }}
             >
               추가
             </button>
