@@ -23,29 +23,111 @@ function PromptInput() {
     { role: 'ai', content: '안녕하세요! AI 멘토입니다. 진로 설계에 대해 무엇이든 물어보세요.' }
   ]);
 
+  // 채팅 히스토리 (백엔드 연동)
   const [chatHistory, setChatHistory] = useState([]);
-  const [activeChatId, setActiveChatId] = useState(null);
-  const [editingChatId, setEditingChatId] = useState(null);
-  const [editingTitle, setEditingTitle] = useState('');
-
+  const [activeChatId, setActiveChatId] = useState(null); // logId
+  
   const messagesEndRef = useRef(null);
-  const messagesAreaRef = useRef(null); // 메시지 영역 ref 추가
-  const prevMessagesLength = useRef(0); // 스크롤 로직을 위한 ref
+  const messagesAreaRef = useRef(null);
+  const prevMessagesLength = useRef(0);
 
   const scrollToBottom = () => {
-    // scrollIntoView 대신 직접 scrollTop 조작 (부모 스크롤 간섭 방지)
     if (messagesAreaRef.current) {
       messagesAreaRef.current.scrollTop = messagesAreaRef.current.scrollHeight;
     }
   };
 
-  // 새 메시지가 "추가"될 때만 스크롤 실행
   useEffect(() => {
     if (messages.length > prevMessagesLength.current) {
       scrollToBottom();
     }
     prevMessagesLength.current = messages.length;
   }, [messages]);
+
+  // 1. 초기 히스토리 로드 (GET /recommend/chats)
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await apiClient.get('/recommend/chats');
+        console.log('[PromptInput] 히스토리 로드:', response.data);
+        if (Array.isArray(response.data)) {
+          // 날짜 내림차순 정렬
+          const sorted = response.data.sort((a, b) => 
+            new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          setChatHistory(sorted);
+        }
+      } catch (error) {
+        console.error('[PromptInput] 히스토리 로드 실패:', error);
+      }
+    };
+    fetchHistory();
+  }, []);
+
+  // 2. 히스토리 클릭 시 상세 로드 (GET /recommend/chats/{logId})
+  const handleLoadChat = async (logId) => {
+    if (activeChatId === logId) return;
+    setActiveChatId(logId);
+    setIsLoading(true);
+
+    try {
+      const response = await apiClient.get(`/recommend/chats/${logId}`);
+      const logDetail = response.data;
+      console.log('[PromptInput] 상세 로그 로드:', logDetail);
+
+      // 상세 로그를 메시지 형태로 변환하여 표시
+      // 여기서는 단일 질의응답 쌍을 보여주는 구조로 가정 (User Query -> Gemini Response)
+      // 만약 멀티턴 대화라면 백엔드 구조에 따라 달라짐. 현재 명세는 ragPrompt, geminiResponse 등이 단일.
+      
+      const loadedMessages = [];
+      
+      // 사용자 질문
+      if (logDetail.userQuery) {
+        loadedMessages.push({ role: 'user', content: logDetail.userQuery });
+      }
+
+      // AI 응답
+      if (logDetail.geminiResponse) {
+        // 추천 결과(items)가 responsePayload에 포함되어 있을 수 있음
+        // 일단 텍스트 응답 표시
+        loadedMessages.push({ role: 'ai', content: logDetail.geminiResponse });
+        
+        // responsePayload에 items가 있다면 추가적으로 카드 형태로 표시 가능
+        if (logDetail.responsePayload && logDetail.responsePayload.items) {
+           const items = logDetail.responsePayload.items;
+           items.forEach(item => {
+             let tags = [];
+             if (item.activity.tags) {
+                // 태그 처리 (string or object)
+                tags = item.activity.tags.map(t => (typeof t === 'string' ? t : t.tagName));
+             }
+             loadedMessages.push({
+               role: 'ai',
+               title: item.activity.title,
+               content: item.reason || item.activity.summary,
+               tags: tags
+             });
+           });
+        }
+      }
+      
+      setMessages(loadedMessages);
+
+    } catch (error) {
+      console.error('[PromptInput] 상세 로그 로드 실패:', error);
+      // 실패 시 초기화 안함 (이전 메시지 유지)
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 3. 새 채팅 시작
+  const handleNewChat = () => {
+    setActiveChatId(null);
+    setMessages([
+      { role: 'ai', content: '새로운 대화를 시작합니다. 무엇을 도와드릴까요?' }
+    ]);
+  };
 
   const handleRecommend = async () => {
     if (isLoading || !prompt.trim()) return;
@@ -56,154 +138,92 @@ function PromptInput() {
       return;
     }
 
+    // 새 메시지 추가 (낙관적 업데이트)
     setMessages(prev => [...prev, { role: 'user', content: prompt }]);
     const currentPrompt = prompt;
     setPrompt('');
     setIsLoading(true);
 
-    console.log('[PromptInput] ===== API 요청 시작 =====');
-    console.log('[PromptInput] 사용자 입력:', currentPrompt);
-
-    // '새 채팅'인 경우, 첫 메시지를 채팅방 제목으로 설정
-    const activeChat = chatHistory.find(chat => chat.id === activeChatId);
-    if (activeChat && activeChat.title === '새 채팅') {
-      const newTitle = currentPrompt.length > 20 ? currentPrompt.substring(0, 20) + '...' : currentPrompt;
-
-      setChatHistory(prevHistory =>
-        prevHistory.map(chat =>
-          chat.id === activeChatId ? { ...chat, title: newTitle } : chat
-        )
-      );
-    }
-
     try {
       const userId = getUserIdFromStorage();
-      console.log('[PromptInput] sessionStorage에서 가져온 userId:', userId);
-
       if (!userId) {
-        throw new Error("사용자 ID를 찾을 수 없습니다. (sessionStorage)");
+        throw new Error("로그인이 필요합니다.");
       }
 
       const requestBody = {
         userId: userId,
         query: currentPrompt,
         topK: 5,
-        preferTags: [], // 필요시 추출 가능
         useProfileHints: true
       };
 
-      console.log('[PromptInput] API 엔드포인트: POST /recommend');
-      console.log('[PromptInput] 요청 본문 (requestBody):', requestBody);
-      console.log('[PromptInput] 요청 URL:', `${apiClient.defaults.baseURL}/recommend`);
-
+      // POST /recommend 호출
       const response = await apiClient.post('/recommend', requestBody);
+      console.log('[PromptInput] 응답:', response.data);
 
-      console.log('[PromptInput] ===== API 응답 수신 =====');
-      console.log('[PromptInput] 전체 응답 객체:', response);
-      console.log('[PromptInput] 응답 데이터 (response.data):', response.data);
-      console.log('[PromptInput] 응답 상태 코드:', response.status);
-      console.log('[PromptInput] 응답 헤더:', response.headers);
-
+      // 응답 처리
+      const newAiMessages = [];
+      
+      // items가 있으면 추천 활동 카드 생성
       if (response.data && response.data.items && response.data.items.length > 0) {
-        console.log('[PromptInput] 추천된 활동 개수:', response.data.items.length);
-        console.log('[PromptInput] 추천된 활동 목록:', response.data.items);
+        
+        // 첫 번째 메시지로 요약/안내 문구가 있다면 좋겠지만, API가 바로 items를 주므로
+        // 필요시 "다음과 같은 활동을 추천합니다" 메시지 추가 가능.
+        // 여기서는 바로 카드들을 보여줌.
 
-        const aiResponses = response.data.items.map(item => {
+        response.data.items.forEach(item => {
           let tags = [];
           if (item.activity.tags && item.activity.tags.length > 0) {
-            if (typeof item.activity.tags[0] === 'string') {
-              tags = item.activity.tags;
-            } else if (typeof item.activity.tags[0] === 'object' && item.activity.tags[0].tagName) {
-              tags = item.activity.tags.map(tag => tag.tagName);
-            }
+            tags = item.activity.tags.map(tag => 
+              typeof tag === 'string' ? tag : tag.tagName
+            );
           }
 
-          const aiResponse = {
+          newAiMessages.push({
             role: 'ai',
-            content: item.reason || item.activity.summary,
             title: item.activity.title,
+            content: item.reason || item.activity.summary, // 이유 또는 요약 표시
             tags: tags
-          };
-
-          console.log('[PromptInput] 처리된 AI 응답:', aiResponse);
-          return aiResponse;
+          });
         });
 
-        console.log('[PromptInput] 모든 AI 응답 처리 완료:', aiResponses);
-        setMessages(prev => [...prev, ...aiResponses]);
-
       } else {
-        console.log('[PromptInput] 추천된 활동이 없습니다.');
-        console.log('[PromptInput] 응답 데이터 구조:', response.data);
-        setMessages(prev => [
-          ...prev,
-          { role: 'ai', content: '관련 활동을 찾지 못했습니다. 질문을 조금 더 구체적으로 해주시겠어요?' }
-        ]);
+        // 추천 없음
+        newAiMessages.push({ 
+          role: 'ai', 
+          content: '관련된 추천 활동을 찾지 못했습니다. 조금 더 구체적으로 질문해 주세요.' 
+        });
       }
 
-      console.log('[PromptInput] ===== API 요청 완료 =====');
+      setMessages(prev => [...prev, ...newAiMessages]);
+
+      // 4. 채팅 후 히스토리 갱신 (새로 생성된 로그 확인)
+      // 비동기로 목록 다시 불러오기
+      try {
+        const historyResponse = await apiClient.get('/recommend/chats');
+        if (Array.isArray(historyResponse.data)) {
+          const sorted = historyResponse.data.sort((a, b) => 
+            new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          setChatHistory(sorted);
+          
+          // 방금 생성된 로그(가장 최신)를 active로 설정할 수도 있음
+          if (sorted.length > 0) {
+            // setActiveChatId(sorted[0].logId); // UX 선택 사항
+          }
+        }
+      } catch (histError) {
+        console.warn('히스토리 갱신 실패:', histError);
+      }
 
     } catch (error) {
-      console.error('[PromptInput] ===== API 호출 실패 =====');
-      console.error('[PromptInput] 에러 객체:', error);
-      console.error('[PromptInput] 에러 메시지:', error.message);
-      console.error('[PromptInput] 에러 응답:', error.response);
-      if (error.response) {
-        console.error('[PromptInput] 에러 응답 데이터:', error.response.data);
-        console.error('[PromptInput] 에러 응답 상태:', error.response.status);
-        console.error('[PromptInput] 에러 응답 헤더:', error.response.headers);
-      }
-      console.error('[PromptInput] 에러 요청 설정:', error.config);
-
+      console.error('[PromptInput] 추천 실패:', error);
       setMessages(prev => [
         ...prev,
         { role: 'ai', content: `오류가 발생했습니다: ${error.message}` }
       ]);
     } finally {
       setIsLoading(false);
-      console.log('[PromptInput] 로딩 상태 종료');
-    }
-  };
-
-  const handleNewChat = () => {
-    const newId = (chatHistory.length > 0 ? Math.max(...chatHistory.map(c => c.id)) : 0) + 1;
-    setChatHistory(prev => [...prev, { id: newId, title: '새 채팅' }]);
-    setActiveChatId(newId);
-    setEditingChatId(newId); // 새 채팅 생성 시 즉시 편집 모드
-    setEditingTitle('새 채팅');
-    setMessages([
-      { role: 'ai', content: '새 채팅을 시작합니다. 무엇을 도와드릴까요?' }
-    ]);
-  };
-
-  const handleStartEdit = (chatId, currentTitle) => {
-    setEditingChatId(chatId);
-    setEditingTitle(currentTitle);
-  };
-
-  const handleSaveEdit = (chatId) => {
-    if (editingTitle.trim()) {
-      setChatHistory(prev =>
-        prev.map(chat =>
-          chat.id === chatId ? { ...chat, title: editingTitle.trim() } : chat
-        )
-      );
-    }
-    setEditingChatId(null);
-    setEditingTitle('');
-  };
-
-  const handleCancelEdit = () => {
-    setEditingChatId(null);
-    setEditingTitle('');
-  };
-
-  const handleKeyDown = (e, chatId) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSaveEdit(chatId);
-    } else if (e.key === 'Escape') {
-      handleCancelEdit();
     }
   };
 
@@ -216,35 +236,27 @@ function PromptInput() {
           <button className={styles.newChatBtn} onClick={handleNewChat}>
             + 새 채팅
           </button>
-          <ul className={styles.chatHistoryList}>
-            {chatHistory.map(chat => (
-              <li
-                key={chat.id}
-                className={chat.id === activeChatId ? styles.active : ''}
-                onClick={() => {
-                  if (editingChatId !== chat.id) {
-                    setActiveChatId(chat.id);
-                  }
-                }}
-                onDoubleClick={() => handleStartEdit(chat.id, chat.title)}
-              >
-                {editingChatId === chat.id ? (
-                  <input
-                    type="text"
-                    value={editingTitle}
-                    onChange={(e) => setEditingTitle(e.target.value)}
-                    onBlur={() => handleSaveEdit(chat.id)}
-                    onKeyDown={(e) => handleKeyDown(e, chat.id)}
-                    onClick={(e) => e.stopPropagation()}
-                    className={styles.chatTitleInput}
-                    autoFocus
-                  />
-                ) : (
-                  <span>{chat.title}</span>
-                )}
-              </li>
-            ))}
-          </ul>
+          <div className={styles.historyListContainer} style={{ overflowY: 'auto', flex: 1 }}>
+            <ul className={styles.chatHistoryList}>
+              {chatHistory.map(chat => (
+                <li
+                  key={chat.logId}
+                  className={chat.logId === activeChatId ? styles.active : ''}
+                  onClick={() => handleLoadChat(chat.logId)}
+                >
+                  {/* 제목은 userQuery를 잘라서 표시 */}
+                  <span title={chat.userQuery}>
+                    {chat.userQuery 
+                      ? (chat.userQuery.length > 18 ? chat.userQuery.substring(0, 18) + '...' : chat.userQuery)
+                      : '대화 기록 없음'}
+                  </span>
+                  <div style={{ fontSize: '0.75rem', color: '#aaa', marginTop: '4px' }}>
+                    {new Date(chat.createdAt).toLocaleDateString()}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {/* 2. 메인 채팅창 */}
@@ -260,11 +272,11 @@ function PromptInput() {
                     <h4>{msg.title}</h4>
                     <p>{msg.content}</p>
                     <div className={styles.tags}>
-                      {msg.tags?.map(tag => <span key={tag} className={styles.tag}>{tag}</span>)}
+                      {msg.tags?.map((tag, tIdx) => <span key={tIdx} className={styles.tag}>{tag}</span>)}
                     </div>
                   </div>
                 ) : (
-                  <p>{msg.content}</p>
+                  <p style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</p>
                 )}
               </div>
             ))}
@@ -281,7 +293,7 @@ function PromptInput() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* 2-2. 메시지 입력 영역 (Gemini 스타일) */}
+          {/* 2-2. 메시지 입력 영역 */}
           <div className={styles.chatInputArea}>
             <div className={styles.chatInputWrapper}>
               <textarea

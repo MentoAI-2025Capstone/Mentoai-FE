@@ -19,8 +19,8 @@ function ActivityRecommender() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]); // 공고(Job Postings) 목록
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(null); // 선택된 공고 ID
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState(null); // 선택된 공고 ID (jobId)
+  const [careerGoal, setCareerGoal] = useState('');
 
   // 선택된 공고에 대한 분석 결과
   const [userScore, setUserScore] = useState(null);
@@ -30,99 +30,80 @@ function ActivityRecommender() {
   
   const [isAnalyzing, setIsAnalyzing] = useState(false); // 분석 로딩 상태
 
-  const handleSearch = async (query) => {
-    const term = query || searchQuery;
-    if (!term.trim()) {
-      alert('검색어를 입력해주세요.');
-      return;
-    }
-
-    try {
-      console.log('[ActivityRecommender] ===== 의미 기반 검색 시작 =====');
-      console.log('[ActivityRecommender] 검색어:', term);
-      setIsLoading(true);
-      
-      const response = await apiClient.get('/search', {
-        params: {
-          q: term,
-          topK: 10
-        }
-      });
-
-      console.log('[ActivityRecommender] 검색 결과:', response.data);
-      
-      if (response.data && response.data.results) {
-         const searchResults = response.data.results.map(item => item.activity);
-         setActivities(searchResults);
-         
-         // 검색 후 첫 번째 아이템 자동 선택하지 않음 (사용자가 클릭하도록 유도)
-         setActiveTab(null);
-         setUserScore(null);
-         setTargetScore(null);
-         setRoleFitData(null);
-         setImprovements([]);
-      } else {
-        setActivities([]);
-      }
-    } catch (error) {
-      console.error('[ActivityRecommender] 검색 실패:', error);
-      alert('검색 중 오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
-
-  const getCareerGoalFromStorage = async (userId) => {
-    try {
-      const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
-      if (storedUser?.user?.interestDomains?.[0]) {
-        return storedUser.user.interestDomains[0];
-      }
-      
-      if (userId) {
-        const profileResponse = await apiClient.get(`/users/${userId}/profile`);
-        if (profileResponse.data?.interestDomains?.[0]) {
-          return profileResponse.data.interestDomains[0];
-        }
-      }
-      return null;
-    } catch (e) {
-      console.error('[ActivityRecommender] 목표 직무 가져오기 실패:', e);
-      return null;
-    }
-  };
-
-  // 1. 초기 로드: 목표 직무 기반 공고 검색
+  // 1. 초기 로드: 목표 직무 가져오기 -> 관련 공고 검색 (GET /job-postings)
   useEffect(() => {
-    const init = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       const userId = getUserIdFromStorage();
       if (!userId) {
         setIsLoading(false);
         return;
       }
 
-      const careerGoal = await getCareerGoalFromStorage(userId);
-      if (careerGoal) {
-        console.log(`[ActivityRecommender] 목표 직무 '${careerGoal}' 기반 공고 검색`);
-        setSearchQuery(careerGoal); // 검색어 창에 자동 입력
-        await handleSearch(careerGoal);
-      } else {
+      try {
+        // 1-1. 목표 직무 가져오기
+        let targetRole = null;
+        const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+        
+        // sessionStorage 우선 확인
+        if (storedUser?.user?.interestDomains?.[0]) {
+          targetRole = storedUser.user.interestDomains[0];
+        } else {
+          // API로 확인
+          const profileResponse = await apiClient.get(`/users/${userId}/profile`);
+          if (profileResponse.data?.interestDomains?.[0]) {
+            targetRole = profileResponse.data.interestDomains[0];
+          }
+        }
+
+        if (targetRole) {
+          console.log(`[ActivityRecommender] 목표 직무 '${targetRole}' 발견. 관련 공고 조회.`);
+          setCareerGoal(targetRole);
+
+          // 1-2. 공고 검색 (GET /job-postings)
+          // targetRole이 단순 텍스트라면 keyword로 검색하거나, 
+          // 백엔드가 targetRoleId를 요구한다면 추가 로직 필요.
+          // 일단 keyword로 검색 시도.
+          const jobResponse = await apiClient.get('/job-postings', {
+            params: {
+              keyword: targetRole, // 또는 백엔드 스펙에 따라 targetRoleId 사용
+              page: 1,
+              size: 20,
+              sort: 'deadline,asc' // 마감일 임박순 예시
+            }
+          });
+
+          console.log('[ActivityRecommender] 공고 조회 결과:', jobResponse.data);
+          
+          if (jobResponse.data && jobResponse.data.items) {
+            setActivities(jobResponse.data.items);
+          } else {
+             setActivities([]);
+          }
+        } else {
+          console.log('[ActivityRecommender] 목표 직무 없음.');
+          // 목표 직무가 없으면 전체 공고를 보여주거나 안내 문구 표시
+          const allJobsResponse = await apiClient.get('/job-postings', {
+             params: { page: 1, size: 20 }
+          });
+          if (allJobsResponse.data && allJobsResponse.data.items) {
+             setActivities(allJobsResponse.data.items);
+          }
+        }
+      } catch (error) {
+        console.error('[ActivityRecommender] 데이터 로드 실패:', error);
+      } finally {
         setIsLoading(false);
-        // 목표 직무가 없으면 빈 화면 혹은 안내
       }
     };
-    init();
+
+    fetchData();
   }, []);
 
   // 2. 공고 클릭 시: 점수 분석 및 추천 활동(Improvements) 조회
-  const handleJobClick = async (activity) => {
-    setActiveTab(activity.activityId);
+  const handleJobClick = async (job) => {
+    // job: JobPostingResponse 객체
+    setActiveTab(job.jobId); 
     const userId = getUserIdFromStorage();
     if (!userId) return;
 
@@ -130,16 +111,16 @@ function ActivityRecommender() {
     setUserScore(null);
     setTargetScore(null);
     setImprovements([]);
+    setRoleFitData(null);
 
     try {
-      // 2-1. RoleFitScore 계산 (공고 제목/내용을 target으로)
-      // 정확도를 위해 activity.title과 activity.summary 등을 조합해서 target으로 보낼 수 있음
-      // 여기서는 title을 사용
-      const targetJob = activity.title;
-      console.log(`[ActivityRecommender] '${targetJob}'에 대한 분석 시작`);
+      // 2-1. RoleFitScore 계산
+      // 공고의 title 등을 target으로 사용
+      const targetJobTitle = job.title; 
+      console.log(`[ActivityRecommender] '${targetJobTitle}'에 대한 분석 시작`);
 
       const roleFitRequestBody = {
-        target: targetJob,
+        target: targetJobTitle,
         topNImprovements: 5
       };
 
@@ -152,16 +133,13 @@ function ActivityRecommender() {
 
       if (roleFitResponse.data) {
         setRoleFitData(roleFitResponse.data);
-        // API 응답 구조에 따라 매핑. 
-        // 만약 API가 targetJobScore를 주지 않으면 85~95 사이의 임의 값 혹은 roleFitScore + alpha로 시뮬레이션 할 수도 있음.
-        // 여기서는 roleFitScore를 userScore로 사용
         setUserScore(roleFitResponse.data.roleFitScore);
-        
         // API가 targetJobScore를 반환한다고 가정 (없으면 90점으로 고정)
         setTargetScore(roleFitResponse.data.targetJobScore || 90);
       }
 
       // 2-2. 추천 공모전/대회 (Improvements) 조회
+      // roleFitResponse.data.target (직무 ID 또는 이름) 사용
       if (roleFitResponse.data?.target) {
         const improvementsResponse = await apiClient.get(
           `/users/${userId}/improvements`,
@@ -184,43 +162,18 @@ function ActivityRecommender() {
     }
   };
 
-  const selectedActivity = activities.find(act => act.activityId === activeTab);
+  // 선택된 공고 찾기 (activities 배열의 요소는 JobPostingResponse 구조)
+  const selectedActivity = activities.find(act => act.jobId === activeTab);
 
   return (
     <div className="page-container">
-      {/* 상단 검색바 */}
-      <div style={{ marginBottom: '20px', padding: '0 10px' }}>
-        <div style={{ display: 'flex', gap: '10px', maxWidth: '800px', margin: '0 auto' }}>
-          <input
-            type="text"
-            placeholder="목표 직무나 관심 회사를 검색해보세요"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            style={{
-              flex: 1,
-              padding: '12px',
-              borderRadius: '8px',
-              border: '1px solid #ddd',
-              fontSize: '16px'
-            }}
-          />
-          <button
-            onClick={() => handleSearch()}
-            style={{
-              padding: '12px 24px',
-              backgroundColor: '#1a73e8',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: 'bold'
-            }}
-          >
-            검색
-          </button>
-        </div>
+      <div style={{ padding: '0 10px 20px 10px' }}>
+        <h2 style={{ margin: '0 0 10px 0' }}>
+          {careerGoal ? `'${careerGoal}' 관련 채용 공고` : '채용 공고 목록'}
+        </h2>
+        <p style={{ color: '#666', margin: 0 }}>
+          목표 직무에 맞는 공고를 선택하여 내 역량 점수를 확인해보세요.
+        </p>
       </div>
 
       {isLoading ? (
@@ -230,32 +183,31 @@ function ActivityRecommender() {
           
           {/* 왼쪽: 공고 목록 */}
           <div className="task-list-card" style={{ flex: 1, minWidth: '300px', maxHeight: '80vh', overflowY: 'auto' }}>
-            <h4 style={{ padding: '10px', borderBottom: '1px solid #eee', margin: 0 }}>
-              추천 공고 목록
-            </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {activities.map(activity => (
+              {activities.map(job => (
                 <li
-                  key={activity.activityId}
-                  className={activeTab === activity.activityId ? 'active' : ''}
-                  onClick={() => handleJobClick(activity)}
+                  key={job.jobId}
+                  className={activeTab === job.jobId ? 'active' : ''}
+                  onClick={() => handleJobClick(job)}
                   style={{
                     padding: '15px',
                     borderBottom: '1px solid #f1f3f4',
                     cursor: 'pointer',
-                    backgroundColor: activeTab === activity.activityId ? '#e8f0fe' : 'white'
+                    backgroundColor: activeTab === job.jobId ? '#e8f0fe' : 'white'
                   }}
                 >
-                  <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{activity.title}</div>
-                  <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                    {activity.organizer || '회사명 미상'} | {activity.location || '위치 미정'}
+                  <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{job.title}</div>
+                  <div style={{ fontSize: '0.9rem', color: '#555' }}>{job.companyName}</div>
+                  <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>
+                    {job.workPlace ? `${job.workPlace} | ` : ''} 
+                    {job.deadline ? `~${new Date(job.deadline).toLocaleDateString()}` : '상시 채용'}
                   </div>
                 </li>
               ))}
             </ul>
             {activities.length === 0 && (
               <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
-                검색 결과가 없습니다.
+                표시할 공고가 없습니다.
               </div>
             )}
           </div>
@@ -264,12 +216,17 @@ function ActivityRecommender() {
           <div className="activity-detail-card" style={{ flex: 2, padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }}>
             {selectedActivity ? (
               <>
-                <h2 style={{ marginTop: 0 }}>{selectedActivity.title}</h2>
-                <p style={{ color: '#666' }}>{selectedActivity.organizer}</p>
+                <div style={{ borderBottom: '1px solid #eee', paddingBottom: '15px', marginBottom: '15px' }}>
+                  <h2 style={{ margin: '0 0 10px 0' }}>{selectedActivity.title}</h2>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#333' }}>{selectedActivity.companyName}</div>
+                  <div style={{ color: '#666', marginTop: '5px' }}>
+                    {selectedActivity.jobSector} | {selectedActivity.employmentType}
+                  </div>
+                </div>
                 
                 {/* 1. 점수 분석 섹션 */}
                 <div style={{ 
-                  marginTop: '20px', 
+                  marginBottom: '30px',
                   padding: '20px', 
                   backgroundColor: '#f8f9fa', 
                   borderRadius: '8px',
@@ -289,7 +246,7 @@ function ActivityRecommender() {
                       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', marginBottom: '20px' }}>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: '0.9rem', color: '#666' }}>나의 점수</div>
-                          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#007bff' }}>{userScore}점</div>
+                          <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#007bff' }}>{userScore.toFixed(1)}점</div>
                         </div>
                         <div style={{ fontSize: '1.5rem', color: '#aaa' }}>VS</div>
                         <div style={{ textAlign: 'center' }}>
@@ -365,24 +322,28 @@ function ActivityRecommender() {
                 </div>
 
                 {/* 공고 상세 내용 */}
-                <div style={{ marginTop: '30px' }}>
-                  {selectedActivity.summary && (
-                    <div className="activity-section">
-                      <h4>요약</h4>
-                      <p>{selectedActivity.summary}</p>
-                    </div>
-                  )}
-                  
-                  {selectedActivity.content && (
+                <div>
+                  {selectedActivity.description && (
                     <div className="activity-section">
                       <h4>상세 내용</h4>
-                      <p style={{ whiteSpace: 'pre-wrap', fontSize: '0.95rem', lineHeight: '1.6' }}>{selectedActivity.content}</p>
+                      <p style={{ whiteSpace: 'pre-wrap', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                        {selectedActivity.description}
+                      </p>
                     </div>
                   )}
 
-                   {selectedActivity.url && (
+                  {selectedActivity.requirements && (
+                    <div className="activity-section">
+                      <h4>자격 요건</h4>
+                      <p style={{ whiteSpace: 'pre-wrap', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                        {selectedActivity.requirements}
+                      </p>
+                    </div>
+                  )}
+
+                   {selectedActivity.link && (
                     <div className="activity-links" style={{ marginTop: '20px' }}>
-                      <a href={selectedActivity.url} target="_blank" rel="noopener noreferrer">
+                      <a href={selectedActivity.link} target="_blank" rel="noopener noreferrer">
                         <button style={{ width: '100%', padding: '12px' }}>공고 원문 보기</button>
                       </a>
                     </div>
