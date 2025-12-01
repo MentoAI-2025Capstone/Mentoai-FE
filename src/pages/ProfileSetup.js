@@ -172,52 +172,6 @@ function ProfileSetup() {
       borderRadius: '8px',
       borderColor: '#ccc',
       boxShadow: 'none',
-      backgroundColor: 'white',
-      '&:hover': {
-        borderColor: '#888'
-      },
-      fontSize: '15px',
-    }),
-    valueContainer: (base) => ({
-      ...base,
-      padding: '0 8px',
-      display: 'grid', // Grid layout for robust alignment
-      gridTemplateColumns: '1fr',
-      alignItems: 'center',
-      height: '100%',
-      flex: 1
-    }),
-    placeholder: (base, state) => ({
-      ...base,
-      color: '#888',
-      margin: 0,
-      gridArea: '1/1', // Overlay in grid
-      display: state.isFocused ? 'none' : 'block'
-    }),
-    singleValue: (base) => ({
-      ...base,
-      color: '#333',
-      margin: 0,
-      lineHeight: '38px',
-      maxWidth: '100%',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      gridArea: '1/1', // Overlay in grid
-    }),
-    input: (base) => ({
-      ...base,
-      margin: 0,
-      padding: 0,
-      color: '#333',
-      gridArea: '1/1', // Overlay in grid
-      visibility: 'visible',
-      minWidth: '2px'
-    }),
-    menu: (base) => ({
-      ...base,
-      borderRadius: '8px',
-      marginTop: '4px',
       boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
       zIndex: 9999
     }),
