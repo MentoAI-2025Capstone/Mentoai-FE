@@ -277,6 +277,7 @@ function ProfileSetup() {
                 value={currentCert}
                 onChange={(val) => setCurrentCert(val)}
                 placeholder="자격증 선택..."
+                isSearchable
               />
             </div>
             <button
