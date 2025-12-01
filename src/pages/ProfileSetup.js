@@ -169,9 +169,51 @@ function ProfileSetup() {
       ...base,
       height: '40px',
       minHeight: '40px',
-      fontSize: '14px',
-      padding: '2px 6px',
-      paddingRight: '4px'
+      borderRadius: '8px',
+      borderColor: '#dadce0',
+      boxShadow: 'none',
+      backgroundColor: 'white',
+      '&:hover': {
+        borderColor: '#888'
+      },
+      fontSize: '15px',
+    }),
+    valueContainer: (base, state) => ({
+      ...base,
+      padding: '0 12px',
+      display: state.selectProps.isMulti ? 'flex' : 'grid',
+      flexWrap: state.selectProps.isMulti ? 'wrap' : undefined,
+      gap: state.selectProps.isMulti ? '4px' : undefined,
+      gridTemplateColumns: state.selectProps.isMulti ? undefined : '1fr',
+      alignItems: 'center',
+      height: '100%',
+      flex: 1
+    }),
+    placeholder: (base, state) => ({
+      ...base,
+      color: '#888',
+      margin: 0,
+      gridArea: state.selectProps.isMulti ? undefined : '1/1',
+      display: state.isFocused ? 'none' : 'block'
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: '#333',
+      margin: 0,
+      maxWidth: '100%',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      gridArea: '1/1',
+    }),
+    input: (base, state) => ({
+      ...base,
+      margin: 0,
+      padding: 0,
+      color: '#333',
+      gridArea: state.selectProps.isMulti ? undefined : '1/1',
+      visibility: 'visible',
+      minWidth: '2px'
     }),
     multiValueRemove: (base) => ({
       ...base,
@@ -213,7 +255,6 @@ function ProfileSetup() {
                     padding: 0,
                     color: '#333',
                     caretColor: 'auto',
-                    lineHeight: '38px',
                     '& input': {
                       opacity: 1
                     },
