@@ -45,7 +45,7 @@ const CustomDropdownIndicator = (props) => {
 };
 
 function ProfileSetup() {
-  const { skillOptions, certOptions } = useMetaData();
+  const { skillOptions, certOptions, majorOptions, jobOptions } = useMetaData();
 
   const [education, setEducation] = useState({ school: '', major: '', grade: '' });
   const [careerGoal, setCareerGoal] = useState('');
@@ -280,7 +280,15 @@ function ProfileSetup() {
             </div>
             <div className="form-group">
               <label>전공</label>
-              <input type="text" value={education.major} onChange={(e) => setEducation({ ...education, major: e.target.value })} placeholder="전공" />
+              <CustomSelect
+                options={majorOptions}
+                value={majorOptions.find(m => m.value === education.major)}
+                onChange={(selected) => setEducation({ ...education, major: selected ? selected.value : '' })}
+                placeholder="전공 선택"
+                isSearchable
+                styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
+              />
             </div>
             <div className="form-group">
               <label>학년</label>
@@ -299,7 +307,15 @@ function ProfileSetup() {
         <div className="form-section">
           <h3>희망 직무</h3>
           <div className="form-group">
-            <input type="text" value={careerGoal} onChange={(e) => setCareerGoal(e.target.value)} placeholder="희망 직무 (예: 백엔드 개발자)" />
+            <CustomSelect
+              options={jobOptions}
+              value={jobOptions.find(j => j.value === careerGoal)}
+              onChange={(selected) => setCareerGoal(selected ? selected.value : '')}
+              placeholder="희망 직무 선택 (예: 백엔드 개발자)"
+              isSearchable
+              styles={selectStyles}
+              components={{ DropdownIndicator: CustomDropdownIndicator }}
+            />
           </div>
         </div>
 

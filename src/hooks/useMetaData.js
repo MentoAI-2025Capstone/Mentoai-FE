@@ -4,6 +4,8 @@ import apiClient from '../api/apiClient';
 export const useMetaData = () => {
   const [skillOptions, setSkillOptions] = useState([]);
   const [certOptions, setCertOptions] = useState([]);
+  const [majorOptions, setMajorOptions] = useState([]);
+  const [jobOptions, setJobOptions] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,6 +21,18 @@ export const useMetaData = () => {
         if (certsRes.data && Array.isArray(certsRes.data)) {
           setCertOptions(certsRes.data.map(c => ({ value: c, label: c })));
         }
+
+        // 학과 데이터 가져오기
+        const majorsRes = await apiClient.get('/meta/data/majors');
+        if (majorsRes.data && Array.isArray(majorsRes.data)) {
+          setMajorOptions(majorsRes.data.map(m => ({ value: m, label: m })));
+        }
+
+        // 직업 데이터 가져오기
+        const jobsRes = await apiClient.get('/meta/data/jobs');
+        if (jobsRes.data && Array.isArray(jobsRes.data)) {
+          setJobOptions(jobsRes.data.map(j => ({ value: j, label: j })));
+        }
       } catch (error) {
         console.error("메타데이터 로딩 실패:", error);
       }
@@ -27,5 +41,5 @@ export const useMetaData = () => {
     fetchData();
   }, []);
 
-  return { skillOptions, certOptions };
+  return { skillOptions, certOptions, majorOptions, jobOptions };
 };

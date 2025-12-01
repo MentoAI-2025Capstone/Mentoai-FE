@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../api/apiClient';
 import './Page.css';
 import CustomSelect, { components } from 'react-select';
+import AsyncSelect from 'react-select/async';
 import { useMetaData } from '../hooks/useMetaData';
 
 const experienceOptions = [{ value: 'PROJECT', label: '프로젝트' }, { value: 'INTERN', label: '인턴' }];
@@ -41,7 +42,7 @@ const CustomDropdownIndicator = (props) => {
 };
 
 function MyPage() {
-  const { skillOptions, certOptions } = useMetaData();
+  const { skillOptions, certOptions, majorOptions, jobOptions } = useMetaData();
 
   const [education, setEducation] = useState({ school: '', major: '', grade: '' });
   const [careerGoal, setCareerGoal] = useState('');
@@ -55,6 +56,14 @@ function MyPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
+
+  // 학교 검색 (AsyncSelect 용)
+  const loadSchoolOptions = (inputValue) => {
+    return apiClient.get(`/meta/data/schools?q=${inputValue}`)
+      .then(res => {
+        return res.data.map(s => ({ value: s, label: s }));
+      });
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -269,11 +278,41 @@ function MyPage() {
           <div className="form-grid two-cols">
             <div className="form-group">
               <label>학교</label>
-              <input type="text" value={education.school} onChange={(e) => setEducation({ ...education, school: e.target.value })} placeholder="학교명" />
+              <AsyncSelect
+                cacheOptions
+                defaultOptions
+                loadOptions={loadSchoolOptions}
+                onChange={(selected) => setEducation({ ...education, school: selected ? selected.value : '' })}
+                value={education.school ? { label: education.school, value: education.school } : null}
+                placeholder="학교 검색"
+                styles={{
+                  ...selectStyles,
+                  input: (base) => ({
+                    ...base,
+                    margin: 0,
+                    padding: 0,
+                    color: '#333',
+                    caretColor: 'auto',
+                    lineHeight: '38px',
+                    '& input': {
+                      opacity: 1
+                    }
+                  })
+                }}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
+              />
             </div>
             <div className="form-group">
               <label>전공</label>
-              <input type="text" value={education.major} onChange={(e) => setEducation({ ...education, major: e.target.value })} placeholder="전공" />
+              <CustomSelect
+                options={majorOptions}
+                value={majorOptions.find(m => m.value === education.major)}
+                onChange={(selected) => setEducation({ ...education, major: selected ? selected.value : '' })}
+                placeholder="전공 선택"
+                isSearchable
+                styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
+              />
             </div>
             <div className="form-group">
               <label>학년</label>
@@ -292,7 +331,15 @@ function MyPage() {
         <div className="form-section">
           <h3>희망 직무</h3>
           <div className="form-group">
-            <input type="text" value={careerGoal} onChange={(e) => setCareerGoal(e.target.value)} placeholder="희망 직무 (예: 백엔드 개발자)" />
+            <CustomSelect
+              options={jobOptions}
+              value={jobOptions.find(j => j.value === careerGoal)}
+              onChange={(selected) => setCareerGoal(selected ? selected.value : '')}
+              placeholder="희망 직무 선택 (예: 백엔드 개발자)"
+              isSearchable
+              styles={selectStyles}
+              components={{ DropdownIndicator: CustomDropdownIndicator }}
+            />
           </div>
         </div>
 
