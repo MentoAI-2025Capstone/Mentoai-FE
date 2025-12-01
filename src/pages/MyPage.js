@@ -187,45 +187,6 @@ function MyPage() {
       ...base,
       height: '40px',
       minHeight: '40px',
-      borderRadius: '8px',
-      borderColor: '#ccc',
-      boxShadow: 'none',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-      zIndex: 9999
-    }),
-    option: (base, state) => ({
-      ...base,
-      padding: '10px',
-      backgroundColor: state.isSelected ? '#e7f3ff' : state.isFocused ? '#f1f3f5' : 'white',
-      color: state.isSelected ? '#007bff' : '#333',
-      fontWeight: state.isSelected ? '500' : 'normal',
-      cursor: 'pointer',
-      ':active': {
-        backgroundColor: '#e7f3ff'
-      }
-    }),
-    indicatorSeparator: () => ({
-      display: 'none'
-    }),
-    dropdownIndicator: (base) => ({
-      ...base,
-      padding: '8px',
-      color: '#6c757d',
-      '&:hover': {
-        color: '#333'
-      }
-    }),
-    multiValue: (base) => ({
-      ...base,
-      backgroundColor: '#e7f3ff',
-      borderRadius: '12px',
-      padding: '2px 4px',
-      margin: '2px'
-    }),
-    multiValueLabel: (base) => ({
-      ...base,
-      color: '#007bff',
-      fontWeight: '600',
       fontSize: '14px',
       padding: '2px 6px',
       paddingRight: '4px'
