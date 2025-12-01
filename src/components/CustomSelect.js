@@ -1,9 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './CustomSelect.css'; // 이 CSS 파일도 새로 만듭니다.
 
-import React, { useState, useRef, useEffect } from 'react';
-import './CustomSelect.css'; // 이 CSS 파일도 새로 만듭니다.
-
 /**
  * 커스텀 드롭다운 컴포넌트
  * @param {Array} options - { value: string, label: string } 형태의 객체 배열

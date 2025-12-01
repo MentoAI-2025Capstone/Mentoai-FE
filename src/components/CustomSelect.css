@@ -1,27 +1,104 @@
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+
+.custom-select-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #333;
+  height: 40px;
+  line-height: 40px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  }
+}
 
-  .custom-arrow {
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 6px solid #6c757d;
-    transform: translateY(-50%);
-    transition: transform 0.2s ease;
-    color: #333;
-  }
+.custom-select-trigger:hover {
+  border-color: #aaa;
+}
 
-  .custom-option:hover {
-    background-color: #f1f3f5;
-  }
+.custom-select-trigger.open {
+  border-color: #007bff;
+}
 
-  .custom-option.selected {
-    background-color: #e7f3ff;
-    color: #007bff;
-    font-weight: 500;
-  }
+.custom-arrow {
+  position: relative;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #6c757d;
+  margin-left: 8px;
+}
+
+.custom-options-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.custom-search-wrapper {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.custom-search-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+  font-size: 14px;
+}
+
+.custom-options-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.custom-option {
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.custom-option:hover {
+  background-color: #f1f3f5;
+}
+
+.custom-option.selected {
+  background-color: #e7f3ff;
+  color: #007bff;
+  font-weight: 500;
+}
+
+.custom-option.no-result {
+  color: #999;
+  cursor: default;
+  text-align: center;
+}
