@@ -298,19 +298,14 @@ function MyPage() {
         <div className="form-section">
           <h3 style={{ marginBottom: '15px' }}>자격증</h3>
           <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-            <input
-              type="text"
-              placeholder="자격증 이름 (예: 정보처리기사)"
-              value={currentCert}
-              onChange={(e) => setCurrentCert(e.target.value)}
-              style={{ flex: 1, height: '40px', borderRadius: '8px', border: '1px solid #ccc', padding: '0 12px' }}
-              list="cert-datalist"
-            />
-            <datalist id="cert-datalist">
-              {certificationOptions.map((option, i) => (
-                <option key={i} value={option.value} />
-              ))}
-            </datalist>
+            <div style={{ flex: 1 }}>
+              <CustomSelect
+                options={certificationOptions}
+                value={currentCert}
+                onChange={(val) => setCurrentCert(val)}
+                placeholder="자격증 선택..."
+              />
+            </div>
             <button
               type="button"
               className="add-item-btn"
