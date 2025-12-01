@@ -1,12 +1,14 @@
-// src/pages/MyPage.js
-
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/apiClient';
 import './Page.css';
 import CustomSelect from '../components/CustomSelect';
 
-// (옵션 정의...)
-const skillOptions = [{ value: '상', label: '상 (업무 활용)' }, { value: '중', label: '중 (토이 프로젝트)' }, { value: '하', label: '하 (학습 경험)' }];
+const SKILL_LIST = [
+  'JavaScript', 'TypeScript', 'React', 'Vue', 'Angular', 'Node.js', 'Spring', 'Java',
+  'Python', 'Django', 'Flask', 'C++', 'C#', 'Go', 'Kotlin', 'Swift', 'Android', 'iOS',
+  'AWS', 'Docker', 'Kubernetes', 'Git', 'MySQL', 'PostgreSQL', 'MongoDB'
+];
+
 const experienceOptions = [{ value: 'PROJECT', label: '프로젝트' }, { value: 'INTERN', label: '인턴' }];
 const gradeOptions = [
   { value: '1', label: '1학년' },
@@ -16,7 +18,6 @@ const gradeOptions = [
   { value: '5', label: '5학년 이상' }
 ];
 
-// sessionStorage에서 'userId'만 가져오는 헬퍼 (토큰은 apiClient가 관리)
 const getUserIdFromStorage = () => {
   try {
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
@@ -27,7 +28,6 @@ const getUserIdFromStorage = () => {
 };
 
 function MyPage() {
-  // (State 정의...)
   const [education, setEducation] = useState({ school: '', major: '', grade: '' });
   const [careerGoal, setCareerGoal] = useState('');
   const [skills, setSkills] = useState([]);
@@ -45,117 +45,45 @@ function MyPage() {
   const [isCalculatingBatch, setIsCalculatingBatch] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
 
-  // 드롭다운 옵션 state
-  const [majorOptions, setMajorOptions] = useState([]);
-  const [jobOptions, setJobOptions] = useState([]);
-  const [techStackOptions, setTechStackOptions] = useState([]);
+  const [techStackOptions, setTechStackOptions] = useState(
+    SKILL_LIST.map(s => ({ value: s, label: s }))
+  );
   const [certificationOptions, setCertificationOptions] = useState([]);
 
-  // 페이지 로드 시 /profile API를 호출하여 기존 정보 로드
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const userId = getUserIdFromStorage();
-        if (!userId) throw new Error("No auth data");
+        if (!userId) return;
 
-        // [신규] 추가 API 연동 확인 (태그, 직무, 메타데이터) - 병렬 호출
-        const [profileResponse, tagsResponse, rolesResponse, metaSkillsResponse, metaMajorsResponse, metaJobsResponse, metaCertsResponse] = await Promise.allSettled([
-          apiClient.get(`/users/${userId}/profile`),
-          apiClient.get('/tags'),
-          apiClient.get('/roles'),
-          apiClient.get('/meta/skills'),
-          apiClient.get('/meta/majors'),
-          apiClient.get('/meta/jobs'),
-          apiClient.get('/meta/certifications')
-        ]);
+        // Fetch certifications
+        fetch('/certifications.csv')
+          .then(res => res.text())
+          .then(text => {
+            const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+            setCertificationOptions(lines.map(c => ({ value: c, label: c })));
+          })
+          .catch(err => console.error('Failed to load certifications:', err));
 
-        // 1. 프로필 응답 처리
-        if (profileResponse.status === 'fulfilled') {
-          const profile = profileResponse.value.data;
-          if (profile) {
-            // OpenAPI UserProfile 스펙에서 기존 형식으로 변환
-            if (profile.university) {
-              setEducation({
-                school: profile.university.universityName || '',
-                major: profile.university.major || '',
-                grade: profile.university.grade ? String(profile.university.grade) : ''
-              });
-            }
+        const response = await apiClient.get(`/users/${userId}/profile`);
+        const data = response.data;
 
-            // interestDomains의 첫 번째 항목을 careerGoal로 사용
-            setCareerGoal(profile.interestDomains && profile.interestDomains.length > 0
-              ? profile.interestDomains[0]
-              : '');
-
-            // techStack을 skills 형식으로 변환
-            if (profile.techStack) {
-              setSkills(profile.techStack.map(skill => ({
-                name: skill.name,
-                level: skill.level === 'ADVANCED' ? '상' :
-                  skill.level === 'INTERMEDIATE' ? '중' :
-                    skill.level === 'EXPERT' ? '상' : '하'
-              })));
-            }
-
-            // experiences를 기존 형식으로 변환
-            if (profile.experiences) {
-              setExperiences(profile.experiences.map(exp => ({
-                type: exp.type,
-                role: exp.role,
-                period: exp.startDate && exp.endDate
-                  ? `${exp.startDate} ~ ${exp.endDate}`
-                  : exp.startDate || '',
-                techStack: exp.techStack ? exp.techStack.join(', ') : ''
-              })));
-            }
-
-            // certifications을 기존 형식으로 변환.
-            if (profile.certifications) {
-              setEvidence({
-                certifications: profile.certifications.map(cert => cert.name)
-              });
-            }
-          }
-        } else {
-          console.error("마이페이지 프로필 로드 실패:", profileResponse.reason);
-          if (profileResponse.reason?.response?.status !== 404) {
-            // 404는 프로필이 없는 경우이므로 무시, 그 외 에러는 알림
-            console.warn(`프로필 로딩 실패: ${profileResponse.reason.message}`);
-          }
+        if (data) {
+          setEducation({
+            school: data.university?.universityName || '',
+            major: data.university?.major || '',
+            grade: data.university?.grade ? String(data.university.grade) : ''
+          });
+          setCareerGoal(data.interestDomains?.[0] || '');
+          setSkills(data.techStack?.map(ts => ({ name: ts.name, level: ts.level === 'ADVANCED' ? '상' : ts.level === 'INTERMEDIATE' ? '중' : '하' })) || []);
+          setExperiences(data.experiences?.map(exp => ({
+            type: exp.type,
+            role: exp.role,
+            period: `${exp.startDate || ''} ~ ${exp.endDate || ''}`,
+            techStack: exp.techStack?.join(', ') || ''
+          })) || []);
+          setEvidence({ certifications: data.certifications?.map(c => c.name) || [] });
         }
-
-        // 2. [신규] 추가 API 로그 출력
-        if (tagsResponse.status === 'fulfilled') {
-          console.log('[MyPage] GET /tags 응답:', tagsResponse.value.data);
-        } else {
-          console.warn('[MyPage] GET /tags 실패:', tagsResponse.reason);
-        }
-
-        if (rolesResponse.status === 'fulfilled') {
-          console.log('[MyPage] GET /roles 응답:', rolesResponse.value.data);
-        } else {
-          console.warn('[MyPage] GET /roles 실패:', rolesResponse.reason);
-        }
-
-        if (metaSkillsResponse.status === 'fulfilled') {
-          console.log('[MyPage] GET /meta/skills 응답:', metaSkillsResponse.value.data);
-          setTechStackOptions(metaSkillsResponse.value.data.map(s => ({ value: s, label: s })));
-        } else {
-          console.warn('[MyPage] GET /meta/skills 실패:', metaSkillsResponse.reason);
-        }
-
-        if (metaMajorsResponse.status === 'fulfilled') {
-          setMajorOptions(metaMajorsResponse.value.data.map(m => ({ value: m, label: m })));
-        }
-
-        if (metaJobsResponse.status === 'fulfilled') {
-          setJobOptions(metaJobsResponse.value.data.map(j => ({ value: j, label: j })));
-        }
-
-        if (metaCertsResponse.status === 'fulfilled') {
-          setCertificationOptions(metaCertsResponse.value.data.map(c => ({ value: c, label: c })));
-        }
-
       } catch (error) {
         console.error("마이페이지 초기화 중 오류:", error);
       } finally {
@@ -163,17 +91,24 @@ function MyPage() {
       }
     };
     fetchProfile();
-  }, []); // 마운트 시 1회 실행
+  }, []);
 
-  // (이벤트 핸들러들...)
-  const handleAddSkill = () => { if (currentSkill.name) { setSkills([...skills, currentSkill]); setCurrentSkill({ name: '', level: '중' }); } };
-  const handleRemoveSkill = (index) => setSkills(skills.filter((_, i) => i !== index));
   const handleAddExperience = () => { if (currentExperience.role && currentExperience.period) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '' }); } };
   const handleRemoveExperience = (index) => setExperiences(experiences.filter((_, i) => i !== index));
   const handleAddCert = () => { if (currentCert) { setEvidence({ ...evidence, certifications: [...evidence.certifications, currentCert] }); setCurrentCert(''); } };
   const handleRemoveCert = (index) => { setEvidence({ ...evidence, certifications: evidence.certifications.filter((_, i) => i !== index) }); };
 
-  // apiClient를 사용하는 handleSave (OpenAPI 스펙에 맞게 변환)
+  const handleAddSkill = () => {
+    if (currentSkill.name && !skills.some(s => s.name === currentSkill.name)) {
+      setSkills([...skills, currentSkill]);
+      setCurrentSkill({ ...currentSkill, name: '' });
+    }
+  };
+
+  const handleRemoveSkill = (index) => {
+    setSkills(skills.filter((_, i) => i !== index));
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
 
@@ -181,7 +116,6 @@ function MyPage() {
       const userId = getUserIdFromStorage();
       if (!userId) throw new Error("인증 정보가 없습니다.");
 
-      // OpenAPI UserProfileUpsert 스펙에 맞게 데이터 변환
       const profileData = {
         university: {
           universityName: education.school || undefined,
@@ -195,7 +129,6 @@ function MyPage() {
             skill.level === '중' ? 'INTERMEDIATE' : 'BEGINNER'
         })),
         experiences: experiences.map(exp => {
-          // period를 startDate/endDate로 파싱
           const periodParts = exp.period.split('~').map(s => s.trim());
           const startDate = periodParts[0] || undefined;
           const endDate = periodParts[1] || undefined;
@@ -213,187 +146,35 @@ function MyPage() {
         }))
       };
 
-      console.log('[MyPage] ===== 프로필 저장 시작 =====');
-      console.log('[MyPage] [요청 시작] PUT /users/{userId}/profile');
-      console.log('[MyPage] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/profile`);
-      console.log('[MyPage] 요청 본문 (profileData):', profileData);
-
-      // apiClient 사용 (헤더 자동 주입)
-      const profileResponse = await apiClient.put(
+      await apiClient.put(
         `/users/${userId}/profile`,
         profileData
       );
 
-      console.log('[MyPage] [프로필 저장 성공] ✅');
-      console.log('[MyPage] 응답 상태 코드:', profileResponse.status);
-      console.log('[MyPage] 응답 데이터:', profileResponse.data);
-
-      // RoleFitScore 계산 요청
       if (careerGoal) {
-        console.log('[MyPage] ===== RoleFitScore 계산 시작 =====');
-        console.log('[MyPage] POST /users/{userId}/role-fit');
-        console.log('[MyPage] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/role-fit`);
-        console.log('[MyPage] 목표 직무 (target):', careerGoal);
-
         const roleFitRequestBody = {
           target: careerGoal,
           topNImprovements: 5
         };
 
-        console.log('[MyPage] 요청 본문 (roleFitRequestBody):', roleFitRequestBody);
-
         try {
-          const roleFitResponse = await apiClient.post(
+          await apiClient.post(
             `/users/${userId}/role-fit`,
             roleFitRequestBody
           );
-
-          console.log('[MyPage] [점수 계산 성공] ✅');
-          console.log('[MyPage] 응답 상태 코드:', roleFitResponse.status);
-          console.log('[MyPage] 전체 RoleFitResponse:', roleFitResponse.data);
-          console.log('[MyPage] 🎯 계산된 RoleFitScore:', roleFitResponse.data?.roleFitScore);
-          console.log('[MyPage] 📊 RoleFitScore Breakdown:', roleFitResponse.data?.breakdown);
-
-          if (roleFitResponse.data?.breakdown) {
-            console.log('[MyPage]    - SkillFit:', roleFitResponse.data.breakdown.skillFit);
-            console.log('[MyPage]    - ExperienceFit:', roleFitResponse.data.breakdown.experienceFit);
-            console.log('[MyPage]    - EducationFit:', roleFitResponse.data.breakdown.educationFit);
-            console.log('[MyPage]    - EvidenceFit:', roleFitResponse.data.breakdown.evidenceFit);
-          }
-          console.log('[MyPage] Missing Skills:', roleFitResponse.data?.missingSkills);
-          console.log('[MyPage] Recommendations:', roleFitResponse.data?.recommendations);
         } catch (roleFitError) {
-          console.error('[MyPage] [점수 계산 실패] ❌');
-          console.error('[MyPage] 에러:', roleFitError);
-          console.error('[MyPage] 에러 응답:', roleFitError.response?.data);
+          console.error('Role fit calculation failed', roleFitError);
         }
-      } else {
-        console.log('[MyPage] ⚠️ 목표 직무(careerGoal)가 없어 RoleFitScore 계산을 건너뜁니다.');
       }
 
-      // 토스트 메시지 표시
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
 
-      console.log('[MyPage] ===== 프로필 저장 완료 =====');
-
     } catch (error) {
       console.error("프로필 저장 실패:", error);
-      const alertMessage = error.message || "알 수 없는 오류";
-      if (error.code === 'ERR_NETWORK' || alertMessage.includes('Network Error')) {
-        alert('프로필 저장에 실패했습니다. (Network Error / CORS 오류)');
-      } else {
-        alert(`프로필 저장 중 오류가 발생했습니다: ${alertMessage}`);
-      }
+      alert("프로필 저장 중 오류가 발생했습니다.");
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  // 여러 직무에 대한 일괄 계산
-  const handleBatchRoleFit = async () => {
-    setIsCalculatingBatch(true);
-    try {
-      const userId = getUserIdFromStorage();
-      if (!userId) throw new Error("인증 정보가 없습니다.");
-
-      const targets = ['backend_entry', 'frontend_entry', 'data_analyst']; // 예시 직무 목록
-
-      console.log('[MyPage] ===== 일괄 RoleFitScore 계산 시작 =====');
-      console.log('[MyPage] POST /users/{userId}/role-fit/batch');
-      console.log('[MyPage] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/role-fit/batch`);
-      console.log('[MyPage] 계산할 직무 목록 (targets):', targets);
-
-      const batchRequestBody = {
-        targets: targets,
-        topNImprovements: 5
-      };
-
-      console.log('[MyPage] 요청 본문 (batchRequestBody):', batchRequestBody);
-
-      const batchResponse = await apiClient.post(
-        `/users/${userId}/role-fit/batch`,
-        batchRequestBody
-      );
-
-      console.log('[MyPage] [일괄 계산 성공] ✅');
-      console.log('[MyPage] 응답 상태 코드:', batchResponse.status);
-      console.log('[MyPage] 전체 일괄 계산 결과:', batchResponse.data);
-      console.log('[MyPage] 계산된 직무 개수:', batchResponse.data?.length);
-
-      if (batchResponse.data) {
-        batchResponse.data.forEach((result, index) => {
-          console.log(`[MyPage] 직무 ${index + 1} (${result.target}):`);
-          console.log(`[MyPage]   - RoleFitScore: ${result.roleFitScore}`);
-          console.log(`[MyPage]   - Breakdown:`, result.breakdown);
-        });
-        setBatchResults(batchResponse.data);
-      }
-    } catch (error) {
-      console.error('[MyPage] [일괄 계산 실패] ❌');
-      console.error('[MyPage] 에러 객체:', error);
-      console.error('[MyPage] 에러 메시지:', error.message);
-      console.error('[MyPage] 에러 응답:', error.response?.data);
-      alert('일괄 계산에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
-    } finally {
-      setIsCalculatingBatch(false);
-    }
-  };
-
-  // 시뮬레이션 (예: AWS 스킬 추가 시 점수 변화)
-  const handleSimulateRoleFit = async () => {
-    setIsSimulating(true);
-    try {
-      const userId = getUserIdFromStorage();
-      if (!userId) throw new Error("인증 정보가 없습니다.");
-
-      if (!careerGoal) {
-        alert('목표 직무를 먼저 설정해주세요.');
-        return;
-      }
-
-      console.log('[MyPage] ===== RoleFitScore 시뮬레이션 시작 =====');
-      console.log('[MyPage] POST /users/{userId}/role-fit/simulate');
-      console.log('[MyPage] 요청 URL:', `${apiClient.defaults.baseURL}/users/${userId}/role-fit/simulate`);
-      console.log('[MyPage] 목표 직무 (target):', careerGoal);
-
-      // 예시: AWS 스킬 추가 시뮬레이션
-      const simulationRequestBody = {
-        target: careerGoal,
-        addSkills: [
-          { name: 'AWS', level: 'INTERMEDIATE' }
-        ],
-        addCertifications: [
-          { name: '정보처리기사' }
-        ]
-      };
-
-      console.log('[MyPage] 요청 본문 (simulationRequestBody):', simulationRequestBody);
-
-      const simulationResponse = await apiClient.post(
-        `/users/${userId}/role-fit/simulate`,
-        simulationRequestBody
-      );
-
-      console.log('[MyPage] [시뮬레이션 성공] ✅');
-      console.log('[MyPage] 응답 상태 코드:', simulationResponse.status);
-      console.log('[MyPage] 전체 시뮬레이션 결과:', simulationResponse.data);
-      console.log('[MyPage] 현재 점수 (baseScore):', simulationResponse.data?.baseScore);
-      console.log('[MyPage] 예상 점수 (newScore):', simulationResponse.data?.newScore);
-      console.log('[MyPage] 점수 변화 (delta):', simulationResponse.data?.delta);
-      console.log('[MyPage] Breakdown 변화:', simulationResponse.data?.breakdownDelta);
-
-      if (simulationResponse.data) {
-        setSimulationResult(simulationResponse.data);
-      }
-    } catch (error) {
-      console.error('[MyPage] [시뮬레이션 실패] ❌');
-      console.error('[MyPage] 에러 객체:', error);
-      console.error('[MyPage] 에러 메시지:', error.message);
-      console.error('[MyPage] 에러 응답:', error.response?.data);
-      alert('시뮬레이션에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
-    } finally {
-      setIsSimulating(false);
     }
   };
 
@@ -401,7 +182,6 @@ function MyPage() {
     return <div className="profile-setup-container"><div className="profile-card">프로필 정보를 불러오는 중...</div></div>;
   }
 
-  // (JSX)
   return (
     <div className="profile-setup-container">
       <div className="profile-card">
@@ -410,46 +190,31 @@ function MyPage() {
           AI 추천 정확도를 높이기 위해 프로필 정보를 최신으로 유지해주세요.
         </p>
 
-        {/* --- 1. 기본 정보 섹션 --- */}
         <div className="form-section">
           <h3>기본 학력</h3>
           <div className="form-grid two-cols">
             <div className="form-group">
               <label>학교</label>
-              <input type="text" value={education.school} onChange={(e) => setEducation({ ...education, school: e.target.value })} required placeholder="예: 경희대학교" />
+              <input type="text" value={education.school} onChange={(e) => setEducation({ ...education, school: e.target.value })} placeholder="학교명" />
             </div>
             <div className="form-group">
               <label>전공</label>
-              <CustomSelect
-                options={majorOptions}
-                value={education.major}
-                onChange={(newValue) => setEducation({ ...education, major: newValue })}
-                placeholder="선택 또는 검색..."
-                isSearchable
-              />
+              <input type="text" value={education.major} onChange={(e) => setEducation({ ...education, major: e.target.value })} placeholder="전공" />
             </div>
             <div className="form-group">
               <label>학년</label>
-              <CustomSelect
-                options={gradeOptions}
-                value={education.grade}
-                onChange={(newValue) => setEducation({ ...education, grade: newValue })}
-              />
-            </div>
-            <div className="form-group">
-              <label>목표 직무</label>
-              <CustomSelect
-                options={jobOptions}
-                value={careerGoal}
-                onChange={(newValue) => setCareerGoal(newValue)}
-                placeholder="선택 또는 검색..."
-                isSearchable
-              />
+              <CustomSelect options={gradeOptions} value={education.grade} onChange={(val) => setEducation({ ...education, grade: val })} />
             </div>
           </div>
         </div>
 
-        {/* --- 2. 기술 스택 섹션 --- */}
+        <div className="form-section">
+          <h3>희망 직무</h3>
+          <div className="form-group">
+            <input type="text" value={careerGoal} onChange={(e) => setCareerGoal(e.target.value)} placeholder="희망 직무 (예: 백엔드 개발자)" />
+          </div>
+        </div>
+
         <div className="form-section">
           <h3>기술 스택</h3>
           <div className="form-grid skill-grid" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
@@ -482,7 +247,6 @@ function MyPage() {
           </ul>
         </div>
 
-        {/* --- 3. 주요 경험 섹션 --- */}
         <div className="form-section">
           <h3>주요 경험</h3>
           <div className="form-grid two-cols">
@@ -531,7 +295,6 @@ function MyPage() {
           </ul>
         </div>
 
-        {/* --- 4. 증빙 자료 섹션 (제목 변경 및 레이아웃 조정) --- */}
         <div className="form-section">
           <h3 style={{ marginBottom: '15px' }}>자격증</h3>
           <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
@@ -566,7 +329,6 @@ function MyPage() {
             ))}
           </ul>
         </div>
-        {/* ... (폼 섹션 끝) ... */}
 
         <button onClick={handleSave} className="submit-button" disabled={isSaving}>
           {isSaving ? '저장 중...' : '프로필 저장'}
