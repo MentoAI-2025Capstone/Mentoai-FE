@@ -208,26 +208,6 @@ function ProfileSetup() {
     }),
     singleValue: (base) => ({
       ...base,
-      color: '#333',
-      margin: 0,
-      lineHeight: '38px'
-    }),
-    input: (base) => ({
-      ...base,
-      margin: 0,
-      padding: 0,
-      color: '#333',
-      caretColor: 'transparent',
-      lineHeight: '38px',
-      '& input': {
-        opacity: 0
-      }
-    }),
-    indicatorSeparator: () => ({
-      display: 'none'
-    }),
-    dropdownIndicator: (base) => ({
-      ...base,
       padding: '8px',
       color: '#6c757d',
       '&:hover': {
