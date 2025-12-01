@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import './Page.css';
-import CustomSelect from '../components/CustomSelect';
-
-const SKILL_LIST = [
-  'JavaScript', 'TypeScript', 'React', 'Vue', 'Angular', 'Node.js', 'Spring', 'Java',
-  'Python', 'Django', 'Flask', 'C++', 'C#', 'Go', 'Kotlin', 'Swift', 'Android', 'iOS',
-  'AWS', 'Docker', 'Kubernetes', 'Git', 'MySQL', 'PostgreSQL', 'MongoDB'
-];
+import CustomSelect, { components } from 'react-select';
+import AsyncSelect from 'react-select/async';
+import { useMetaData } from '../hooks/useMetaData';
 
 const experienceOptions = [{ value: 'PROJECT', label: '프로젝트' }, { value: 'INTERN', label: '인턴' }];
 const gradeOptions = [
@@ -30,7 +26,27 @@ const getAuthDataFromStorage = () => {
   }
 };
 
+// CustomDropdownIndicator 컴포넌트
+const CustomDropdownIndicator = (props) => {
+  return (
+    <components.DropdownIndicator {...props}>
+      <div style={{
+        width: 0,
+        height: 0,
+        borderLeft: '5px solid transparent',
+        borderRight: '5px solid transparent',
+        borderTop: '6px solid #6c757d',
+        transform: props.selectProps.menuIsOpen ? 'rotate(180deg)' : 'none',
+        transition: 'transform 0.2s ease',
+        cursor: 'pointer'
+      }} />
+    </components.DropdownIndicator>
+  );
+};
+
 function ProfileSetup() {
+  const { skillOptions, certOptions } = useMetaData();
+
   const [education, setEducation] = useState({ school: '', major: '', grade: '' });
   const [careerGoal, setCareerGoal] = useState('');
 
@@ -42,22 +58,15 @@ function ProfileSetup() {
   const [currentCert, setCurrentCert] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  const [techStackOptions, setTechStackOptions] = useState(
-    SKILL_LIST.map(s => ({ value: s, label: s }))
-  );
-  const [certificationOptions, setCertificationOptions] = useState([]);
-
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch('/certifications.csv')
-      .then(res => res.text())
-      .then(text => {
-        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-        setCertificationOptions(lines.map(c => ({ value: c, label: c })));
-      })
-      .catch(err => console.error('Failed to load certifications:', err));
-  }, []);
+  // 학교 검색 (AsyncSelect 용)
+  const loadSchoolOptions = (inputValue) => {
+    return apiClient.get(`/meta/data/schools?q=${inputValue}`)
+      .then(res => {
+        return res.data.map(s => ({ value: s, label: s }));
+      });
+  };
 
   const handleAddExperience = () => { if (currentExperience.role && currentExperience.period) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '' }); } };
   const handleRemoveExperience = (index) => setExperiences(experiences.filter((_, i) => i !== index));
@@ -156,6 +165,83 @@ function ProfileSetup() {
     }
   };
 
+  // 공통 Select 스타일
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      minHeight: '40px',
+      height: '40px',
+      borderRadius: '8px',
+      borderColor: '#ccc',
+      boxShadow: 'none',
+      '&:hover': {
+        borderColor: '#888'
+      },
+      fontSize: '15px',
+      backgroundColor: 'white'
+    }),
+    valueContainer: (base) => ({
+      ...base,
+      padding: '0 12px',
+      height: '38px',
+      display: 'flex',
+      alignItems: 'center',
+      lineHeight: '38px'
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: '#888',
+      margin: 0,
+      lineHeight: '38px'
+    }),
+    menu: (base) => ({
+      ...base,
+      borderRadius: '8px',
+      marginTop: '4px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+      zIndex: 9999
+    }),
+    option: (base, state) => ({
+      ...base,
+      padding: '10px',
+      backgroundColor: state.isSelected ? '#e7f3ff' : state.isFocused ? '#f1f3f5' : 'white',
+      color: state.isSelected ? '#007bff' : '#333',
+      fontWeight: state.isSelected ? '500' : 'normal',
+      cursor: 'pointer',
+      ':active': {
+        backgroundColor: '#e7f3ff'
+      }
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: '#333',
+      margin: 0,
+      lineHeight: '38px'
+    }),
+    input: (base) => ({
+      ...base,
+      margin: 0,
+      padding: 0,
+      color: '#333',
+      caretColor: 'transparent',
+      lineHeight: '38px',
+      '& input': {
+        opacity: 0
+      }
+    }),
+    indicatorSeparator: () => ({
+      display: 'none'
+    }),
+    dropdownIndicator: (base) => ({
+      ...base,
+      padding: '8px',
+      color: '#6c757d',
+      '&:hover': {
+        color: '#333'
+      }
+    })
+  };
+
   return (
     <div className="profile-setup-container">
       <form className="profile-card" onSubmit={handleSubmit}>
@@ -167,7 +253,30 @@ function ProfileSetup() {
           <div className="form-grid two-cols">
             <div className="form-group">
               <label>학교</label>
-              <input type="text" value={education.school} onChange={(e) => setEducation({ ...education, school: e.target.value })} placeholder="학교명" />
+              <AsyncSelect
+                cacheOptions
+                defaultOptions
+                loadOptions={loadSchoolOptions}
+                onChange={(selected) => setEducation({ ...education, school: selected ? selected.value : '' })}
+                value={education.school ? { label: education.school, value: education.school } : null}
+                placeholder="학교 검색"
+                styles={{
+                  ...selectStyles,
+                  input: (base) => ({
+                    ...base,
+                    margin: 0,
+                    padding: 0,
+                    color: '#333',
+                    caretColor: 'auto',
+                    lineHeight: '38px',
+                    '& input': {
+                      opacity: 1
+                    }
+                  })
+                }}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
+                required
+              />
             </div>
             <div className="form-group">
               <label>전공</label>
@@ -175,7 +284,14 @@ function ProfileSetup() {
             </div>
             <div className="form-group">
               <label>학년</label>
-              <CustomSelect options={gradeOptions} value={education.grade} onChange={(val) => setEducation({ ...education, grade: val })} />
+              <CustomSelect
+                options={gradeOptions}
+                value={gradeOptions.find(g => g.value === education.grade)}
+                onChange={(val) => setEducation({ ...education, grade: val.value })}
+                styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
+                placeholder="학년 선택"
+              />
             </div>
           </div>
         </div>
@@ -193,11 +309,13 @@ function ProfileSetup() {
             <div className="form-group" style={{ flex: 1 }}>
               <label>기술 이름</label>
               <CustomSelect
-                options={techStackOptions}
-                value={currentSkill.name}
-                onChange={(newValue) => setCurrentSkill({ ...currentSkill, name: newValue })}
+                options={skillOptions}
+                value={skillOptions.find(s => s.value === currentSkill.name)}
+                onChange={(selected) => setCurrentSkill({ ...currentSkill, name: selected ? selected.value : '' })}
                 placeholder="선택 또는 검색..."
                 isSearchable
+                styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
               />
             </div>
             <button
@@ -226,8 +344,10 @@ function ProfileSetup() {
               <label>유형</label>
               <CustomSelect
                 options={experienceOptions}
-                value={currentExperience.type}
-                onChange={(newValue) => setCurrentExperience({ ...currentExperience, type: newValue })}
+                value={experienceOptions.find(e => e.value === currentExperience.type)}
+                onChange={(selected) => setCurrentExperience({ ...currentExperience, type: selected.value })}
+                styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
               />
             </div>
             <div className="form-group">
@@ -240,18 +360,24 @@ function ProfileSetup() {
             </div>
             <div className="form-group">
               <label>사용 기술</label>
-              <input
-                type="text"
-                placeholder="예: React, Spring"
-                value={currentExperience.techStack}
-                onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })}
-                list="techstack-datalist"
+              <CustomSelect
+                isMulti
+                options={skillOptions}
+                onChange={(selectedOptions) => {
+                  const techString = selectedOptions ? selectedOptions.map(s => s.value).join(', ') : '';
+                  setCurrentExperience({ ...currentExperience, techStack: techString });
+                }}
+                value={
+                  currentExperience.techStack
+                    ? currentExperience.techStack.split(',').map(s => s.trim()).filter(s => s).map(s => ({ label: s, value: s }))
+                    : []
+                }
+                placeholder="사용 기술 선택 (다중 선택)"
+                styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
+                blurInputOnSelect={false}
+                openMenuOnFocus={false}
               />
-              <datalist id="techstack-datalist">
-                {techStackOptions.map((option, i) => (
-                  <option key={i} value={option.value} />
-                ))}
-              </datalist>
             </div>
 
             <div className="form-group grid-col-span-2 grid-align-end">
@@ -273,11 +399,13 @@ function ProfileSetup() {
           <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
             <div style={{ flex: 1 }}>
               <CustomSelect
-                options={certificationOptions}
-                value={currentCert}
-                onChange={(val) => setCurrentCert(val)}
+                options={certOptions}
+                value={certOptions.find(c => c.value === currentCert)}
+                onChange={(selected) => setCurrentCert(selected ? selected.value : '')}
                 placeholder="자격증 선택..."
                 isSearchable
+                styles={selectStyles}
+                components={{ DropdownIndicator: CustomDropdownIndicator }}
               />
             </div>
             <button
