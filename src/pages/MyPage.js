@@ -221,27 +221,6 @@ function MyPage() {
       backgroundColor: state.isSelected ? '#e7f3ff' : state.isFocused ? '#f1f3f5' : 'white',
       color: state.isSelected ? '#007bff' : '#333',
       fontWeight: state.isSelected ? '500' : 'normal',
-      cursor: 'pointer',
-      ':active': {
-        backgroundColor: '#e7f3ff'
-      }
-    }),
-    singleValue: (base) => ({
-      ...base,
-      color: '#333',
-      margin: 0,
-      lineHeight: '38px'
-    }),
-    input: (base) => ({
-      ...base,
-      margin: 0,
-      padding: 0,
-      color: '#333',
-    }),
-    indicatorSeparator: () => ({
-      display: 'none'
-    }),
-    dropdownIndicator: (base) => ({
       ...base,
       padding: '8px',
       color: '#6c757d',
