@@ -180,7 +180,8 @@ function ProfileSetup() {
       padding: '2px 8px',
       display: 'flex',
       alignItems: 'center',
-      flexWrap: 'wrap'
+      flexWrap: 'wrap',
+      minHeight: '38px'
     }),
     placeholder: (base) => ({
       ...base,
@@ -207,6 +208,21 @@ function ProfileSetup() {
       }
     }),
     singleValue: (base) => ({
+      ...base,
+      color: '#333',
+      margin: 0,
+      lineHeight: '38px'
+    }),
+    input: (base) => ({
+      ...base,
+      margin: 0,
+      padding: 0,
+      color: '#333',
+    }),
+    indicatorSeparator: () => ({
+      display: 'none'
+    }),
+    dropdownIndicator: (base) => ({
       ...base,
       padding: '8px',
       color: '#6c757d',
@@ -300,7 +316,7 @@ function ProfileSetup() {
                 styles={selectStyles}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 placeholder="학년 선택"
-                isSearchable
+                isSearchable={false}
               />
             </div>
           </div>
@@ -366,7 +382,7 @@ function ProfileSetup() {
                 onChange={(selected) => setCurrentExperience({ ...currentExperience, type: selected.value })}
                 styles={selectStyles}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
-                isSearchable
+                isSearchable={false}
               />
             </div>
             <div className="form-group">
