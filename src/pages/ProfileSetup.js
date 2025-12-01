@@ -62,6 +62,8 @@ function ProfileSetup() {
 
   // 학교 검색 (AsyncSelect 용)
   const loadSchoolOptions = (inputValue) => {
+    // 검색어가 없으면 요청하지 않거나 빈 배열 반환 (defaultOptions=false와 함께 동작)
+    if (!inputValue) return Promise.resolve([]);
     return apiClient.get(`/meta/data/schools?q=${inputValue}`)
       .then(res => {
         return res.data.map(s => ({ value: s, label: s }));
@@ -179,9 +181,9 @@ function ProfileSetup() {
     valueContainer: (base) => ({
       ...base,
       padding: '0 8px',
-      display: 'flex',
+      display: 'grid', // Grid layout for robust alignment
+      gridTemplateColumns: '1fr',
       alignItems: 'center',
-      flexWrap: 'nowrap',
       height: '100%',
       flex: 1
     }),
@@ -189,6 +191,7 @@ function ProfileSetup() {
       ...base,
       color: '#888',
       margin: 0,
+      gridArea: '1/1', // Overlay in grid
       display: state.isFocused ? 'none' : 'block'
     }),
     singleValue: (base) => ({
@@ -200,16 +203,16 @@ function ProfileSetup() {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
-      position: 'relative',
-      top: 'auto',
-      transform: 'none'
+      gridArea: '1/1', // Overlay in grid
     }),
     input: (base) => ({
       ...base,
       margin: 0,
       padding: 0,
       color: '#333',
-      position: 'absolute'
+      gridArea: '1/1', // Overlay in grid
+      visibility: 'visible',
+      minWidth: '2px'
     }),
     menu: (base) => ({
       ...base,
@@ -282,7 +285,7 @@ function ProfileSetup() {
               <label>학교</label>
               <AsyncSelect
                 cacheOptions
-                defaultOptions
+                defaultOptions={false} // 검색어 없을 때 요청 안 함
                 loadOptions={loadSchoolOptions}
                 onChange={(selected) => setEducation({ ...education, school: selected ? selected.value : '' })}
                 value={education.school ? { label: education.school, value: education.school } : null}
@@ -299,7 +302,9 @@ function ProfileSetup() {
                     '& input': {
                       opacity: 1
                     },
-                    position: 'absolute'
+                    gridArea: '1/1',
+                    visibility: 'visible',
+                    minWidth: '2px'
                   })
                 }}
                 components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
