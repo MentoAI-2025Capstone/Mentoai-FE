@@ -49,7 +49,7 @@ function MyPage() {
   const [skills, setSkills] = useState([]);
   const [currentSkill, setCurrentSkill] = useState({ name: '', level: '중' });
   const [experiences, setExperiences] = useState([]);
-  const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', period: '', techStack: '' });
+  const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', techStack: '' });
   const [evidence, setEvidence] = useState({ certifications: [] });
   const [currentCert, setCurrentCert] = useState('');
 
@@ -85,7 +85,6 @@ function MyPage() {
           setExperiences(data.experiences?.map(exp => ({
             type: exp.type,
             role: exp.role,
-            period: `${exp.startDate || ''} ~ ${exp.endDate || ''}`,
             techStack: exp.techStack?.join(', ') || ''
           })) || []);
           setEvidence({ certifications: data.certifications?.map(c => c.name) || [] });
@@ -99,7 +98,7 @@ function MyPage() {
     fetchProfile();
   }, []);
 
-  const handleAddExperience = () => { if (currentExperience.role && currentExperience.period) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', period: '', techStack: '' }); } };
+  const handleAddExperience = () => { if (currentExperience.role) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', techStack: '' }); } };
   const handleRemoveExperience = (index) => setExperiences(experiences.filter((_, i) => i !== index));
   const handleAddCert = () => { if (currentCert) { setEvidence({ ...evidence, certifications: [...evidence.certifications, currentCert] }); setCurrentCert(''); } };
   const handleRemoveCert = (index) => { setEvidence({ ...evidence, certifications: evidence.certifications.filter((_, i) => i !== index) }); };
@@ -135,15 +134,11 @@ function MyPage() {
             skill.level === '중' ? 'INTERMEDIATE' : 'BEGINNER'
         })),
         experiences: experiences.map(exp => {
-          const periodParts = exp.period.split('~').map(s => s.trim());
-          const startDate = periodParts[0] || undefined;
-          const endDate = periodParts[1] || undefined;
-
           return {
             type: exp.type === 'PROJECT' ? 'PROJECT' : 'INTERNSHIP',
             role: exp.role,
-            startDate: startDate,
-            endDate: endDate,
+            startDate: null,
+            endDate: null,
             techStack: exp.techStack ? exp.techStack.split(',').map(t => t.trim()) : []
           };
         }),
@@ -257,6 +252,33 @@ function MyPage() {
       color: '#6c757d',
       '&:hover': {
         color: '#333'
+      }
+    }),
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: '#e7f3ff',
+      borderRadius: '12px',
+      padding: '2px 4px',
+      margin: '2px'
+    }),
+    multiValueLabel: (base) => ({
+      ...base,
+      color: '#007bff',
+      fontWeight: '600',
+      fontSize: '14px',
+      padding: '2px 6px',
+      paddingRight: '4px'
+    }),
+    multiValueRemove: (base) => ({
+      ...base,
+      color: '#007bff',
+      cursor: 'pointer',
+      borderRadius: '0 12px 12px 0',
+      paddingLeft: '4px',
+      paddingRight: '6px',
+      ':hover': {
+        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+        color: '#0056b3'
       }
     })
   };
@@ -395,10 +417,6 @@ function MyPage() {
               <input type="text" placeholder="예: 프론트엔드 개발" value={currentExperience.role} onChange={(e) => setCurrentExperience({ ...currentExperience, role: e.target.value })} />
             </div>
             <div className="form-group">
-              <label>기간</label>
-              <input type="text" placeholder="예: 3개월" value={currentExperience.period} onChange={(e) => setCurrentExperience({ ...currentExperience, period: e.target.value })} />
-            </div>
-            <div className="form-group">
               <label>사용 기술</label>
               <CustomSelect
                 isMulti
@@ -426,7 +444,7 @@ function MyPage() {
           <ul className="added-list">
             {experiences.map((exp, index) => (
               <li key={index} className="added-item">
-                [{exp.type}] {exp.role} ({exp.period}) - {exp.techStack}
+                [{exp.type}] {exp.role} - {exp.techStack}
                 <button type="button" className="remove-item-btn" onClick={() => handleRemoveExperience(index)}>×</button>
               </li>
             ))}
