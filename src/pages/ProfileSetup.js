@@ -170,11 +170,64 @@ function ProfileSetup() {
       borderRadius: '8px',
       borderColor: '#ccc',
       boxShadow: 'none',
+      backgroundColor: 'white',
+      '&:hover': {
+        borderColor: '#888'
+      },
+      fontSize: '15px',
+    }),
+    valueContainer: (base) => ({
+      ...base,
+      padding: '0 8px',
+      display: 'flex',
+      alignItems: 'center',
+      flexWrap: 'nowrap',
+      height: '100%'
+    }),
+    placeholder: (base, state) => ({
+      ...base,
+      color: '#888',
+      margin: 0,
+      display: state.isFocused ? 'none' : 'block'
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: '#333',
+      margin: 0,
+      lineHeight: '38px',
+      maxWidth: '100%',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
+    }),
+    input: (base) => ({
+      ...base,
+      margin: 0,
+      padding: 0,
+      color: '#333',
+    }),
+    menu: (base) => ({
+      ...base,
+      borderRadius: '8px',
+      marginTop: '4px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+      zIndex: 9999
+    }),
+    option: (base, state) => ({
       ...base,
       padding: '10px',
       backgroundColor: state.isSelected ? '#e7f3ff' : state.isFocused ? '#f1f3f5' : 'white',
       color: state.isSelected ? '#007bff' : '#333',
       fontWeight: state.isSelected ? '500' : 'normal',
+      cursor: 'pointer',
+      ':active': {
+        backgroundColor: '#e7f3ff'
+      }
+    }),
+    indicatorSeparator: () => ({
+      display: 'none'
+    }),
+    dropdownIndicator: (base) => ({
       ...base,
       padding: '8px',
       color: '#6c757d',
