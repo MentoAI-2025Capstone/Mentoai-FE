@@ -182,7 +182,8 @@ function ProfileSetup() {
       display: 'flex',
       alignItems: 'center',
       flexWrap: 'nowrap',
-      height: '100%'
+      height: '100%',
+      flex: 1
     }),
     placeholder: (base, state) => ({
       ...base,
@@ -198,13 +199,17 @@ function ProfileSetup() {
       maxWidth: '100%',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap'
+      whiteSpace: 'nowrap',
+      position: 'relative',
+      top: 'auto',
+      transform: 'none'
     }),
     input: (base) => ({
       ...base,
       margin: 0,
       padding: 0,
       color: '#333',
+      position: 'absolute'
     }),
     menu: (base) => ({
       ...base,
@@ -293,7 +298,8 @@ function ProfileSetup() {
                     lineHeight: '38px',
                     '& input': {
                       opacity: 1
-                    }
+                    },
+                    position: 'absolute'
                   })
                 }}
                 components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
