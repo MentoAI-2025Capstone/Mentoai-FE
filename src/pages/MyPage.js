@@ -188,34 +188,6 @@ function MyPage() {
       borderRadius: '8px',
       borderColor: '#ccc',
       boxShadow: 'none',
-      '&:hover': {
-        borderColor: '#888'
-      },
-      fontSize: '15px',
-      backgroundColor: 'white'
-    }),
-    valueContainer: (base) => ({
-      ...base,
-      padding: '0 8px',
-      display: 'flex',
-      alignItems: 'center',
-      flexWrap: 'nowrap',
-      height: '100%'
-    }),
-    placeholder: (base, state) => ({
-      ...base,
-      color: '#888',
-      margin: 0,
-      display: state.isFocused ? 'none' : 'block'
-    }),
-    menu: (base) => ({
-      ...base,
-      borderRadius: '8px',
-      marginTop: '4px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-      zIndex: 9999
-    }),
-    option: (base, state) => ({
       ...base,
       padding: '10px',
       backgroundColor: state.isSelected ? '#e7f3ff' : state.isFocused ? '#f1f3f5' : 'white',
@@ -295,7 +267,7 @@ function MyPage() {
                     }
                   })
                 }}
-                components={{ DropdownIndicator: CustomDropdownIndicator }}
+                components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
               />
             </div>
             <div className="form-group">
@@ -307,7 +279,7 @@ function MyPage() {
                 placeholder="전공 선택"
                 isSearchable
                 styles={selectStyles}
-                components={{ DropdownIndicator: CustomDropdownIndicator }}
+                components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
               />
             </div>
             <div className="form-group">
@@ -317,7 +289,7 @@ function MyPage() {
                 value={gradeOptions.find(g => g.value === education.grade)}
                 onChange={(val) => setEducation({ ...education, grade: val.value })}
                 styles={selectStyles}
-                components={{ DropdownIndicator: CustomDropdownIndicator }}
+                components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
                 placeholder="학년 선택"
                 isSearchable={false}
               />
@@ -335,7 +307,7 @@ function MyPage() {
               placeholder="희망 직무 선택 (예: 백엔드 개발자)"
               isSearchable
               styles={selectStyles}
-              components={{ DropdownIndicator: CustomDropdownIndicator }}
+              components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
             />
           </div>
         </div>
@@ -352,7 +324,7 @@ function MyPage() {
                 placeholder="선택 또는 검색..."
                 isSearchable
                 styles={selectStyles}
-                components={{ DropdownIndicator: CustomDropdownIndicator }}
+                components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
               />
             </div>
             <button
@@ -384,7 +356,7 @@ function MyPage() {
                 value={experienceOptions.find(e => e.value === currentExperience.type)}
                 onChange={(selected) => setCurrentExperience({ ...currentExperience, type: selected.value })}
                 styles={selectStyles}
-                components={{ DropdownIndicator: CustomDropdownIndicator }}
+                components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
                 isSearchable={false}
               />
             </div>
@@ -408,7 +380,7 @@ function MyPage() {
                 }
                 placeholder="사용 기술 선택 (다중 선택)"
                 styles={selectStyles}
-                components={{ DropdownIndicator: CustomDropdownIndicator }}
+                components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
                 blurInputOnSelect={false}
                 openMenuOnFocus={false}
                 isSearchable
@@ -439,7 +411,7 @@ function MyPage() {
                 placeholder="자격증 선택..."
                 isSearchable
                 styles={selectStyles}
-                components={{ DropdownIndicator: CustomDropdownIndicator }}
+                components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
               />
             </div>
             <button
