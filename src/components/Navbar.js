@@ -64,19 +64,19 @@ function Navbar() {
   };
 
   const handleLogout = () => {
-    // 1. sessionStorage에서 사용자 정보 삭제
-    sessionStorage.removeItem('mentoUser');
-    
-    // 2. App.js가 라우팅을 다시 계산하도록 /login으로 강제 이동 및 새로고침
-    window.location.href = '/login'; 
-  };
+    // 1. sessionStorage에서 사용자 정보 삭제
+    sessionStorage.removeItem('mentoUser');
+    
+    // 2. App.js가 라우팅을 다시 계산하도록 /login으로 강제 이동 및 새로고침
+    window.location.href = '/login'; 
+  };
 
-  return (
-    <nav className="navbar">
-      <NavLink to="/recommend" className="navbar-logo">
-        MentoAI
-      </NavLink>
-      
+  return (
+    <nav className="navbar">
+      <NavLink to="/recommend" className="navbar-logo">
+        MentoAI
+      </NavLink>
+ 
       <ul className="navbar-menu">
         <li>
           <NavLink to="/recommend" className={({ isActive }) => (isActive ? 'active' : '')}>
@@ -107,10 +107,10 @@ function Navbar() {
       </div>
 
       <button onClick={handleLogout} className="logout-button">
-        로그아웃
-      </button>
-    </nav>
-  );
+        로그아웃
+      </button>
+    </nav>
+  );
 }
 
 export default Navbar;

@@ -45,6 +45,12 @@ function MyPage() {
   const [isCalculatingBatch, setIsCalculatingBatch] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
 
+  // 드롭다운 옵션 state
+  const [majorOptions, setMajorOptions] = useState([]);
+  const [jobOptions, setJobOptions] = useState([]);
+  const [techStackOptions, setTechStackOptions] = useState([]);
+  const [certificationOptions, setCertificationOptions] = useState([]);
+
   // 페이지 로드 시 /profile API를 호출하여 기존 정보 로드
   useEffect(() => {
     const fetchProfile = async () => {
@@ -53,11 +59,14 @@ function MyPage() {
         if (!userId) throw new Error("No auth data");
 
         // [신규] 추가 API 연동 확인 (태그, 직무, 메타데이터) - 병렬 호출
-        const [profileResponse, tagsResponse, rolesResponse, metaSkillsResponse] = await Promise.allSettled([
+        const [profileResponse, tagsResponse, rolesResponse, metaSkillsResponse, metaMajorsResponse, metaJobsResponse, metaCertsResponse] = await Promise.allSettled([
           apiClient.get(`/users/${userId}/profile`),
           apiClient.get('/tags'),
           apiClient.get('/roles'),
-          apiClient.get('/meta/skills')
+          apiClient.get('/meta/skills'),
+          apiClient.get('/meta/majors'),
+          apiClient.get('/meta/jobs'),
+          apiClient.get('/meta/certifications')
         ]);
 
         // 1. 프로필 응답 처리
@@ -110,8 +119,8 @@ function MyPage() {
         } else {
           console.error("마이페이지 프로필 로드 실패:", profileResponse.reason);
           if (profileResponse.reason?.response?.status !== 404) {
-             // 404는 프로필이 없는 경우이므로 무시, 그 외 에러는 알림
-             console.warn(`프로필 로딩 실패: ${profileResponse.reason.message}`);
+            // 404는 프로필이 없는 경우이므로 무시, 그 외 에러는 알림
+            console.warn(`프로필 로딩 실패: ${profileResponse.reason.message}`);
           }
         }
 
@@ -130,8 +139,21 @@ function MyPage() {
 
         if (metaSkillsResponse.status === 'fulfilled') {
           console.log('[MyPage] GET /meta/skills 응답:', metaSkillsResponse.value.data);
+          setTechStackOptions(metaSkillsResponse.value.data.map(s => ({ value: s, label: s })));
         } else {
           console.warn('[MyPage] GET /meta/skills 실패:', metaSkillsResponse.reason);
+        }
+
+        if (metaMajorsResponse.status === 'fulfilled') {
+          setMajorOptions(metaMajorsResponse.value.data.map(m => ({ value: m, label: m })));
+        }
+
+        if (metaJobsResponse.status === 'fulfilled') {
+          setJobOptions(metaJobsResponse.value.data.map(j => ({ value: j, label: j })));
+        }
+
+        if (metaCertsResponse.status === 'fulfilled') {
+          setCertificationOptions(metaCertsResponse.value.data.map(c => ({ value: c, label: c })));
         }
 
       } catch (error) {
@@ -398,7 +420,13 @@ function MyPage() {
             </div>
             <div className="form-group">
               <label>전공</label>
-              <input type="text" value={education.major} onChange={(e) => setEducation({ ...education, major: e.target.value })} required placeholder="예: 컴퓨터공학과" />
+              <CustomSelect
+                options={majorOptions}
+                value={education.major}
+                onChange={(newValue) => setEducation({ ...education, major: newValue })}
+                placeholder="선택 또는 검색..."
+                isSearchable
+              />
             </div>
             <div className="form-group">
               <label>학년</label>
@@ -410,7 +438,13 @@ function MyPage() {
             </div>
             <div className="form-group">
               <label>목표 직무</label>
-              <input type="text" value={careerGoal} onChange={(e) => setCareerGoal(e.target.value)} required placeholder="예: AI 엔지니어" />
+              <CustomSelect
+                options={jobOptions}
+                value={careerGoal}
+                onChange={(newValue) => setCareerGoal(newValue)}
+                placeholder="선택 또는 검색..."
+                isSearchable
+              />
             </div>
           </div>
         </div>
@@ -421,13 +455,19 @@ function MyPage() {
           <div className="form-grid skill-grid" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
             <div className="form-group" style={{ flex: 1 }}>
               <label>기술 이름</label>
-              <input type="text" placeholder="예: React" value={currentSkill.name} onChange={(e) => setCurrentSkill({ ...currentSkill, name: e.target.value })} />
+              <CustomSelect
+                options={techStackOptions}
+                value={currentSkill.name}
+                onChange={(newValue) => setCurrentSkill({ ...currentSkill, name: newValue })}
+                placeholder="선택 또는 검색..."
+                isSearchable
+              />
             </div>
-            <button 
-              type="button" 
-              className="add-item-btn" 
+            <button
+              type="button"
+              className="add-item-btn"
               onClick={handleAddSkill}
-              style={{ height: '40px', marginBottom: '1px', flex: '0 0 80px', borderRadius: '8px' }} 
+              style={{ height: '40px', marginBottom: '1px', flex: '0 0 80px', borderRadius: '8px' }}
             >
               추가
             </button>
@@ -464,7 +504,18 @@ function MyPage() {
             </div>
             <div className="form-group">
               <label>사용 기술</label>
-              <input type="text" placeholder="예: React, Spring" value={currentExperience.techStack} onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })} />
+              <input
+                type="text"
+                placeholder="예: React, Spring"
+                value={currentExperience.techStack}
+                onChange={(e) => setCurrentExperience({ ...currentExperience, techStack: e.target.value })}
+                list="techstack-datalist"
+              />
+              <datalist id="techstack-datalist">
+                {techStackOptions.map((option, i) => (
+                  <option key={i} value={option.value} />
+                ))}
+              </datalist>
             </div>
             <div className="form-group grid-col-span-2 grid-align-end">
               <button type="button" className="add-item-btn" onClick={handleAddExperience}>추가</button>
@@ -484,16 +535,22 @@ function MyPage() {
         <div className="form-section">
           <h3 style={{ marginBottom: '15px' }}>자격증</h3>
           <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-            <input 
-              type="text" 
-              placeholder="자격증 이름 (예: 정보처리기사)" 
-              value={currentCert} 
-              onChange={(e) => setCurrentCert(e.target.value)} 
+            <input
+              type="text"
+              placeholder="자격증 이름 (예: 정보처리기사)"
+              value={currentCert}
+              onChange={(e) => setCurrentCert(e.target.value)}
               style={{ flex: 1, height: '40px', borderRadius: '8px', border: '1px solid #ccc', padding: '0 12px' }}
+              list="cert-datalist"
             />
-            <button 
-              type="button" 
-              className="add-item-btn" 
+            <datalist id="cert-datalist">
+              {certificationOptions.map((option, i) => (
+                <option key={i} value={option.value} />
+              ))}
+            </datalist>
+            <button
+              type="button"
+              className="add-item-btn"
               onClick={handleAddCert}
               style={{ height: '40px', flex: '0 0 80px', borderRadius: '8px' }}
             >
