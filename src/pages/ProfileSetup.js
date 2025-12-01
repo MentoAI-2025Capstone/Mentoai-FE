@@ -165,6 +165,7 @@ function ProfileSetup() {
   const selectStyles = {
     control: (base, state) => ({
       ...base,
+      height: '40px',
       minHeight: '40px',
       borderRadius: '8px',
       borderColor: '#ccc',
@@ -177,17 +178,17 @@ function ProfileSetup() {
     }),
     valueContainer: (base) => ({
       ...base,
-      padding: '2px 8px',
+      padding: '0 8px',
       display: 'flex',
       alignItems: 'center',
-      flexWrap: 'wrap',
-      minHeight: '38px'
+      flexWrap: 'nowrap',
+      height: '100%'
     }),
-    placeholder: (base) => ({
+    placeholder: (base, state) => ({
       ...base,
       color: '#888',
       margin: 0,
-      lineHeight: '38px'
+      display: state.isFocused ? 'none' : 'block'
     }),
     menu: (base) => ({
       ...base,
