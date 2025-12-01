@@ -184,7 +184,6 @@ function MyPage() {
     control: (base, state) => ({
       ...base,
       minHeight: '40px',
-      height: '40px',
       borderRadius: '8px',
       borderColor: '#ccc',
       boxShadow: 'none',
@@ -196,11 +195,10 @@ function MyPage() {
     }),
     valueContainer: (base) => ({
       ...base,
-      padding: '0 12px',
-      height: '38px',
+      padding: '2px 8px',
       display: 'flex',
       alignItems: 'center',
-      lineHeight: '38px'
+      flexWrap: 'wrap'
     }),
     placeholder: (base) => ({
       ...base,
@@ -345,6 +343,7 @@ function MyPage() {
                 styles={selectStyles}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 placeholder="학년 선택"
+                isSearchable
               />
             </div>
           </div>
@@ -410,6 +409,7 @@ function MyPage() {
                 onChange={(selected) => setCurrentExperience({ ...currentExperience, type: selected.value })}
                 styles={selectStyles}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
+                isSearchable
               />
             </div>
             <div className="form-group">
@@ -435,6 +435,7 @@ function MyPage() {
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 blurInputOnSelect={false}
                 openMenuOnFocus={false}
+                isSearchable
               />
             </div>
             <div className="form-group grid-col-span-2 grid-align-end">
@@ -452,7 +453,7 @@ function MyPage() {
         </div>
 
         <div className="form-section">
-          <h3 style={{ marginBottom: '15px' }}>자격증</h3>
+          <h3>자격증</h3>
           <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
             <div style={{ flex: 1 }}>
               <CustomSelect

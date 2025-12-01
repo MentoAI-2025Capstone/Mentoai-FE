@@ -166,7 +166,6 @@ function ProfileSetup() {
     control: (base, state) => ({
       ...base,
       minHeight: '40px',
-      height: '40px',
       borderRadius: '8px',
       borderColor: '#ccc',
       boxShadow: 'none',
@@ -178,11 +177,10 @@ function ProfileSetup() {
     }),
     valueContainer: (base) => ({
       ...base,
-      padding: '0 12px',
-      height: '38px',
+      padding: '2px 8px',
       display: 'flex',
       alignItems: 'center',
-      lineHeight: '38px'
+      flexWrap: 'wrap'
     }),
     placeholder: (base) => ({
       ...base,
@@ -322,6 +320,7 @@ function ProfileSetup() {
                 styles={selectStyles}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 placeholder="학년 선택"
+                isSearchable
               />
             </div>
           </div>
@@ -387,6 +386,7 @@ function ProfileSetup() {
                 onChange={(selected) => setCurrentExperience({ ...currentExperience, type: selected.value })}
                 styles={selectStyles}
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
+                isSearchable
               />
             </div>
             <div className="form-group">
@@ -412,6 +412,7 @@ function ProfileSetup() {
                 components={{ DropdownIndicator: CustomDropdownIndicator }}
                 blurInputOnSelect={false}
                 openMenuOnFocus={false}
+                isSearchable
               />
             </div>
 
@@ -430,7 +431,7 @@ function ProfileSetup() {
         </div>
 
         <div className="form-section">
-          <h3 style={{ marginBottom: '15px' }}>자격증</h3>
+          <h3>자격증</h3>
           <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
             <div style={{ flex: 1 }}>
               <CustomSelect
