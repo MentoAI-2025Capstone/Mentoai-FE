@@ -44,6 +44,15 @@ function Dashboard() {
         try {
           const calendarRes = await apiClient.get(`/users/${userId}/calendar/events`);
           const events = calendarRes.data || [];
+          console.log('[Dashboard] 캘린더 이벤트 응답', events.map(e => ({
+            eventId: e.eventId,
+            eventType: e.eventType,
+            activityId: e.activityId,
+            activityTitle: e.activityTitle,
+            jobPostingTitle: e.jobPostingTitle,
+            jobPostingCompany: e.jobPostingCompany,
+            fallbackTitle: e.title
+          })));
 
           const now = new Date();
           const oneMonthAgo = new Date();
