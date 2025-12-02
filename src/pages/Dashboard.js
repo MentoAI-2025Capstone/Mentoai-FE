@@ -153,45 +153,42 @@ function Dashboard() {
           </button>
         </div>
 
-        {/* 3. 캘린더 스니펫 */}
-        <div className="card calendar-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginTop: 0 }}>📅 일정 요약</h3>
+        {/* 3. 임박한 일정 카드 */}
+        <div className="card upcoming-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ marginTop: 0, color: '#d32f2f' }}>🔥 임박한 일정</h3>
+          {upcomingEvents.length > 0 ? (
+            <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
+              {upcomingEvents.map(e => (
+                <li key={e.eventId} style={{ marginBottom: '8px' }}>
+                  <strong>{e.activityTitle || e.title || '일정'}</strong> <br />
+                  <span style={{ color: '#666', fontSize: '0.85rem' }}>
+                    {new Date(e.startAt).toLocaleDateString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ fontSize: '0.85rem', color: '#888' }}>예정된 일정이 없습니다.</p>
+          )}
+        </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <h4 style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: '#d32f2f' }}>🔥 임박한 일정</h4>
-            {upcomingEvents.length > 0 ? (
-              <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
-                {upcomingEvents.map(e => (
-                  <li key={e.eventId} style={{ marginBottom: '4px' }}>
-                    <strong>{e.activityTitle || e.title || '일정'}</strong> <br />
-                    <span style={{ color: '#666', fontSize: '0.85rem' }}>
-                      {new Date(e.startAt).toLocaleDateString()} {new Date(e.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p style={{ fontSize: '0.85rem', color: '#888' }}>예정된 일정이 없습니다.</p>
-            )}
-          </div>
-
-          <div>
-            <h4 style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: '#1976d2' }}>⏮ 지난달 활동</h4>
-            {pastEvents.length > 0 ? (
-              <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
-                {pastEvents.map(e => (
-                  <li key={e.eventId} style={{ marginBottom: '4px' }}>
-                    <strong>{e.activityTitle || e.title || '활동'}</strong> <br />
-                    <span style={{ color: '#666', fontSize: '0.85rem' }}>
-                      {new Date(e.startAt).toLocaleDateString()}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p style={{ fontSize: '0.85rem', color: '#888' }}>지난 활동이 없습니다.</p>
-            )}
-          </div>
+        {/* 4. 지난달 활동 카드 */}
+        <div className="card past-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ marginTop: 0, color: '#1976d2' }}>⏮ 지난달 활동</h3>
+          {pastEvents.length > 0 ? (
+            <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
+              {pastEvents.map(e => (
+                <li key={e.eventId} style={{ marginBottom: '8px' }}>
+                  <strong>{e.activityTitle || e.title || '활동'}</strong> <br />
+                  <span style={{ color: '#666', fontSize: '0.85rem' }}>
+                    {new Date(e.startAt).toLocaleDateString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ fontSize: '0.85rem', color: '#888' }}>지난 활동이 없습니다.</p>
+          )}
         </div>
 
       </div>
