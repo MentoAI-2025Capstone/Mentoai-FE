@@ -93,27 +93,13 @@
   transition: all 0.2s;
 }
 
-.navbar-menu a:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.navbar-menu a.active {
-  color: white;
-  font-weight: 700;
-}
-
-/* --- 오른쪽 영역: 로그아웃 --- */
-.logout-button {
-  padding: 6px 14px;
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  background-color: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
+font-weight: 500;
+color: rgba(255, 255, 255, 0.9);
+background-color: transparent;
+border: 1px solid rgba(255, 255, 255, 0.3);
+border-radius: 4px;
+cursor: pointer;
+transition: all 0.2s;
 }
 
 .logout-button:hover {
