@@ -59,7 +59,7 @@ export default function OAuthCallback() {
 
         // 7) 프로필 완성 여부에 따라 최종 목적지로 이동
         const profileComplete = meResponse.data?.profileComplete;
-        const destination = profileComplete ? '/recommend' : '/profile-setup';
+        const destination = profileComplete ? '/dashboard' : '/profile-setup';
 
         // App.js가 새 정보를 읽도록 새로고침
         window.location.href = destination;

@@ -18,7 +18,6 @@ const getUserIdFromStorage = () => {
 function Dashboard() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
-  const [recommendations, setRecommendations] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,22 +36,7 @@ function Dashboard() {
         const profileRes = await apiClient.get(`/users/${userId}/profile`);
         setProfile(profileRes.data);
 
-        // 2. 추천 활동 가져오기 (기본 쿼리)
-        try {
-          const recommendRes = await apiClient.post('/recommend', {
-            userId: userId,
-            query: "나에게 맞는 활동 추천해줘",
-            topK: 2, // 상위 2개만
-            useProfileHints: true
-          });
-          if (recommendRes.data && recommendRes.data.items) {
-            setRecommendations(recommendRes.data.items);
-          }
-        } catch (e) {
-          console.warn('추천 로드 실패:', e);
-        }
-
-        // 3. 캘린더 이벤트 가져오기
+        // 2. 캘린더 이벤트 가져오기
         try {
           const calendarRes = await apiClient.get(`/users/${userId}/calendar/events`);
           const events = calendarRes.data || [];
@@ -68,7 +52,6 @@ function Dashboard() {
             .slice(0, 3);
 
           // 지난달 활동 (startAt 또는 endAt이 지난달)
-          // 여기서는 단순하게 startAt 기준으로 지난달~오늘 이전 필터링
           const past = events
             .filter(e => {
               const d = new Date(e.startAt);
@@ -105,6 +88,16 @@ function Dashboard() {
     navigate('/prompt', { state: { initialPrompt: prompt } });
   };
 
+  // 기술 스택 문자열 생성
+  const getTechStackString = () => {
+    if (!profile?.techStack) return '설정되지 않음';
+    // techStack이 객체 배열({name, level})인지 문자열 배열인지 확인
+    if (Array.isArray(profile.techStack)) {
+      return profile.techStack.map(t => (typeof t === 'string' ? t : t.name)).join(', ');
+    }
+    return '설정되지 않음';
+  };
+
   if (isLoading) {
     return (
       <div className="page-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -122,9 +115,9 @@ function Dashboard() {
         {/* 1. 사용자 프로필 요약 */}
         <div className="card profile-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', position: 'relative' }}>
           <h3 style={{ marginTop: 0 }}>👋 안녕하세요, {profile?.name || '사용자'}님!</h3>
-          <p style={{ color: '#666' }}>
+          <p style={{ color: '#666', lineHeight: '1.6' }}>
             <strong>관심 직무:</strong> {profile?.interestDomains?.join(', ') || '설정되지 않음'}<br />
-            <strong>관심 기술:</strong> {profile?.interestTechs?.join(', ') || '설정되지 않음'}
+            <strong>보유 기술:</strong> {getTechStackString()}
           </p>
           <button
             onClick={() => navigate('/mypage')}
@@ -160,29 +153,7 @@ function Dashboard() {
           </button>
         </div>
 
-        {/* 3. 추천 콘텐츠 요약 */}
-        <div className="card recommend-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', gridColumn: 'span 1' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-            <h3 style={{ margin: 0 }}>✨ 오늘의 추천 활동</h3>
-            <button onClick={() => navigate('/recommend')} style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer' }}>더보기 &gt;</button>
-          </div>
-          {recommendations.length > 0 ? (
-            <ul style={{ paddingLeft: '20px', margin: 0 }}>
-              {recommendations.map((item, idx) => (
-                <li key={idx} style={{ marginBottom: '8px' }}>
-                  <strong>{item.activity?.title || item.title}</strong>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#666' }}>
-                    {item.reason ? item.reason.substring(0, 50) + '...' : '추천 활동입니다.'}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p style={{ color: '#888' }}>추천 활동을 불러오는 중이거나 없습니다.</p>
-          )}
-        </div>
-
-        {/* 4. 캘린더 스니펫 */}
+        {/* 3. 캘린더 스니펫 */}
         <div className="card calendar-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <h3 style={{ marginTop: 0 }}>📅 일정 요약</h3>
 
@@ -191,8 +162,11 @@ function Dashboard() {
             {upcomingEvents.length > 0 ? (
               <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
                 {upcomingEvents.map(e => (
-                  <li key={e.eventId}>
-                    {e.activityTitle} ({new Date(e.startAt).toLocaleDateString()})
+                  <li key={e.eventId} style={{ marginBottom: '4px' }}>
+                    <strong>{e.activityTitle || e.title || '일정'}</strong> <br />
+                    <span style={{ color: '#666', fontSize: '0.85rem' }}>
+                      {new Date(e.startAt).toLocaleDateString()} {new Date(e.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -206,8 +180,11 @@ function Dashboard() {
             {pastEvents.length > 0 ? (
               <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
                 {pastEvents.map(e => (
-                  <li key={e.eventId}>
-                    {e.activityTitle} ({new Date(e.startAt).toLocaleDateString()})
+                  <li key={e.eventId} style={{ marginBottom: '4px' }}>
+                    <strong>{e.activityTitle || e.title || '활동'}</strong> <br />
+                    <span style={{ color: '#666', fontSize: '0.85rem' }}>
+                      {new Date(e.startAt).toLocaleDateString()}
+                    </span>
                   </li>
                 ))}
               </ul>
