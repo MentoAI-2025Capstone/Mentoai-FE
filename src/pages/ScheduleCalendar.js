@@ -52,10 +52,15 @@ function ScheduleCalendar() {
             const startDate = new Date(event.startAt);
             const dateString = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
             
+            const title =
+              event.activityTitle ||
+              event.jobPostingTitle ||
+              (event.activityId ? `활동 #${event.activityId}` : '일정');
+
             return {
               id: event.eventId,
               date: dateString,
-              title: event.activityId ? `활동 #${event.activityId}` : '일정',
+              title,
               startAt: event.startAt,
               endAt: event.endAt,
               activityId: event.activityId,
