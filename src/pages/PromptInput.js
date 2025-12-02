@@ -1,6 +1,7 @@
 // src/pages/PromptInput.js
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import styles from './PromptInput.module.css';
 import { checkGuardrails } from '../utils/guardrails';
 import apiClient from '../api/apiClient';
