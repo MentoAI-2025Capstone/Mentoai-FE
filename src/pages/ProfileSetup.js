@@ -51,7 +51,7 @@ function ProfileSetup() {
   const [careerGoal, setCareerGoal] = useState('');
 
   const [skills, setSkills] = useState([]);
-  const [currentSkill, setCurrentSkill] = useState({ name: '', level: '중' });
+  const [currentSkill, setCurrentSkill] = useState({ name: '' });
   const [experiences, setExperiences] = useState([]);
   const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', techStack: '' });
   const [evidence, setEvidence] = useState({ certifications: [] });
@@ -77,7 +77,7 @@ function ProfileSetup() {
   const handleAddSkill = () => {
     if (currentSkill.name && !skills.some(s => s.name === currentSkill.name)) {
       setSkills([...skills, currentSkill]);
-      setCurrentSkill({ ...currentSkill, name: '' });
+      setCurrentSkill({ name: '' });
     }
   };
 
@@ -104,8 +104,7 @@ function ProfileSetup() {
         interestDomains: careerGoal ? [careerGoal] : [],
         techStack: skills.map(skill => ({
           name: skill.name,
-          level: skill.level === '상' ? 'ADVANCED' :
-            skill.level === '중' ? 'INTERMEDIATE' : 'BEGINNER'
+          level: 'INTERMEDIATE'
         })),
         experiences: experiences.map(exp => {
           return {
@@ -318,7 +317,7 @@ function ProfileSetup() {
               <label>기술 이름</label>
               <CustomSelect
                 options={skillOptions}
-                value={skillOptions.find(s => s.value === currentSkill.name)}
+                value={skillOptions.find(s => s.value === currentSkill.name) || null}
                 onChange={(selected) => setCurrentSkill({ ...currentSkill, name: selected ? selected.value : '' })}
                 placeholder="선택 또는 검색..."
                 isSearchable
@@ -406,7 +405,7 @@ function ProfileSetup() {
             <div style={{ flex: 1 }}>
               <CustomSelect
                 options={certOptions}
-                value={certOptions.find(c => c.value === currentCert)}
+                value={certOptions.find(c => c.value === currentCert) || null}
                 onChange={(selected) => setCurrentCert(selected ? selected.value : '')}
                 placeholder="자격증 선택..."
                 isSearchable

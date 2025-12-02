@@ -47,7 +47,7 @@ function MyPage() {
   const [education, setEducation] = useState({ school: '', major: '', grade: '' });
   const [careerGoal, setCareerGoal] = useState('');
   const [skills, setSkills] = useState([]);
-  const [currentSkill, setCurrentSkill] = useState({ name: '', level: '중' });
+  const [currentSkill, setCurrentSkill] = useState({ name: '' });
   const [experiences, setExperiences] = useState([]);
   const [currentExperience, setCurrentExperience] = useState({ type: 'PROJECT', role: '', techStack: '' });
   const [evidence, setEvidence] = useState({ certifications: [] });
@@ -82,7 +82,7 @@ function MyPage() {
             grade: data.university?.grade ? String(data.university.grade) : ''
           });
           setCareerGoal(data.interestDomains?.[0] || '');
-          setSkills(data.techStack?.map(ts => ({ name: ts.name, level: ts.level === 'ADVANCED' ? '상' : ts.level === 'INTERMEDIATE' ? '중' : '하' })) || []);
+          setSkills(data.techStack?.map(ts => ({ name: ts.name })) || []);
           setExperiences(data.experiences?.map(exp => ({
             type: exp.type,
             role: exp.role,
@@ -107,7 +107,7 @@ function MyPage() {
   const handleAddSkill = () => {
     if (currentSkill.name && !skills.some(s => s.name === currentSkill.name)) {
       setSkills([...skills, currentSkill]);
-      setCurrentSkill({ ...currentSkill, name: '' });
+      setCurrentSkill({ name: '' });
     }
   };
 
@@ -131,8 +131,7 @@ function MyPage() {
         interestDomains: careerGoal ? [careerGoal] : [],
         techStack: skills.map(skill => ({
           name: skill.name,
-          level: skill.level === '상' ? 'ADVANCED' :
-            skill.level === '중' ? 'INTERMEDIATE' : 'BEGINNER'
+          level: 'INTERMEDIATE'
         })),
         experiences: experiences.map(exp => {
           return {
@@ -290,6 +289,7 @@ function MyPage() {
                   })
                 }}
                 components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
+                required
               />
             </div>
             <div className="form-group">
@@ -341,8 +341,8 @@ function MyPage() {
               <label>기술 이름</label>
               <CustomSelect
                 options={skillOptions}
-                value={skillOptions.find(s => s.value === currentSkill.name)}
-                onChange={(selected) => setCurrentSkill({ ...currentSkill, name: selected ? selected.value : '' })}
+                value={skillOptions.find(s => s.value === currentSkill.name) || null}
+                onChange={(selected) => setCurrentSkill({ name: selected ? selected.value : '' })}
                 placeholder="선택 또는 검색..."
                 isSearchable
                 styles={selectStyles}
@@ -428,7 +428,7 @@ function MyPage() {
             <div style={{ flex: 1 }}>
               <CustomSelect
                 options={certOptions}
-                value={certOptions.find(c => c.value === currentCert)}
+                value={certOptions.find(c => c.value === currentCert) || null}
                 onChange={(selected) => setCurrentCert(selected ? selected.value : '')}
                 placeholder="자격증 선택..."
                 isSearchable
