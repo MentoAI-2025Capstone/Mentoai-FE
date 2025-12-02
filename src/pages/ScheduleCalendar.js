@@ -230,6 +230,8 @@ function ScheduleCalendar() {
           alertMinutes: 1440
         };
 
+        console.log('[ScheduleCalendar] PUT payload', eventData);
+
         const response = await apiClient.put(
           `/users/${userId}/calendar/events/${selectedEvent.eventId}`,
           eventData
@@ -264,6 +266,8 @@ function ScheduleCalendar() {
           endAt: newEvent.date ? new Date(newEvent.date).toISOString() : undefined,
           alertMinutes: 1440
         };
+
+        console.log('[ScheduleCalendar] POST payload', eventData);
 
         const response = await apiClient.post(
           `/users/${userId}/calendar/events`,
