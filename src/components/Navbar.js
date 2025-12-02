@@ -10,19 +10,19 @@ function Navbar() {
 
   return (
     <nav className="navbar">
-      {/* 왼쪽: 로고 + 대시보드 링크 (구분선으로 분리) */}
+      {/* 왼쪽: 로고 + 대시보드 뱃지 */}
       <div className="navbar-left">
         <NavLink to="/dashboard" className="navbar-logo">
           MentoAI
         </NavLink>
 
-        <span className="navbar-divider">|</span>
-
         <NavLink
           to="/dashboard"
-          className={({ isActive }) => (isActive ? 'navbar-dashboard active' : 'navbar-dashboard')}
+          className={({ isActive }) => (isActive ? 'navbar-dashboard-pill active' : 'navbar-dashboard-pill')}
+          title="대시보드 홈으로 이동"
         >
-          대시보드
+          <span>🏠</span>
+          <span>대시보드</span>
         </NavLink>
       </div>
 
@@ -30,22 +30,22 @@ function Navbar() {
       <ul className="navbar-menu">
         <li>
           <NavLink to="/recommend" className={({ isActive }) => (isActive ? 'active' : '')}>
-            📚 활동 추천 목록
+            활동 추천
           </NavLink>
         </li>
         <li>
           <NavLink to="/prompt" className={({ isActive }) => (isActive ? 'active' : '')}>
-            ✨ 진로설계 AI
+            진로설계 AI
           </NavLink>
         </li>
         <li>
           <NavLink to="/schedule" className={({ isActive }) => (isActive ? 'active' : '')}>
-            📅 활동 캘린더
+            캘린더
           </NavLink>
         </li>
         <li>
           <NavLink to="/mypage" className={({ isActive }) => (isActive ? 'active' : '')}>
-            👤 마이페이지
+            마이페이지
           </NavLink>
         </li>
       </ul>
