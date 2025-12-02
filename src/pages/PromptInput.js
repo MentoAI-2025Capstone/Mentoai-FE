@@ -103,6 +103,16 @@ const RecommendationItem = ({ item, onAddToCalendar }) => {
   );
 };
 
+// 활동 타입을 캘린더 이벤트 타입으로 변환
+const resolveEventType = (activity) => {
+  const rawType = (activity?.type || '').toUpperCase();
+
+  if (rawType === 'JOB') return 'JOB_POSTING';
+  if (rawType === 'CUSTOM') return 'CUSTOM';
+
+  return 'ACTIVITY'; // CONTEST, STUDY, CAMPUS 등은 활동으로 간주
+};
+
 function PromptInput() {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -212,7 +222,7 @@ function PromptInput() {
       await apiClient.post('/recommend/calendar', {
         userId,
         activityId: item.activity.activityId,
-        eventType: item.activity.type || 'UNKNOWN',
+        eventType: resolveEventType(item.activity),
         startAt,
         alertMinutes: 1440 // 1일 전 알림 기본값
       });
