@@ -246,6 +246,9 @@ function ProfileSetup() {
                 onChange={(selected) => setEducation({ ...education, school: selected ? selected.value : '' })}
                 value={education.school ? { label: education.school, value: education.school } : null}
                 placeholder="학교 검색"
+                noOptionsMessage={({ inputValue }) =>
+                  inputValue ? '검색 결과가 없습니다.' : '학교명을 입력해 검색하세요.'
+                }
                 styles={{
                   ...selectStyles,
                   input: (base) => ({
