@@ -303,7 +303,7 @@ function ProfileSetup() {
               options={jobOptions}
               value={jobOptions.find(j => j.value === careerGoal)}
               onChange={(selected) => setCareerGoal(selected ? selected.value : '')}
-              placeholder="희망 직무 선택 (예: 백엔드 개발자)"
+              placeholder="희망 직무 선택"
               isSearchable
               styles={selectStyles}
               components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
