@@ -16,28 +16,6 @@ function Navbar() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
         <NavLink to="/dashboard" className="navbar-logo">
           MentoAI
-        </NavLink>
-
-        {/* 홈 버튼 (대시보드) */}
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) => (isActive ? 'active-home' : 'nav-home')}
-          style={{
-            textDecoration: 'none',
-            fontSize: '1.2rem',
-            display: 'flex',
-            alignItems: 'center',
-            color: 'inherit'
-          }}
-          title="대시보드 홈"
-        >
-          🏠
-        </NavLink>
-      </div>
-
-      <ul className="navbar-menu">
-        {/* 대시보드는 로고 옆으로 이동했으므로 여기서 제거 */}
-        <li>
           <NavLink to="/recommend" className={({ isActive }) => (isActive ? 'active' : '')}>
             📚 활동 추천 목록
           </NavLink>
