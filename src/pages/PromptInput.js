@@ -212,6 +212,7 @@ function PromptInput() {
       await apiClient.post('/recommend/calendar', {
         userId,
         activityId: item.activity.activityId,
+        eventType: item.activity.type || 'UNKNOWN',
         startAt,
         alertMinutes: 1440 // 1일 전 알림 기본값
       });
