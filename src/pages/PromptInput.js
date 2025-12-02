@@ -154,6 +154,33 @@ function PromptInput() {
     fetchHistory();
   }, []);
 
+  // [추가] 대시보드 등에서 전달된 초기 프롬프트 처리
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.initialPrompt) {
+      const initPrompt = location.state.initialPrompt;
+      // 상태 초기화 (재진입 방지)
+      window.history.replaceState({}, document.title);
+
+      setPrompt(initPrompt);
+      // 약간의 지연 후 실행 (상태 업데이트 반영 보장)
+      setTimeout(() => {
+        // handleRecommend는 prompt 상태를 사용하므로, 
+        // 여기서는 직접 호출하기보다 setPrompt 후 버튼 클릭을 시뮬레이션하거나
+        // handleRecommend가 인자를 받도록 수정하는 것이 좋음.
+        // 하지만 기존 구조 유지를 위해, 여기서는 prompt 상태가 업데이트 된 후 
+        // 사용자가 엔터를 치거나 버튼을 누른 것과 동일하게 동작하도록 
+        // 별도의 트리거 로직을 구현하거나 handleRecommend를 수정해야 함.
+
+        // 가장 간단한 방법: handleRecommend 내부에서 prompt 상태 대신 인자를 우선 사용하도록 수정.
+        // 또는 여기서 직접 로직 수행.
+
+        // 리팩토링: handleRecommend가 인자를 받을 수 있게 수정하고 호출.
+        handleRecommend(initPrompt);
+      }, 100);
+    }
+  }, [location.state]);
+
   // 캘린더 추가 핸들러
   const handleAddToCalendar = async (item) => {
     const userId = getUserIdFromStorage();
@@ -248,18 +275,21 @@ function PromptInput() {
     ]);
   };
 
-  const handleRecommend = async () => {
-    if (isLoading || !prompt.trim()) return;
+  const handleRecommend = async (promptText = null) => {
+    // 인자가 있으면 그것을 사용, 없으면 상태값 사용
+    const targetPrompt = (typeof promptText === 'string') ? promptText : prompt;
 
-    const guardrailResult = checkGuardrails(prompt);
+    if (isLoading || !targetPrompt.trim()) return;
+
+    const guardrailResult = checkGuardrails(targetPrompt);
     if (!guardrailResult.isSafe) {
       alert(guardrailResult.message);
       return;
     }
 
     // 새 메시지 추가 (낙관적 업데이트)
-    setMessages(prev => [...prev, { role: 'user', content: prompt }]);
-    const currentPrompt = prompt;
+    setMessages(prev => [...prev, { role: 'user', content: targetPrompt }]);
+    const currentPrompt = targetPrompt;
     setPrompt('');
     setIsLoading(true);
 
