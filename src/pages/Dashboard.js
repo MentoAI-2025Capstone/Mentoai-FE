@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import './Page.css'; // 공통 스타일 사용
+import RadarChartComponent from '../components/RadarChartComponent';
 
 // sessionStorage에서 userId를 가져오는 헬퍼
 const getUserIdFromStorage = () => {
@@ -18,6 +19,7 @@ const getUserIdFromStorage = () => {
 function Dashboard() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
+  const [roleFit, setRoleFit] = useState(null);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,7 +36,21 @@ function Dashboard() {
       try {
         // 1. 프로필 정보 가져오기
         const profileRes = await apiClient.get(`/users/${userId}/profile`);
-        setProfile(profileRes.data);
+        const profileData = profileRes.data;
+        setProfile(profileData);
+
+        // 1.5 직무 적합도 가져오기 (관심 직무가 있는 경우)
+        if (profileData.interestDomains && profileData.interestDomains.length > 0) {
+          try {
+            const targetRole = profileData.interestDomains[0];
+            const roleFitRes = await apiClient.post(`/users/${userId}/role-fit`, {
+              target: targetRole
+            });
+            setRoleFit(roleFitRes.data);
+          } catch (e) {
+            console.warn('직무 적합도 로드 실패:', e);
+          }
+        }
 
         // 2. 캘린더 이벤트 가져오기
         try {
@@ -119,6 +135,17 @@ function Dashboard() {
             <strong>관심 직무:</strong> {profile?.interestDomains?.join(', ') || '설정되지 않음'}<br />
             <strong>보유 기술:</strong> {getTechStackString()}
           </p>
+
+          {/* 직무 적합도 차트 */}
+          {roleFit && roleFit.breakdown && (
+            <div style={{ marginTop: '20px' }}>
+              <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#555' }}>
+                🎯 {roleFit.target} 적합도: {roleFit.roleFitScore}점
+              </h4>
+              <RadarChartComponent data={roleFit.breakdown} />
+            </div>
+          )}
+
           <button
             onClick={() => navigate('/mypage')}
             style={{
