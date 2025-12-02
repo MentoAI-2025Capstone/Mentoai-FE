@@ -2,47 +2,33 @@
 
 .navbar {
   width: 100%;
-  height: 60px; /* 상단바 높이 */
-  background: linear-gradient(90deg, #1a73e8 0%, #0d47a1 100%); /* [수정] 고급스러운 그라데이션 */
-  padding: 0 30px; /* 좌우 패딩 */
-  color: white; /* [수정] 텍스트 흰색 복귀 */
+  height: 60px;
+  /* 상단바 높이 */
+  background: linear-gradient(90deg, #1a73e8 0%, #0d47a1 100%);
+  /* [수정] 고급스러운 그라데이션 */
+  padding: 0 30px;
+  /* 좌우 패딩 */
+  color: white;
+  /* [수정] 텍스트 흰색 복귀 */
   display: flex;
-  flex-direction: row; /* 수평 정렬 */
-  align-items: center; /* 세로 중앙 정렬 */
-  justify-content: space-between; /* 로고, 메뉴, 로그아웃 버튼 사이 공간 분배 */
+  flex-direction: row;
+  /* 수평 정렬 */
+  align-items: center;
+  /* 세로 중앙 정렬 */
+  justify-content: space-between;
+  /* 로고, 메뉴, 로그아웃 버튼 사이 공간 분배 */
   box-sizing: border-box;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* [수정] 그림자 조정 */
-  border-bottom: none; /* 하단 구분선 제거 */
-  
-  position: fixed; 
-  top: 0;
-  left: 0;
-  z-index: 100;
-}
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  /* [수정] 그림자 조정 */
+  border-bottom: none;
+  /* 하단 구분선 제거 */
 
-.navbar > * {
-  flex: 0 0 auto; /* 각 요소가 자동 크기 */
-}
-
-/* [수정] NavLink(a태그) 자체에 스타일 적용 */
-.navbar-logo {
-  font-size: 24px;
-  font-weight: 800;
-  color: white; /* [수정] 로고 흰색 */
-  text-decoration: none;
-  flex-shrink: 0;
-  margin-right: auto;
-  letter-spacing: -0.5px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.1); /* [추가] 미세한 텍스트 그림자 */
-}
-
-.navbar-menu {
-  list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: row;
-  gap: 10px; /* [수정] 간격 약간 조정 */
+  gap: 10px;
+  /* [수정] 간격 약간 조정 */
   position: static;
   white-space: nowrap;
   flex-wrap: nowrap;
@@ -55,7 +41,8 @@
 }
 
 .navbar-menu a {
-  color: rgba(255, 255, 255, 0.9); /* [수정] 약간 투명한 흰색 */
+  color: rgba(255, 255, 255, 0.9);
+  /* [수정] 약간 투명한 흰색 */
   text-decoration: none;
   font-size: 15px;
   font-weight: 500;
@@ -69,12 +56,14 @@
 }
 
 .navbar-menu a:hover {
-  background-color: rgba(255, 255, 255, 0.15); /* [수정] 반투명 흰색 배경 */
+  background-color: rgba(255, 255, 255, 0.15);
+  /* [수정] 반투명 흰색 배경 */
   color: white;
 }
 
 .navbar-menu a.active {
-  background-color: rgba(255, 255, 255, 0.25); /* [수정] 더 진한 반투명 배경 */
+  background-color: rgba(255, 255, 255, 0.25);
+  /* [수정] 더 진한 반투명 배경 */
   font-weight: 700;
   color: white;
   line-height: 16px;
@@ -83,12 +72,14 @@
 /* 알림 아이콘 스타일 */
 .notification-container {
   position: relative;
-  margin-right: 15px; /* 로그아웃 버튼과 간격 */
+  margin-right: 15px;
+  /* 로그아웃 버튼과 간격 */
   cursor: pointer;
   padding: 8px;
   border-radius: 50%;
   transition: background-color 0.2s;
-  margin-left: auto; /* 오른쪽 정렬을 위해 */
+  margin-left: auto;
+  /* 오른쪽 정렬을 위해 */
 }
 
 .notification-container:hover {
@@ -103,7 +94,8 @@
   position: absolute;
   top: 0;
   right: 0;
-  background-color: #ff4d4f; /* 빨간색 뱃지 */
+  background-color: #ff4d4f;
+  /* 빨간색 뱃지 */
   color: white;
   font-size: 11px;
   font-weight: bold;
@@ -119,14 +111,17 @@
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9); /* [수정] 텍스트 색상 */
+  color: rgba(255, 255, 255, 0.9);
+  /* [수정] 텍스트 색상 */
   background-color: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.4); /* [수정] 반투명 테두리 */
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  /* [수정] 반투명 테두리 */
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
-  margin-left: 0; /* 알림 아이콘이 auto를 가져감 */
+  margin-left: 0;
+  /* 알림 아이콘이 auto를 가져감 */
 }
 
 .logout-button:hover {

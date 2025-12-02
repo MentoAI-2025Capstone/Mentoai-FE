@@ -4,39 +4,29 @@ import './Navbar.css';
 
 function Navbar() {
   const handleLogout = () => {
-    // 1. sessionStorage에서 사용자 정보 삭제
     sessionStorage.removeItem('mentoUser');
-
-    // 2. App.js가 라우팅을 다시 계산하도록 /login으로 강제 이동 및 새로고침
     window.location.href = '/login';
   };
 
   return (
     <nav className="navbar">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+      {/* 왼쪽: 로고 + 대시보드 링크 (구분선으로 분리) */}
+      <div className="navbar-left">
         <NavLink to="/dashboard" className="navbar-logo">
           MentoAI
         </NavLink>
 
-        {/* 홈 버튼 (대시보드) */}
+        <span className="navbar-divider">|</span>
+
         <NavLink
           to="/dashboard"
-          className={({ isActive }) => (isActive ? 'active-home' : 'nav-home')}
-          style={{
-            textDecoration: 'none',
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            color: 'inherit',
-            marginLeft: '5px'
-          }}
-          title="대시보드 홈"
+          className={({ isActive }) => (isActive ? 'navbar-dashboard active' : 'navbar-dashboard')}
         >
           대시보드
         </NavLink>
       </div>
 
+      {/* 중앙: 주요 기능 메뉴 */}
       <ul className="navbar-menu">
         <li>
           <NavLink to="/recommend" className={({ isActive }) => (isActive ? 'active' : '')}>
@@ -60,6 +50,7 @@ function Navbar() {
         </li>
       </ul>
 
+      {/* 오른쪽: 로그아웃 */}
       <button onClick={handleLogout} className="logout-button">
         로그아웃
       </button>
