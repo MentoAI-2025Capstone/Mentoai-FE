@@ -23,8 +23,37 @@ function Navbar() {
         >
           <span>🏠</span>
           <span>대시보드</span>
-          로그아웃
-        </button>
+        </NavLink>
+      </div>
+
+      {/* 중앙: 주요 기능 메뉴 */}
+      <ul className="navbar-menu">
+        <li>
+          <NavLink to="/recommend" className={({ isActive }) => (isActive ? 'active' : '')}>
+            📚 활동 추천
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/prompt" className={({ isActive }) => (isActive ? 'active' : '')}>
+            ✨ 진로설계 AI
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/schedule" className={({ isActive }) => (isActive ? 'active' : '')}>
+            📅 캘린더
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/mypage" className={({ isActive }) => (isActive ? 'active' : '')}>
+            👤 마이페이지
+          </NavLink>
+        </li>
+      </ul>
+
+      {/* 오른쪽: 로그아웃 */}
+      <button onClick={handleLogout} className="logout-button">
+        로그아웃
+      </button>
     </nav>
   );
 }
