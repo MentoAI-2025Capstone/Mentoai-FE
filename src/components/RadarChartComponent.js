@@ -6,8 +6,7 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   ResponsiveContainer,
-  Tooltip,
-  Legend
+  Tooltip
 } from 'recharts';
 
 const RadarChartComponent = ({ data }) => {
@@ -22,11 +21,18 @@ const RadarChartComponent = ({ data }) => {
 
   // 커스텀 Tick 렌더러로 텍스트 잘림 방지
   const renderPolarAngleAxis = ({ payload, x, y, cx, cy, ...rest }) => {
+    // 중심으로부터의 방향 벡터 계산
+    const dx = x - cx;
+    const dy = y - cy;
+
+    // 거리 조절 계수 (기존보다 더 멀리 배치)
+    const offsetScale = 1.2;
+
     return (
       <text
         {...rest}
-        x={x + (x - cx) / 10} // 중심에서 조금 더 멀리 배치
-        y={y + (y - cy) / 10}
+        x={cx + dx * offsetScale}
+        y={cy + dy * offsetScale}
         dy={payload.value === '학력/전공' ? 10 : 0} // 하단 텍스트 위치 조정
         textAnchor="middle"
         fill="#666"
@@ -41,7 +47,7 @@ const RadarChartComponent = ({ data }) => {
   return (
     <div style={{ width: '100%', height: 320, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
+        <RadarChart cx="50%" cy="50%" outerRadius="65%" data={chartData}>
           <PolarGrid />
           <PolarAngleAxis
             dataKey="subject"
@@ -62,24 +68,6 @@ const RadarChartComponent = ({ data }) => {
           />
         </RadarChart>
       </ResponsiveContainer>
-
-      {/* 점수 상세 표 */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '8px',
-        width: '100%',
-        marginTop: '-10px',
-        padding: '0 10px',
-        fontSize: '0.85rem'
-      }}>
-        {chartData.map((item) => (
-          <div key={item.subject} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 8px', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
-            <span style={{ color: '#555' }}>{item.subject}</span>
-            <span style={{ fontWeight: 'bold', color: '#1976d2' }}>{item.A}점</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 };

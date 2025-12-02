@@ -23,6 +23,7 @@ function Dashboard() {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRoleFitLoading, setIsRoleFitLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,19 +39,6 @@ function Dashboard() {
         const profileRes = await apiClient.get(`/users/${userId}/profile`);
         const profileData = profileRes.data;
         setProfile(profileData);
-
-        // 1.5 직무 적합도 가져오기 (관심 직무가 있는 경우)
-        if (profileData.interestDomains && profileData.interestDomains.length > 0) {
-          try {
-            const targetRole = profileData.interestDomains[0];
-            const roleFitRes = await apiClient.post(`/users/${userId}/role-fit`, {
-              target: targetRole
-            });
-            setRoleFit(roleFitRes.data);
-          } catch (e) {
-            console.warn('직무 적합도 로드 실패:', e);
-          }
-        }
 
         // 2. 캘린더 이벤트 가져오기
         try {
@@ -92,6 +80,31 @@ function Dashboard() {
 
     fetchData();
   }, [navigate]);
+
+  // 별도 Effect: 직무 적합도 비동기 로드 (메인 로딩 차단 안함)
+  useEffect(() => {
+    const fetchRoleFit = async () => {
+      const userId = getUserIdFromStorage();
+      if (!userId || !profile?.interestDomains?.[0]) return;
+
+      setIsRoleFitLoading(true);
+      try {
+        const targetRole = profile.interestDomains[0];
+        const roleFitRes = await apiClient.post(`/users/${userId}/role-fit`, {
+          target: targetRole
+        });
+        setRoleFit(roleFitRes.data);
+      } catch (e) {
+        console.warn('직무 적합도 로드 실패:', e);
+      } finally {
+        setIsRoleFitLoading(false);
+      }
+    };
+
+    if (profile) {
+      fetchRoleFit();
+    }
+  }, [profile]);
 
   const handleCtaClick = (type) => {
     let prompt = "";
@@ -137,14 +150,18 @@ function Dashboard() {
           </p>
 
           {/* 직무 적합도 차트 */}
-          {roleFit && roleFit.breakdown && (
+          {isRoleFitLoading ? (
+            <div style={{ marginTop: '20px', textAlign: 'center', color: '#888', fontSize: '0.9rem' }}>
+              분석 중...
+            </div>
+          ) : roleFit && roleFit.breakdown ? (
             <div style={{ marginTop: '20px' }}>
               <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#555' }}>
                 🎯 {roleFit.target} 적합도: {roleFit.roleFitScore}점
               </h4>
               <RadarChartComponent data={roleFit.breakdown} />
             </div>
-          )}
+          ) : null}
 
           <button
             onClick={() => navigate('/mypage')}
