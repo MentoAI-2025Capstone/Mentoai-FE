@@ -58,10 +58,9 @@ function MyPage() {
   const [showToast, setShowToast] = useState(false);
 
   // 학교 검색 (AsyncSelect 용)
-  const loadSchoolOptions = (inputValue) => {
-    // 검색어가 없으면 요청하지 않거나 빈 배열 반환 (defaultOptions=false와 함께 동작)
-    if (!inputValue) return Promise.resolve([]);
-    return apiClient.get(`/meta/data/schools?q=${inputValue}`)
+  const loadSchoolOptions = (inputValue = '') => {
+    const query = inputValue || '';
+    return apiClient.get(`/meta/data/schools?q=${query}`)
       .then(res => {
         return res.data.map(s => ({ value: s, label: s }));
       });
@@ -266,7 +265,7 @@ function MyPage() {
               <label>학교</label>
               <AsyncSelect
                 cacheOptions
-                defaultOptions={false} // 검색어 없을 때 요청 안 함
+                defaultOptions
                 loadOptions={loadSchoolOptions}
                 onChange={(selected) => setEducation({ ...education, school: selected ? selected.value : '' })}
                 value={education.school ? { label: education.school, value: education.school } : null}
