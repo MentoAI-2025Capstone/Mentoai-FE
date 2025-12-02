@@ -209,9 +209,10 @@ function PromptInput() {
     const startAt = targetDate.toISOString();
 
     try {
-      await apiClient.post(`/users/${userId}/calendar/events`, {
+      await apiClient.post('/recommend/calendar', {
+        userId,
         activityId: item.activity.activityId,
-        startAt: startAt,
+        startAt,
         alertMinutes: 1440 // 1일 전 알림 기본값
       });
       alert(`"${item.activity.title}" 일정이 캘린더에 추가되었습니다.`);
