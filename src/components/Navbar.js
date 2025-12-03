@@ -30,7 +30,7 @@ function Navbar() {
       <ul className="navbar-menu">
         <li>
           <NavLink to="/recommend" className={({ isActive }) => (isActive ? 'active' : '')}>
-            📚 활동 추천
+            📚 직무 추천
           </NavLink>
         </li>
         <li>
