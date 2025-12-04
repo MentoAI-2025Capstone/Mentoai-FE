@@ -45,7 +45,7 @@ const CustomDropdownIndicator = (props) => {
 };
 
 function ProfileSetup() {
-  const { skillOptions, certOptions, majorOptions, jobOptions } = useMetaData();
+  const { skillOptions, majorOptions, jobOptions } = useMetaData();
 
   const [education, setEducation] = useState({ school: '', major: '', grade: '' });
   const [careerGoal, setCareerGoal] = useState('');
@@ -67,6 +67,15 @@ function ProfileSetup() {
       .then(res => {
         return res.data.map(s => ({ value: s, label: s }));
       });
+  };
+
+  const loadCertificationOptions = (inputValue = '') => {
+    const query = (inputValue || '').trim();
+    if (!query) {
+      return Promise.resolve([]);
+    }
+    return apiClient.get(`/meta/data/certifications?q=${encodeURIComponent(query)}`)
+      .then(res => res.data.map(c => ({ value: c, label: c })));
   };
 
   const handleAddExperience = () => { if (currentExperience.role) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', techStack: '' }); } };
@@ -403,13 +412,32 @@ function ProfileSetup() {
           <h3>자격증</h3>
           <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
             <div style={{ flex: 1 }}>
-              <CustomSelect
-                options={certOptions}
-                value={certOptions.find(c => c.value === currentCert) || null}
+              <AsyncSelect
+                cacheOptions
+                defaultOptions={false}
+                loadOptions={loadCertificationOptions}
+                value={currentCert ? { label: currentCert, value: currentCert } : null}
                 onChange={(selected) => setCurrentCert(selected ? selected.value : '')}
-                placeholder="자격증 선택..."
-                isSearchable
-                styles={selectStyles}
+                placeholder="자격증 검색"
+                noOptionsMessage={({ inputValue }) =>
+                  inputValue ? '검색 결과가 없습니다.' : '자격증명을 입력해 검색하세요.'
+                }
+                styles={{
+                  ...selectStyles,
+                  input: (base) => ({
+                    ...base,
+                    margin: 0,
+                    padding: 0,
+                    color: '#333',
+                    caretColor: 'auto',
+                    '& input': {
+                      opacity: 1
+                    },
+                    gridArea: '1/1',
+                    visibility: 'visible',
+                    minWidth: '2px'
+                  })
+                }}
                 components={{ DropdownIndicator: CustomDropdownIndicator, IndicatorSeparator: () => null }}
               />
             </div>

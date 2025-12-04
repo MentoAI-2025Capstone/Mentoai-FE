@@ -3,7 +3,6 @@ import apiClient from '../api/apiClient';
 
 export const useMetaData = () => {
   const [skillOptions, setSkillOptions] = useState([]);
-  const [certOptions, setCertOptions] = useState([]);
   const [majorOptions, setMajorOptions] = useState([]);
   const [jobOptions, setJobOptions] = useState([]);
 
@@ -14,12 +13,6 @@ export const useMetaData = () => {
         const skillsRes = await apiClient.get('/meta/data/skills');
         if (skillsRes.data && Array.isArray(skillsRes.data)) {
           setSkillOptions(skillsRes.data.map(s => ({ value: s, label: s })));
-        }
-
-        // 자격증 데이터 가져오기
-        const certsRes = await apiClient.get('/meta/data/certifications');
-        if (certsRes.data && Array.isArray(certsRes.data)) {
-          setCertOptions(certsRes.data.map(c => ({ value: c, label: c })));
         }
 
         // 학과 데이터 가져오기
@@ -41,5 +34,5 @@ export const useMetaData = () => {
     fetchData();
   }, []);
 
-  return { skillOptions, certOptions, majorOptions, jobOptions };
+  return { skillOptions, majorOptions, jobOptions };
 };
