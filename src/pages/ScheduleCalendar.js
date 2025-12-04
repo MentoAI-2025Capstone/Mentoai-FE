@@ -15,16 +15,49 @@ const getUserIdFromStorage = () => {
   }
 };
 
+const createEmptyEventForm = () => ({
+  title: '',
+  date: '',
+  activityId: null,
+  jobPostingId: null,
+  eventType: 'CUSTOM'
+});
+
 function ScheduleCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date()); 
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newEvent, setNewEvent] = useState({ title: '', date: '', activityId: null });
+  const [newEvent, setNewEvent] = useState(createEmptyEventForm());
   
   // [신규] 수정/삭제할 이벤트를 추적하는 state
   const [selectedEvent, setSelectedEvent] = useState(null);
+
+  const formatEventResponse = (eventData, fallbackTitle = '일정') => {
+    if (!eventData) return null;
+
+    const startDate = new Date(eventData.startAt);
+    const dateString = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+
+    const derivedTitle =
+      eventData.activityTitle ||
+      eventData.jobPostingTitle ||
+      fallbackTitle ||
+      (eventData.activityId ? `활동 #${eventData.activityId}` : '일정');
+
+    return {
+      id: eventData.eventId,
+      eventId: eventData.eventId,
+      date: dateString,
+      title: derivedTitle,
+      startAt: eventData.startAt,
+      endAt: eventData.endAt,
+      activityId: eventData.activityId,
+      jobPostingId: eventData.jobPostingId,
+      eventType: eventData.eventType
+    };
+  };
 
   // 페이지 로드 시 캘린더 이벤트를 가져오는 로직
   useEffect(() => {
@@ -47,26 +80,9 @@ function ScheduleCalendar() {
         
         if (response.data && Array.isArray(response.data)) {
           // CalendarEvent를 캘린더 표시 형식으로 변환
-          const formattedEvents = response.data.map(event => {
-            // startAt을 YYYY-MM-DD 형식으로 변환
-            const startDate = new Date(event.startAt);
-            const dateString = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
-            
-            const title =
-              event.activityTitle ||
-              event.jobPostingTitle ||
-              (event.activityId ? `활동 #${event.activityId}` : '일정');
-
-            return {
-              id: event.eventId,
-              date: dateString,
-              title,
-              startAt: event.startAt,
-              endAt: event.endAt,
-              activityId: event.activityId,
-              eventId: event.eventId
-            };
-          });
+          const formattedEvents = response.data
+            .map(event => formatEventResponse(event))
+            .filter(Boolean);
           
           setEvents(formattedEvents);
           console.log('[ScheduleCalendar] ✅ 이벤트 로드 완료:', formattedEvents.length + '개');
@@ -92,20 +108,26 @@ function ScheduleCalendar() {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedEvent(null);
-    setNewEvent({ title: '', date: '' });
+    setNewEvent(createEmptyEventForm());
   };
   
   // --- [신규] 새 활동 추가 모달 열기 ---
   const openNewEventModal = () => {
     setSelectedEvent(null); // 새 활동이므로 selectedEvent는 null
-    setNewEvent({ title: '', date: '' }); // 폼 비우기
+    setNewEvent(createEmptyEventForm()); // 폼 비우기
     setIsModalOpen(true);
   };
 
   // --- [신규] 기존 일정 클릭 시 모달 열기 ---
   const handleEventClick = (event) => {
     setSelectedEvent(event); // 클릭한 이벤트를 '선택됨'으로 설정
-    setNewEvent(event); // 폼에 내용 채우기
+    setNewEvent({
+      title: event.title || '',
+      date: event.date || '',
+      activityId: event.activityId || null,
+      jobPostingId: event.jobPostingId || null,
+      eventType: event.eventType || 'CUSTOM'
+    }); // 폼에 내용 채우기
     setIsModalOpen(true);
   };
 
@@ -221,14 +243,27 @@ function ScheduleCalendar() {
         throw new Error("인증 정보가 없습니다.");
       }
 
+      const resolveEventType = () => {
+        if (newEvent.activityId) return 'ACTIVITY';
+        if (newEvent.jobPostingId) return 'JOB_POSTING';
+        if (selectedEvent?.eventType) return selectedEvent.eventType;
+        return 'CUSTOM';
+      };
+
+      const resolvedType = resolveEventType();
+
+      const baseEventData = {
+        eventType: resolvedType,
+        activityId: resolvedType === 'ACTIVITY' ? (newEvent.activityId || selectedEvent?.activityId || undefined) : undefined,
+        jobPostingId: resolvedType === 'JOB_POSTING' ? (newEvent.jobPostingId || selectedEvent?.jobPostingId || undefined) : undefined,
+        startAt: new Date(newEvent.date).toISOString(),
+        endAt: newEvent.date ? new Date(newEvent.date).toISOString() : undefined,
+        alertMinutes: 1440
+      };
+
       if (selectedEvent) {
         // '수정' 모드 - PUT /users/{userId}/calendar/events/{eventId}
-        const eventData = {
-          eventType: 'CUSTOM', // 필수 (명세서)
-          startAt: new Date(newEvent.date).toISOString(),
-          endAt: newEvent.date ? new Date(newEvent.date).toISOString() : undefined,
-          alertMinutes: 1440
-        };
+        const eventData = baseEventData;
 
         console.log('[ScheduleCalendar] PUT payload', eventData);
 
@@ -239,33 +274,15 @@ function ScheduleCalendar() {
 
         // 응답 데이터로 로컬 상태 업데이트
         if (response.data) {
-          const updatedEvent = response.data;
-          const startDate = new Date(updatedEvent.startAt);
-          const dateString = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+          const formattedEvent = formatEventResponse(response.data, newEvent.title || selectedEvent.title);
           
-          const formattedEvent = {
-            id: updatedEvent.eventId,
-            date: dateString,
-            title: newEvent.title,
-            startAt: updatedEvent.startAt,
-            endAt: updatedEvent.endAt,
-            activityId: updatedEvent.activityId,
-            eventId: updatedEvent.eventId
-          };
-          
-          setEvents(events.map(ev => 
+          setEvents(prevEvents => prevEvents.map(ev => 
             ev.id === selectedEvent.id ? formattedEvent : ev
           ));
         }
       } else {
         // '추가' 모드 - POST /users/{userId}/calendar/events
-        const eventData = {
-          eventType: 'CUSTOM', // 필수 (명세서)
-          activityId: newEvent.activityId || undefined,
-          startAt: new Date(newEvent.date).toISOString(),
-          endAt: newEvent.date ? new Date(newEvent.date).toISOString() : undefined,
-          alertMinutes: 1440
-        };
+        const eventData = baseEventData;
 
         console.log('[ScheduleCalendar] POST payload', eventData);
 
@@ -276,21 +293,9 @@ function ScheduleCalendar() {
 
         // 응답에서 반환된 이벤트를 로컬 상태에 추가
         if (response.data) {
-          const createdEvent = response.data;
-          const startDate = new Date(createdEvent.startAt);
-          const dateString = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+          const formattedEvent = formatEventResponse(response.data, newEvent.title);
           
-          const formattedEvent = {
-            id: createdEvent.eventId,
-            date: dateString,
-            title: newEvent.title,
-            startAt: createdEvent.startAt,
-            endAt: createdEvent.endAt,
-            activityId: createdEvent.activityId,
-            eventId: createdEvent.eventId
-          };
-          
-          setEvents([...events, formattedEvent]);
+          setEvents(prevEvents => [...prevEvents, formattedEvent]);
         }
       }
       
@@ -317,7 +322,7 @@ function ScheduleCalendar() {
         await apiClient.delete(`/users/${userId}/calendar/events/${selectedEvent.eventId}`);
         
         // 로컬 상태에서 제거
-        setEvents(events.filter(ev => ev.id !== selectedEvent.id));
+        setEvents(prevEvents => prevEvents.filter(ev => ev.id !== selectedEvent.id));
         closeModal();
       } catch (error) {
         console.error("이벤트 삭제 실패:", error);
