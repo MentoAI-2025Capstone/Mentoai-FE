@@ -27,7 +27,7 @@ function ActivityRecommender() {
   const [targetScore, setTargetScore] = useState(null); // 회사(공고) 요구 점수
   const [roleFitData, setRoleFitData] = useState(null);
   const [improvements, setImprovements] = useState([]); // 추천 공모전/대회
-  
+
   const [isAnalyzing, setIsAnalyzing] = useState(false); // 분석 로딩 상태
 
   // 1. 초기 로드: 목표 직무 가져오기 -> 관련 공고 검색 (GET /job-postings)
@@ -44,7 +44,7 @@ function ActivityRecommender() {
         // 1-1. 목표 직무 가져오기
         let targetRole = null;
         const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
-        
+
         // sessionStorage 우선 확인
         if (storedUser?.user?.interestDomains?.[0]) {
           targetRole = storedUser.user.interestDomains[0];
@@ -71,20 +71,20 @@ function ActivityRecommender() {
           });
 
           console.log('[ActivityRecommender] 공고 조회 결과:', jobResponse.data);
-          
+
           if (jobResponse.data && jobResponse.data.items) {
             setActivities(jobResponse.data.items);
           } else {
-             setActivities([]);
+            setActivities([]);
           }
         } else {
           console.log('[ActivityRecommender] 목표 직무 없음.');
           // 목표 직무가 없으면 전체 공고를 보여주거나 안내 문구 표시
           const allJobsResponse = await apiClient.get('/job-postings', {
-             params: { page: 1, size: 20 }
+            params: { page: 1, size: 20 }
           });
           if (allJobsResponse.data && allJobsResponse.data.items) {
-             setActivities(allJobsResponse.data.items);
+            setActivities(allJobsResponse.data.items);
           }
         }
       } catch (error) {
@@ -100,7 +100,7 @@ function ActivityRecommender() {
   // 2. 공고 클릭 시: 점수 분석 및 추천 활동(Improvements) 조회
   const handleJobClick = async (job) => {
     // job: JobPostingResponse 객체
-    setActiveTab(job.jobId); 
+    setActiveTab(job.jobId);
     const userId = getUserIdFromStorage();
     if (!userId) return;
 
@@ -125,7 +125,7 @@ function ActivityRecommender() {
         // JobFitScoreResponse 스키마: totalScore 사용
         setUserScore(roleFitResponse.data.totalScore);
         setTargetScore(90); // 기준 점수는 고정 (백엔드에서 제공하지 않음)
-        
+
         // JobFitScoreResponse에 improvements 배열이 포함되어 있음
         if (roleFitResponse.data.improvements && roleFitResponse.data.improvements.length > 0) {
           setImprovements(roleFitResponse.data.improvements);
@@ -157,6 +157,41 @@ function ActivityRecommender() {
     }
   };
 
+  // 3. 캘린더에 일정 추가 (POST /users/{userId}/calendar/events)
+  const handleAddToCalendar = async (job) => {
+    const userId = getUserIdFromStorage();
+    if (!userId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    if (!window.confirm(`'${job.title}' 공고를 캘린더에 추가하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      // 마감일이 있으면 마감일, 없으면 오늘 날짜 사용
+      const eventDate = job.deadline ? new Date(job.deadline) : new Date();
+
+      const eventData = {
+        eventType: 'JOB_POSTING',
+        jobPostingId: job.jobId,
+        startAt: eventDate.toISOString(),
+        endAt: eventDate.toISOString(),
+        alertMinutes: 1440 // 1일 전 알림
+      };
+
+      console.log('[ActivityRecommender] 일정 추가 요청:', eventData);
+
+      await apiClient.post(`/users/${userId}/calendar/events`, eventData);
+
+      alert("일정이 캘린더에 저장되었습니다.");
+    } catch (error) {
+      console.error('[ActivityRecommender] 일정 추가 실패:', error);
+      alert(`일정 추가 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
   // 선택된 공고 찾기 (activities 배열의 요소는 JobPostingResponse 구조)
   const selectedActivity = activities.find(act => act.jobId === activeTab);
 
@@ -175,7 +210,7 @@ function ActivityRecommender() {
         <div style={{ textAlign: 'center', padding: '40px' }}>공고를 불러오는 중...</div>
       ) : (
         <div className="recommender-layout" style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-          
+
           {/* 왼쪽: 공고 목록 */}
           <div className="task-list-card" style={{ flex: 1, minWidth: '300px', maxHeight: '80vh', overflowY: 'auto' }}>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
@@ -194,7 +229,7 @@ function ActivityRecommender() {
                   <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{job.title}</div>
                   <div style={{ fontSize: '0.9rem', color: '#555' }}>{job.companyName}</div>
                   <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>
-                    {job.workPlace} 
+                    {job.workPlace}
                     {job.deadline && ` | ~${new Date(job.deadline).toLocaleDateString()}`}
                   </div>
                 </li>
@@ -218,12 +253,12 @@ function ActivityRecommender() {
                     {selectedActivity.jobSector} | {selectedActivity.employmentType}
                   </div>
                 </div>
-                
+
                 {/* 1. 점수 분석 섹션 */}
-                <div style={{ 
+                <div style={{
                   marginBottom: '30px',
-                  padding: '20px', 
-                  backgroundColor: '#f8f9fa', 
+                  padding: '20px',
+                  backgroundColor: '#f8f9fa',
                   borderRadius: '8px',
                   border: '1px solid #dee2e6'
                 }}>
@@ -237,7 +272,7 @@ function ActivityRecommender() {
                       <h3 style={{ margin: '0 0 15px 0', fontSize: '1.1rem', borderBottom: '2px solid #007bff', paddingBottom: '8px', display: 'inline-block' }}>
                         📊 역량 분석 결과
                       </h3>
-                      
+
                       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: '0.9rem', color: '#666' }}>나의 점수</div>
@@ -251,10 +286,10 @@ function ActivityRecommender() {
                           <h4 style={{ margin: '0 0 10px 0', fontSize: '1rem' }}>💡 점수 향상을 위한 추천 활동</h4>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             {improvements.map((item, idx) => (
-                              <div key={idx} style={{ 
-                                padding: '12px', 
-                                backgroundColor: 'white', 
-                                border: '1px solid #e0e0e0', 
+                              <div key={idx} style={{
+                                padding: '12px',
+                                backgroundColor: 'white',
+                                border: '1px solid #e0e0e0',
                                 borderRadius: '6px',
                                 display: 'flex',
                                 justifyContent: 'space-between',
@@ -268,11 +303,11 @@ function ActivityRecommender() {
                                     {item.activity?.summary ? item.activity.summary.substring(0, 60) + '...' : '이 활동을 통해 부족한 역량을 보완할 수 있습니다.'}
                                   </div>
                                 </div>
-                                <div style={{ 
-                                  backgroundColor: '#e7f3ff', 
-                                  color: '#007bff', 
-                                  padding: '4px 8px', 
-                                  borderRadius: '4px', 
+                                <div style={{
+                                  backgroundColor: '#e7f3ff',
+                                  color: '#007bff',
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
                                   fontSize: '0.8rem',
                                   fontWeight: 'bold',
                                   whiteSpace: 'nowrap',
@@ -285,10 +320,10 @@ function ActivityRecommender() {
                           </div>
                         </div>
                       )}
-                      
+
                       {/* 3. AI 질문 버튼 */}
                       <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                        <button 
+                        <button
                           onClick={() => navigate('/prompt')}
                           style={{
                             backgroundColor: '#6c757d',
@@ -331,18 +366,33 @@ function ActivityRecommender() {
                     </div>
                   )}
 
-                   {selectedActivity.link && (
-                    <div className="activity-links" style={{ marginTop: '20px' }}>
-                      <a href={selectedActivity.link} target="_blank" rel="noopener noreferrer">
-                        <button style={{ width: '100%', padding: '12px' }}>공고 원문 보기</button>
+                  {selectedActivity.link && (
+                    <div className="activity-links" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                      <a href={selectedActivity.link} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
+                        <button style={{ width: '100%', padding: '12px', cursor: 'pointer', backgroundColor: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px' }}>공고 원문 보기</button>
                       </a>
+                      <button
+                        onClick={() => handleAddToCalendar(selectedActivity)}
+                        style={{
+                          flex: 1,
+                          padding: '12px',
+                          cursor: 'pointer',
+                          backgroundColor: '#e3f2fd',
+                          border: '1px solid #90caf9',
+                          borderRadius: '4px',
+                          color: '#1976d2',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        📅 일정에 추가하기
+                      </button>
                     </div>
                   )}
                 </div>
               </>
             ) : (
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#888' }}>
-                왼쪽 목록에서 공고를 선택하여<br/>역량 분석과 추천 활동을 확인하세요.
+                왼쪽 목록에서 공고를 선택하여<br />역량 분석과 추천 활동을 확인하세요.
               </div>
             )}
           </div>

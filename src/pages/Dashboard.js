@@ -136,6 +136,39 @@ function Dashboard() {
     return '설정되지 않음';
   };
 
+  // D-Day 계산 및 색상 결정 헬퍼
+  const calculateDDay = (targetDate) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(targetDate);
+    target.setHours(0, 0, 0, 0);
+
+    const diffTime = target - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    let dDayString = '';
+    let color = '#333'; // 기본 색상
+
+    if (diffDays === 0) {
+      dDayString = 'D-Day';
+      color = '#d32f2f'; // 빨강 (당일)
+    } else if (diffDays > 0) {
+      dDayString = `D-${diffDays}`;
+      if (diffDays <= 3) {
+        color = '#d32f2f'; // 빨강 (임박)
+      } else if (diffDays <= 7) {
+        color = '#f57c00'; // 주황 (일주일 내)
+      } else {
+        color = '#388e3c'; // 초록 (여유)
+      }
+    } else {
+      dDayString = `D+${Math.abs(diffDays)}`; // 지난 일정
+      color = '#999';
+    }
+
+    return { text: dDayString, color };
+  };
+
   if (isLoading) {
     return (
       <div className="page-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -211,14 +244,24 @@ function Dashboard() {
           <h3 style={{ marginTop: 0, color: '#d32f2f' }}>🔥 임박한 일정</h3>
           {upcomingEvents.length > 0 ? (
             <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
-              {upcomingEvents.map(e => (
-                <li key={e.eventId} style={{ marginBottom: '8px' }}>
-                  <strong>{e.activityTitle || e.title || '일정'}</strong> <br />
-                  <span style={{ color: '#666', fontSize: '0.85rem' }}>
-                    {new Date(e.startAt).toLocaleDateString()}
-                  </span>
-                </li>
-              ))}
+              {upcomingEvents.map(e => {
+                const dDayInfo = calculateDDay(e.startAt);
+                return (
+                  <li key={e.eventId} style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <strong style={{ flex: 1, marginRight: '10px' }}>{e.activityTitle || e.title || '일정'}</strong>
+                    <span style={{
+                      color: dDayInfo.color,
+                      fontWeight: 'bold',
+                      backgroundColor: `${dDayInfo.color}15`, // 배경색은 투명도 10%
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontSize: '0.8rem'
+                    }}>
+                      {dDayInfo.text}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p style={{ fontSize: '0.85rem', color: '#888' }}>예정된 일정이 없습니다.</p>
