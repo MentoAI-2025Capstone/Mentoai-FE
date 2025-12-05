@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 // [수정] Page.css 대신 ScheduleCalendar.module.css를 import
 import styles from './ScheduleCalendar.module.css';
 import apiClient from '../api/apiClient';
+import Modal from '../components/Modal';
 
 // sessionStorage에서 userId를 가져오는 헬퍼
 const getUserIdFromStorage = () => {
@@ -24,15 +25,16 @@ const createEmptyEventForm = () => ({
 });
 
 function ScheduleCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date()); 
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState(createEmptyEventForm());
-  
+
   // [신규] 수정/삭제할 이벤트를 추적하는 state
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const formatEventResponse = (eventData, fallbackTitle = '일정') => {
     if (!eventData) return null;
@@ -71,26 +73,26 @@ function ScheduleCalendar() {
         }
 
         console.log('[ScheduleCalendar] 이벤트 조회 시작...');
-        
+
         // GET /users/{userId}/calendar/events API 호출
         // 명세서: startDate, endDate 파라미터 선택사항 (현재 월 전체 조회를 위해 생략 가능)
         const response = await apiClient.get(`/users/${userId}/calendar/events`);
-        
+
         console.log('[ScheduleCalendar] 이벤트 응답:', response.data);
-        
+
         if (response.data && Array.isArray(response.data)) {
           // CalendarEvent를 캘린더 표시 형식으로 변환
           const formattedEvents = response.data
             .map(event => formatEventResponse(event))
             .filter(Boolean);
-          
+
           setEvents(formattedEvents);
           console.log('[ScheduleCalendar] ✅ 이벤트 로드 완료:', formattedEvents.length + '개');
         }
       } catch (error) {
         console.error("[ScheduleCalendar] ❌ 캘린더 이벤트 로딩 실패:", error);
         console.error("[ScheduleCalendar] 에러 상세:", error.response?.data || error.message);
-        
+
         if (error.response?.status !== 404) {
           console.error("[ScheduleCalendar] 이벤트 로딩 중 오류:", error.message);
         }
@@ -110,7 +112,7 @@ function ScheduleCalendar() {
     setSelectedEvent(null);
     setNewEvent(createEmptyEventForm());
   };
-  
+
   // --- [신규] 새 활동 추가 모달 열기 ---
   const openNewEventModal = () => {
     setSelectedEvent(null); // 새 활동이므로 selectedEvent는 null
@@ -159,7 +161,7 @@ function ScheduleCalendar() {
       </div>
     );
   };
-  
+
   // [신규] ESLint (no-loop-func) 경고를 해결하기 위한 헬퍼 함수
   const getEventsForDate = (dateString) => {
     return events.filter(event => event.date === dateString);
@@ -171,7 +173,7 @@ function ScheduleCalendar() {
     const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
     const startDate = new Date(monthStart);
     startDate.setDate(startDate.getDate() - monthStart.getDay());
-    
+
     const endDate = new Date(monthEnd);
     endDate.setDate(endDate.getDate() + (6 - monthEnd.getDay()));
 
@@ -183,7 +185,7 @@ function ScheduleCalendar() {
       for (let i = 0; i < 7; i++) {
         const formattedDate = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
         const isCurrentMonth = day.getMonth() === currentDate.getMonth();
-        const isToday = day.toDateString() === new Date().toDateString(); 
+        const isToday = day.toDateString() === new Date().toDateString();
 
         const dayEvents = getEventsForDate(formattedDate);
 
@@ -201,8 +203,8 @@ function ScheduleCalendar() {
           >
             <span>{day.getDate()}</span>
             {dayEvents.map((event, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className={styles.calendarEvent} // [수정]
                 onClick={() => handleEventClick(event)}
               >
@@ -275,8 +277,8 @@ function ScheduleCalendar() {
         // 응답 데이터로 로컬 상태 업데이트
         if (response.data) {
           const formattedEvent = formatEventResponse(response.data, newEvent.title || selectedEvent.title);
-          
-          setEvents(prevEvents => prevEvents.map(ev => 
+
+          setEvents(prevEvents => prevEvents.map(ev =>
             ev.id === selectedEvent.id ? formattedEvent : ev
           ));
         }
@@ -294,11 +296,11 @@ function ScheduleCalendar() {
         // 응답에서 반환된 이벤트를 로컬 상태에 추가
         if (response.data) {
           const formattedEvent = formatEventResponse(response.data, newEvent.title);
-          
+
           setEvents(prevEvents => [...prevEvents, formattedEvent]);
         }
       }
-      
+
       closeModal();
     } catch (error) {
       console.error("이벤트 저장 실패:", error);
@@ -307,29 +309,40 @@ function ScheduleCalendar() {
     }
   };
 
-  // --- [신규] 삭제 로직 - API 통합 ---
-  const handleDeleteEvent = async () => {
+  // --- [신규] 삭제 로직 (확인 팝업 요청) ---
+  const handleDeleteRequest = () => {
+    if (!selectedEvent) return;
+    // 기존 입력 모달은 닫고 삭제 확인 모달만 염 (혹은 입력 모달 위에 띄울 수도 있음. 여기선 닫고 진행)
+    // setIsModalOpen(false); // 선택사항: 삭제 확인 창만 띄우려면 기존 창 닫기
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteEvent = async () => {
     if (!selectedEvent) return;
 
-    if (window.confirm(`'${selectedEvent.title}' 일정을 삭제하시겠습니까?`)) {
-      try {
-        const userId = getUserIdFromStorage();
-        if (!userId) {
-          throw new Error("인증 정보가 없습니다.");
-        }
-
-        // DELETE /users/{userId}/calendar/events/{eventId}
-        await apiClient.delete(`/users/${userId}/calendar/events/${selectedEvent.eventId}`);
-        
-        // 로컬 상태에서 제거
-        setEvents(prevEvents => prevEvents.filter(ev => ev.id !== selectedEvent.id));
-        closeModal();
-      } catch (error) {
-        console.error("이벤트 삭제 실패:", error);
-        console.error("에러 응답:", error.response?.data);
-        alert(`이벤트 삭제 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
+    try {
+      const userId = getUserIdFromStorage();
+      if (!userId) {
+        throw new Error("인증 정보가 없습니다.");
       }
+
+      // DELETE /users/{userId}/calendar/events/{eventId}
+      await apiClient.delete(`/users/${userId}/calendar/events/${selectedEvent.eventId}`);
+
+      // 로컬 상태에서 제거
+      setEvents(prevEvents => prevEvents.filter(ev => ev.id !== selectedEvent.id));
+      closeModal();
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      console.error("이벤트 삭제 실패:", error);
+      console.error("에러 응답:", error.response?.data);
+      alert(`이벤트 삭제 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
+      setIsDeleteModalOpen(false);
     }
+  };
+
+  const cancelDeleteEvent = () => {
+    setIsDeleteModalOpen(false);
   };
 
   return (
@@ -367,7 +380,7 @@ function ScheduleCalendar() {
             {/* [수정] className 적용 */}
             <div className={styles.modalActions}>
               {selectedEvent && (
-                <button className={styles.btnDelete} onClick={handleDeleteEvent}>삭제하기</button>
+                <button className={styles.btnDelete} onClick={handleDeleteRequest}>삭제하기</button>
               )}
               <button className={styles.btnCancel} onClick={closeModal}>취소</button>
               <button className={styles.btnSave} onClick={handleAddOrUpdateEvent}>
@@ -377,6 +390,17 @@ function ScheduleCalendar() {
           </div>
         </div>
       )}
+      {/* 삭제 확인 모달 */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        title="일정 삭제"
+        message={`'${selectedEvent?.title}' 일정을 삭제하시겠습니까?`}
+        onConfirm={confirmDeleteEvent}
+        onCancel={cancelDeleteEvent}
+        confirmText="삭제"
+        cancelText="취소"
+        type="danger" // 빨간 버튼 등의 스타일링 필요 시 사용
+      />
     </div>
   );
 }

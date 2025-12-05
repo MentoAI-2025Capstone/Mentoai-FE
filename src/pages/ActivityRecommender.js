@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Page.css';
 import apiClient from '../api/apiClient';
+import Modal from '../components/Modal';
 
 // sessionStorage에서 userId를 가져오는 헬퍼
 const getUserIdFromStorage = () => {
@@ -29,6 +30,9 @@ function ActivityRecommender() {
   const [improvements, setImprovements] = useState([]); // 추천 공모전/대회
 
   const [isAnalyzing, setIsAnalyzing] = useState(false); // 분석 로딩 상태
+
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+  const [selectedJobForCalendar, setSelectedJobForCalendar] = useState(null);
 
   // 1. 초기 로드: 목표 직무 가져오기 -> 관련 공고 검색 (GET /job-postings)
   useEffect(() => {
@@ -157,17 +161,21 @@ function ActivityRecommender() {
     }
   };
 
-  // 3. 캘린더에 일정 추가 (POST /users/{userId}/calendar/events)
-  const handleAddToCalendar = async (job) => {
+  // 3. 캘린더에 일정 추가 (확인 팝업 요청)
+  const handleAddToCalendarRequest = (job) => {
     const userId = getUserIdFromStorage();
     if (!userId) {
       alert("로그인이 필요합니다.");
       return;
     }
+    setSelectedJobForCalendar(job);
+    setIsCalendarModalOpen(true);
+  };
 
-    if (!window.confirm(`'${job.title}' 공고를 캘린더에 추가하시겠습니까?`)) {
-      return;
-    }
+  // 3-1. 실제 캘린더 추가 로직
+  const confirmAddToCalendar = async () => {
+    if (!selectedJobForCalendar) return;
+    const job = selectedJobForCalendar;
 
     try {
       // 마감일이 있으면 마감일, 없으면 오늘 날짜 사용
@@ -183,13 +191,22 @@ function ActivityRecommender() {
 
       console.log('[ActivityRecommender] 일정 추가 요청:', eventData);
 
+      const userId = getUserIdFromStorage();
       await apiClient.post(`/users/${userId}/calendar/events`, eventData);
 
       alert("일정이 캘린더에 저장되었습니다.");
     } catch (error) {
       console.error('[ActivityRecommender] 일정 추가 실패:', error);
       alert(`일정 추가 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setIsCalendarModalOpen(false);
+      setSelectedJobForCalendar(null);
     }
+  };
+
+  const cancelAddToCalendar = () => {
+    setIsCalendarModalOpen(false);
+    setSelectedJobForCalendar(null);
   };
 
   // 선택된 공고 찾기 (activities 배열의 요소는 JobPostingResponse 구조)
@@ -372,7 +389,7 @@ function ActivityRecommender() {
                         <button style={{ width: '100%', padding: '12px', cursor: 'pointer', backgroundColor: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px' }}>공고 원문 보기</button>
                       </a>
                       <button
-                        onClick={() => handleAddToCalendar(selectedActivity)}
+                        onClick={() => handleAddToCalendarRequest(selectedActivity)}
                         style={{
                           flex: 1,
                           padding: '12px',
@@ -398,6 +415,16 @@ function ActivityRecommender() {
           </div>
         </div>
       )}
+      {/* 캘린더 추가 확인 모달 */}
+      <Modal
+        isOpen={isCalendarModalOpen}
+        title="캘린더 일정 추가"
+        message={`'${selectedJobForCalendar?.title}' 공고를 캘린더에 추가하시겠습니까?`}
+        onConfirm={confirmAddToCalendar}
+        onCancel={cancelAddToCalendar}
+        confirmText="추가"
+        cancelText="취소"
+      />
     </div>
   );
 }
