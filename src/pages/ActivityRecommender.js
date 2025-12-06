@@ -33,6 +33,7 @@ function ActivityRecommender() {
 
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [selectedJobForCalendar, setSelectedJobForCalendar] = useState(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false); // 성공 알림 모달 상태
 
   // 1. 초기 로드: 목표 직무 가져오기 -> 관련 공고 검색 (GET /job-postings)
   useEffect(() => {
@@ -194,7 +195,8 @@ function ActivityRecommender() {
       const userId = getUserIdFromStorage();
       await apiClient.post(`/users/${userId}/calendar/events`, eventData);
 
-      alert("일정이 캘린더에 저장되었습니다.");
+      // alert("일정이 캘린더에 저장되었습니다.");
+      setIsSuccessModalOpen(true); // 성공 모달 표시
     } catch (error) {
       console.error('[ActivityRecommender] 일정 추가 실패:', error);
       alert(`일정 추가 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
@@ -424,6 +426,17 @@ function ActivityRecommender() {
         onCancel={cancelAddToCalendar}
         confirmText="추가"
         cancelText="취소"
+      />
+
+      {/* 일정 추가 성공 알림 모달 (취소 버튼 없음) */}
+      <Modal
+        isOpen={isSuccessModalOpen}
+        title="알림"
+        message="일정이 캘린더에 저장되었습니다."
+        onConfirm={() => setIsSuccessModalOpen(false)}
+        onCancel={() => setIsSuccessModalOpen(false)}
+        confirmText="확인"
+        cancelText={null} // 취소 버튼 숨김
       />
     </div>
   );

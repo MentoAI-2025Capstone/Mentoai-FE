@@ -14,9 +14,11 @@ const Modal = ({ isOpen, title, message, onConfirm, onCancel, confirmText = '확
           <p>{message}</p>
         </div>
         <div className="custom-modal-actions">
-          <button className="custom-modal-btn cancel" onClick={onCancel}>
-            {cancelText}
-          </button>
+          {cancelText && (
+            <button className="custom-modal-btn cancel" onClick={onCancel}>
+              {cancelText}
+            </button>
+          )}
           <button className={`custom-modal-btn ${type}`} onClick={onConfirm}>
             {confirmText}
           </button>
