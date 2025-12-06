@@ -63,19 +63,34 @@ function ProfileSetup() {
   // 학교 검색 (AsyncSelect 용)
   const loadSchoolOptions = (inputValue = '') => {
     const query = inputValue || '';
+    console.log('[ProfileSetup] 학교 검색 요청:', query);
     return apiClient.get(`/meta/data/schools?q=${query}`)
       .then(res => {
+        console.log('[ProfileSetup] 학교 검색 응답:', res.data);
         return res.data.map(s => ({ value: s, label: s }));
+      })
+      .catch(err => {
+        console.error('[ProfileSetup] 학교 검색 실패:', err.response?.data || err.message);
+        return [];
       });
   };
 
   const loadCertificationOptions = (inputValue = '') => {
     const query = (inputValue || '').trim();
     if (!query) {
+      console.log('[ProfileSetup] 자격증 검색 요청: 빈 입력 -> skip');
       return Promise.resolve([]);
     }
+    console.log('[ProfileSetup] 자격증 검색 요청:', query);
     return apiClient.get(`/meta/data/certifications?q=${encodeURIComponent(query)}`)
-      .then(res => res.data.map(c => ({ value: c, label: c })));
+      .then(res => {
+        console.log('[ProfileSetup] 자격증 검색 응답:', res.data);
+        return res.data.map(c => ({ value: c, label: c }));
+      })
+      .catch(err => {
+        console.error('[ProfileSetup] 자격증 검색 실패:', err.response?.data || err.message);
+        return [];
+      });
   };
 
   const handleAddExperience = () => { if (currentExperience.role) { setExperiences([...experiences, currentExperience]); setCurrentExperience({ type: 'PROJECT', role: '', techStack: '' }); } };

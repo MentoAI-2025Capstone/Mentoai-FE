@@ -60,19 +60,34 @@ function MyPage() {
   // 학교 검색 (AsyncSelect 용)
   const loadSchoolOptions = (inputValue = '') => {
     const query = inputValue || '';
+    console.log('[MyPage] 학교 검색 요청:', query);
     return apiClient.get(`/meta/data/schools?q=${query}`)
       .then(res => {
+        console.log('[MyPage] 학교 검색 응답:', res.data);
         return res.data.map(s => ({ value: s, label: s }));
+      })
+      .catch(err => {
+        console.error('[MyPage] 학교 검색 실패:', err.response?.data || err.message);
+        return [];
       });
   };
 
   const loadCertificationOptions = (inputValue = '') => {
     const query = (inputValue || '').trim();
     if (!query) {
+      console.log('[MyPage] 자격증 검색 요청: 빈 입력 -> skip');
       return Promise.resolve([]);
     }
+    console.log('[MyPage] 자격증 검색 요청:', query);
     return apiClient.get(`/meta/data/certifications?q=${encodeURIComponent(query)}`)
-      .then(res => res.data.map(c => ({ value: c, label: c })));
+      .then(res => {
+        console.log('[MyPage] 자격증 검색 응답:', res.data);
+        return res.data.map(c => ({ value: c, label: c }));
+      })
+      .catch(err => {
+        console.error('[MyPage] 자격증 검색 실패:', err.response?.data || err.message);
+        return [];
+      });
   };
 
   useEffect(() => {
