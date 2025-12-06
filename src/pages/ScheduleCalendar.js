@@ -45,6 +45,7 @@ function ScheduleCalendar() {
     const derivedTitle =
       eventData.activityTitle ||
       eventData.jobPostingTitle ||
+      eventData.eventTitle ||
       fallbackTitle ||
       (eventData.activityId ? `활동 #${eventData.activityId}` : '일정');
 
@@ -256,6 +257,7 @@ function ScheduleCalendar() {
 
       const baseEventData = {
         eventType: resolvedType,
+        eventTitle: newEvent.title || selectedEvent?.title || undefined,
         activityId: resolvedType === 'ACTIVITY' ? (newEvent.activityId || selectedEvent?.activityId || undefined) : undefined,
         jobPostingId: resolvedType === 'JOB_POSTING' ? (newEvent.jobPostingId || selectedEvent?.jobPostingId || undefined) : undefined,
         startAt: new Date(newEvent.date).toISOString(),
