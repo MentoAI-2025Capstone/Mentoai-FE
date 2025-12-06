@@ -7,10 +7,20 @@ import './Page.css'; // 공통 스타일 사용
 import RadarChartComponent from '../components/RadarChartComponent';
 
 // sessionStorage에서 userId를 가져오는 헬퍼
+// sessionStorage에서 userId를 가져오는 헬퍼
 const getUserIdFromStorage = () => {
   try {
     const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
     return storedUser ? storedUser.user.userId : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const getUserNameFromStorage = () => {
+  try {
+    const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+    return storedUser?.user?.name || null;
   } catch (e) {
     return null;
   }
@@ -179,67 +189,94 @@ function Dashboard() {
 
   return (
     <div className="page-container dashboard-container">
-      <h1 style={{ marginBottom: '20px' }}>대시보드</h1>
+      {/* 1. 상단 사용자 헤더 (인사말 + 정보) */}
+      <div className="dashboard-header" style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        marginBottom: '20px',
+        flexWrap: 'wrap',
+        gap: '20px'
+      }}>
+        <div style={{ flex: '1 1 auto' }}>
+          <h2 style={{ margin: 0, fontSize: '1.8rem' }}>👋 안녕하세요, {profile?.name || getUserNameFromStorage() || '사용자'}님!</h2>
+        </div>
+        <div style={{
+          flex: '0 1 auto',
+          textAlign: 'right',
+          backgroundColor: '#f8f9fa',
+          padding: '10px 15px',
+          borderRadius: '8px',
+          fontSize: '0.9rem',
+          color: '#555',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+        }}>
+          <div style={{ marginBottom: '4px' }}>
+            <strong>관심 직무:</strong> {profile?.interestDomains?.join(', ') || '설정되지 않음'}
+          </div>
+          <div>
+            <strong>보유 기술:</strong> {getTechStackString()}
+          </div>
+        </div>
+      </div>
 
       <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
 
-        {/* 1. 사용자 프로필 요약 */}
-        <div className="card profile-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', position: 'relative' }}>
-          <h3 style={{ marginTop: 0 }}>👋 안녕하세요, {profile?.name || '사용자'}님!</h3>
-          <p style={{ color: '#666', lineHeight: '1.6' }}>
-            <strong>관심 직무:</strong> {profile?.interestDomains?.join(', ') || '설정되지 않음'}<br />
-            <strong>보유 기술:</strong> {getTechStackString()}
-          </p>
-
-          {/* 직무 적합도 차트 */}
+        {/* 2. 직무 적합도 차트 (카드 1) */}
+        <div className="card chart-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', position: 'relative' }}>
+          {/* 차트 제목/점수 */}
           {isRoleFitLoading ? (
-            <div style={{ marginTop: '20px', textAlign: 'center', color: '#888', fontSize: '0.9rem' }}>
+            <div style={{ textAlign: 'center', color: '#888', fontSize: '0.9rem', padding: '40px 0' }}>
               분석 중...
             </div>
           ) : roleFit && roleFit.breakdown ? (
-            <div style={{ marginTop: '20px' }}>
-              <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#555' }}>
-                🎯 {roleFit.target} 적합도: {roleFit.roleFitScore}점
+            <div>
+              <h4 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#333' }}>
+                🎯 {roleFit.target} 적합도: <span style={{ color: '#1976d2', fontSize: '1.2rem' }}>{roleFit.roleFitScore}점</span>
               </h4>
               <RadarChartComponent data={roleFit.breakdown} />
             </div>
-          ) : null}
+          ) : (
+            <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
+              직무 적합도 데이터가 없습니다.
+            </div>
+          )}
 
           <button
             onClick={() => navigate('/mypage')}
             style={{
-              position: 'absolute',
-              bottom: '20px',
-              right: '20px',
+              marginTop: '15px',
+              width: '100%',
               padding: '8px 16px',
               backgroundColor: '#f0f0f0',
               border: 'none',
               borderRadius: '4px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              color: '#333'
             }}
           >
             프로필 수정
           </button>
         </div>
 
-        {/* 2. 추천 CTA 카드 */}
-        <div className="card cta-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
+        {/* 3. 추천 CTA 카드 (카드 2) */}
+        <div className="card cta-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', gap: '15px', justifyContent: 'center' }}>
           <h3 style={{ marginTop: 0 }}>🚀 진로 설계 시작하기</h3>
           <button
             onClick={() => handleCtaClick('contest')}
-            style={{ padding: '12px', backgroundColor: '#e3f2fd', border: 'none', borderRadius: '8px', color: '#1976d2', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}
+            style={{ padding: '20px', backgroundColor: '#e3f2fd', border: 'none', borderRadius: '12px', color: '#1565c0', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', fontSize: '1.1rem', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
           >
             🏆 공모전 추천받기
           </button>
           <button
             onClick={() => handleCtaClick('job')}
-            style={{ padding: '12px', backgroundColor: '#fff3e0', border: 'none', borderRadius: '8px', color: '#e65100', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}
+            style={{ padding: '20px', backgroundColor: '#fff3e0', border: 'none', borderRadius: '12px', color: '#e65100', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', fontSize: '1.1rem', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
           >
             💼 직무 추천받기
           </button>
         </div>
 
-        {/* 3. 임박한 일정 카드 */}
+        {/* 4. 임박한 일정 카드 (카드 3) */}
         <div className="card upcoming-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <h3 style={{ marginTop: 0, color: '#d32f2f' }}>🔥 임박한 일정</h3>
           {upcomingEvents.length > 0 ? (
@@ -247,15 +284,20 @@ function Dashboard() {
               {upcomingEvents.map(e => {
                 const dDayInfo = calculateDDay(e.startAt);
                 return (
-                  <li key={e.eventId} style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong style={{ flex: 1, marginRight: '10px' }}>{e.activityTitle || e.title || '일정'}</strong>
+                  <li key={e.eventId} style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ flex: 1, marginRight: '10px' }}>
+                      <strong style={{ display: 'block', fontSize: '1rem', marginBottom: '2px' }}>{e.activityTitle || e.title || '일정'}</strong>
+                      <span style={{ fontSize: '0.8rem', color: '#666' }}>{new Date(e.startAt).toLocaleDateString()}</span>
+                    </div>
                     <span style={{
                       color: dDayInfo.color,
                       fontWeight: 'bold',
-                      backgroundColor: `${dDayInfo.color}15`, // 배경색은 투명도 10%
-                      padding: '2px 8px',
+                      backgroundColor: `${dDayInfo.color}15`,
+                      padding: '4px 10px',
                       borderRadius: '12px',
-                      fontSize: '0.8rem'
+                      fontSize: '0.9rem',
+                      minWidth: '50px',
+                      textAlign: 'center'
                     }}>
                       {dDayInfo.text}
                     </span>
@@ -264,26 +306,26 @@ function Dashboard() {
               })}
             </ul>
           ) : (
-            <p style={{ fontSize: '0.85rem', color: '#888' }}>예정된 일정이 없습니다.</p>
+            <p style={{ fontSize: '0.9rem', color: '#888', textAlign: 'center', marginTop: '40px' }}>예정된 일정이 없습니다.</p>
           )}
         </div>
 
-        {/* 4. 지난달 활동 카드 */}
+        {/* 5. 지난달 활동 카드 (카드 4) - 필요한 경우 유지 */}
         <div className="card past-card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <h3 style={{ marginTop: 0, color: '#1976d2' }}>⏮ 지난달 활동</h3>
           {pastEvents.length > 0 ? (
             <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
               {pastEvents.map(e => (
-                <li key={e.eventId} style={{ marginBottom: '8px' }}>
-                  <strong>{e.activityTitle || e.title || '활동'}</strong> <br />
+                <li key={e.eventId} style={{ marginBottom: '12px' }}>
+                  <strong style={{ display: 'block', fontSize: '1rem', marginBottom: '2px' }}>{e.activityTitle || e.title || '활동'}</strong>
                   <span style={{ color: '#666', fontSize: '0.85rem' }}>
-                    {new Date(e.startAt).toLocaleDateString()}
+                    {new Date(e.startAt).toLocaleDateString()} 완료
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p style={{ fontSize: '0.85rem', color: '#888' }}>지난 활동이 없습니다.</p>
+            <p style={{ fontSize: '0.9rem', color: '#888', textAlign: 'center', marginTop: '40px' }}>지난 활동이 없습니다.</p>
           )}
         </div>
 

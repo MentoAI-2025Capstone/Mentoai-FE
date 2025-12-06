@@ -13,13 +13,16 @@ export default function OAuthCallback() {
   useEffect(() => {
     const completeLogin = async () => {
       try {
-        // 1) URL 해시(#)에서 토큰 파싱
+        // 1) URL 해시(#)에서 토큰 및 사용자 이름 파싱
         const hash = window.location.hash.substring(1);
         const params = new URLSearchParams(hash);
         const accessToken = params.get('accessToken');
         const refreshToken = params.get('refreshToken');
         const tokenType = params.get('tokenType') || 'Bearer';
         const expiresIn = params.get('expiresIn') || '0';
+        // 사용자 이름 파싱 (URL 디코딩 필요할 수 있음)
+        const nameParam = params.get('name');
+        const name = nameParam ? decodeURIComponent(nameParam) : null;
 
         if (!accessToken) {
           throw new Error("URL에서 Access Token을 찾을 수 없습니다.");
@@ -39,16 +42,17 @@ export default function OAuthCallback() {
         setMessage('사용자 정보를 가져오는 중...');
         const meResponse = await apiClient.get('/auth/me');
         console.log('[OAuthCallback.js] GET /auth/me - Full response:', meResponse);
-        console.log('[OAuthCallback.js] GET /auth/me - response.data:', meResponse.data);
-        console.log('[OAuthCallback.js] GET /auth/me - response.data.user:', meResponse.data?.user);
-        console.log('[OAuthCallback.js] GET /auth/me - profileComplete:', meResponse.data?.profileComplete);
 
         // 5) [!!!] [수정] 덮어쓰지 않고, 기존 tokens와 새 user 정보를 합칩니다.
         // profileComplete 값을 user 객체에 복사 (백엔드 응답의 루트에 있음)
+        // URL에서 받은 name이 있고, API 응답에 name이 없다면 URL의 name을 사용 (또는 우선순위 조정)
+        const apiUser = meResponse.data.user || {};
         const userWithProfileComplete = {
-          ...meResponse.data.user,
+          ...apiUser,
+          name: apiUser.name || name, // API 등답의 name 우선, 없으면 URL 파라미터 name 사용
           profileComplete: meResponse.data.profileComplete
         };
+
         const finalAuthData = {
           tokens: tempAuthData.tokens,      // <-- 2단계에서 저장한 토큰
           user: userWithProfileComplete     // <-- profileComplete가 포함된 사용자 정보
