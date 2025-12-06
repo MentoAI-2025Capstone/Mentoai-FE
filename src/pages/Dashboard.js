@@ -61,6 +61,7 @@ function Dashboard() {
             activityTitle: e.activityTitle,
             jobPostingTitle: e.jobPostingTitle,
             jobPostingCompany: e.jobPostingCompany,
+            eventTitle: e.eventTitle,
             fallbackTitle: e.title
           })));
 
@@ -283,10 +284,16 @@ function Dashboard() {
             <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
               {upcomingEvents.map(e => {
                 const dDayInfo = calculateDDay(e.startAt);
+                const title =
+                  e.activityTitle ||
+                  e.jobPostingTitle ||
+                  e.eventTitle ||
+                  e.title ||
+                  '일정';
                 return (
                   <li key={e.eventId} style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ flex: 1, marginRight: '10px' }}>
-                      <strong style={{ display: 'block', fontSize: '1rem', marginBottom: '2px' }}>{e.activityTitle || e.title || '일정'}</strong>
+                      <strong style={{ display: 'block', fontSize: '1rem', marginBottom: '2px' }}>{title}</strong>
                       <span style={{ fontSize: '0.8rem', color: '#666' }}>{new Date(e.startAt).toLocaleDateString()}</span>
                     </div>
                     <span style={{
@@ -315,14 +322,22 @@ function Dashboard() {
           <h3 style={{ marginTop: 0, color: '#1976d2' }}>⏮ 지난달 활동</h3>
           {pastEvents.length > 0 ? (
             <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
-              {pastEvents.map(e => (
-                <li key={e.eventId} style={{ marginBottom: '12px' }}>
-                  <strong style={{ display: 'block', fontSize: '1rem', marginBottom: '2px' }}>{e.activityTitle || e.title || '활동'}</strong>
-                  <span style={{ color: '#666', fontSize: '0.85rem' }}>
-                    {new Date(e.startAt).toLocaleDateString()} 완료
-                  </span>
-                </li>
-              ))}
+              {pastEvents.map(e => {
+                const title =
+                  e.activityTitle ||
+                  e.jobPostingTitle ||
+                  e.eventTitle ||
+                  e.title ||
+                  '활동';
+                return (
+                  <li key={e.eventId} style={{ marginBottom: '12px' }}>
+                    <strong style={{ display: 'block', fontSize: '1rem', marginBottom: '2px' }}>{title}</strong>
+                    <span style={{ color: '#666', fontSize: '0.85rem' }}>
+                      {new Date(e.startAt).toLocaleDateString()} 완료
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p style={{ fontSize: '0.9rem', color: '#888', textAlign: 'center', marginTop: '40px' }}>지난 활동이 없습니다.</p>
