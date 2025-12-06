@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import './Page.css';
 import apiClient from '../api/apiClient';
 import Modal from '../components/Modal';
+import JobFilterModal from '../components/JobFilterModal';
 
 // sessionStorage에서 userId를 가져오는 헬퍼
 const getUserIdFromStorage = () => {
@@ -34,6 +35,10 @@ function ActivityRecommender() {
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [selectedJobForCalendar, setSelectedJobForCalendar] = useState(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false); // 성공 알림 모달 상태
+
+  // 직무 필터 상태
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState([]);
 
   // 1. 초기 로드: 목표 직무 가져오기 -> 관련 공고 검색 (GET /job-postings)
   useEffect(() => {
@@ -211,7 +216,23 @@ function ActivityRecommender() {
     setSelectedJobForCalendar(null);
   };
 
+  // 필터링 적용된 공고 목록
+  const filteredActivities = activities.filter(job => {
+    if (selectedFilters.length === 0) return true;
+
+    // 필터 조건: 제목, 직군, 또는 타겟 직무 이름에 선택된 키워드가 포함되어 있는지 확인
+    const jobText = [
+      job.title,
+      job.jobSector,
+      job.targetRoles?.map(r => r.name).join(' ')
+    ].join(' ').toLowerCase();
+
+    // 선택된 필터 중 '하나라도' 포함되면 보여줌 (OR 조건) -> 필요시 AND로 변경 가능
+    return selectedFilters.some(filter => jobText.includes(filter.toLowerCase()));
+  });
+
   // 선택된 공고 찾기 (activities 배열의 요소는 JobPostingResponse 구조)
+  // 필터링된 목록 내에서 찾아야 안전하지만, activeTab은 ID이므로 전체에서 찾아도 무방
   const selectedActivity = activities.find(act => act.jobId === activeTab);
 
   return (
@@ -232,8 +253,41 @@ function ActivityRecommender() {
 
           {/* 왼쪽: 공고 목록 */}
           <div className="task-list-card" style={{ flex: 1, minWidth: '300px', maxHeight: '80vh', overflowY: 'auto' }}>
+
+            {/* 필터 버튼 영역 */}
+            <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button
+                onClick={() => setIsFilterModalOpen(true)}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '20px',
+                  border: '1px solid #ddd',
+                  backgroundColor: selectedFilters.length > 0 ? '#e3f2fd' : 'white',
+                  color: selectedFilters.length > 0 ? '#1976d2' : '#555',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontWeight: selectedFilters.length > 0 ? 'bold' : 'normal'
+                }}
+              >
+                <span>⚙️ 직무 필터</span>
+                {selectedFilters.length > 0 && <span>({selectedFilters.length})</span>}
+              </button>
+
+              {selectedFilters.length > 0 && (
+                <button
+                  onClick={() => setSelectedFilters([])}
+                  style={{ background: 'none', border: 'none', fontSize: '0.8rem', color: '#999', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  초기화
+                </button>
+              )}
+            </div>
+
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {activities.map(job => (
+              {filteredActivities.map(job => (
                 <li
                   key={job.jobId}
                   className={activeTab === job.jobId ? 'active' : ''}
@@ -437,6 +491,14 @@ function ActivityRecommender() {
         onCancel={() => setIsSuccessModalOpen(false)}
         confirmText="확인"
         cancelText={null} // 취소 버튼 숨김
+      />
+
+      {/* 직무 필터 모달 */}
+      <JobFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApply={(filters) => setSelectedFilters(filters)}
+        initialSelected={selectedFilters}
       />
     </div>
   );
