@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Page.css'; // 기본 페이지 스타일 사용 (필요시 Onboarding.css 분리)
+import './Page.css';
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -16,127 +16,169 @@ const Onboarding = () => {
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
-      backgroundColor: '#f8f9fa',
-      padding: '20px',
-      textAlign: 'center'
+      background: 'linear-gradient(to bottom, #ffffff, #f0f7ff)', // 은은한 블루 그라데이션
+      padding: '40px 20px',
+      textAlign: 'center',
+      fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif"
     }}>
-      {/* 1. Header / Logo Area */}
-      <div style={{ marginBottom: '40px' }}>
-        <h1 style={{
-          fontSize: '2.5rem',
+      {/* 1. Hero Section */}
+      <div style={{ marginBottom: '60px', animation: 'fadeIn 0.8s ease-out' }}>
+        <div style={{
+          display: 'inline-block',
+          backgroundColor: '#e3f2fd',
+          color: '#1565c0',
+          padding: '8px 16px',
+          borderRadius: '20px',
           fontWeight: 'bold',
+          fontSize: '0.9rem',
+          marginBottom: '20px'
+        }}>
+          ✨ AI 커리어 멘토
+        </div>
+        <h1 style={{
+          fontSize: '3.5rem',
+          fontWeight: '800',
           color: '#1976d2',
-          margin: 0
+          margin: '0 0 20px 0',
+          letterSpacing: '-1px',
+          lineHeight: '1.2'
         }}>
           MentoAI
         </h1>
         <p style={{
-          fontSize: '1rem',
-          color: '#666',
-          marginTop: '10px'
+          fontSize: '1.2rem',
+          color: '#555',
+          maxWidth: '600px',
+          margin: '0 auto',
+          lineHeight: '1.6'
         }}>
-          AI 커리어 멘토와 함께하는 스마트한 취업 준비
+          막막한 취업 준비, 이제 AI와 함께 체계적으로 시작하세요.<br />
+          직무 탐색부터 합격까지 MentoAI가 함께합니다.
         </p>
       </div>
 
-      {/* 2. Hero Image / Visual (Placeholder) */}
+      {/* 2. Visual Icons (Animated) */}
       <div style={{
-        marginBottom: '40px',
-        maxWidth: '600px',
-        width: '100%'
+        display: 'flex',
+        gap: '40px',
+        marginBottom: '60px',
+        animation: 'fadeIn 1s ease-out 0.2s backwards'
       }}>
-        {/* 실제 이미지가 있다면 img 태그 사용, 여기서는 이모지로 대체하여 분위기 연출 */}
-        <div style={{
-          fontSize: '5rem',
-          marginBottom: '20px'
-        }}>
-          🚀 🎯 📊
-        </div>
+        <div className="floating-icon" style={{ fontSize: '4rem' }}>🚀</div>
+        <div className="floating-icon" style={{ fontSize: '4rem', animationDelay: '0.2s' }}>🎯</div>
+        <div className="floating-icon" style={{ fontSize: '4rem', animationDelay: '0.4s' }}>📊</div>
       </div>
 
       {/* 3. Key Features List */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '20px',
-        marginBottom: '50px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '30px',
+        marginBottom: '60px',
         width: '100%',
-        maxWidth: '900px'
+        maxWidth: '1000px',
+        animation: 'fadeIn 1s ease-out 0.4s backwards'
       }}>
-        <div className="feature-card" style={{
-          backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '12px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
-        }}>
-          <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🔍</div>
-          <h3 style={{ margin: '10px 0', color: '#333' }}>맞춤 공고 추천</h3>
-          <p style={{ color: '#666', fontSize: '0.9rem', lineHeight: '1.5' }}>
-            나의 관심 직무와 기술 스택에 딱 맞는<br />
-            최적의 채용 공고를 찾아드립니다.
-          </p>
-        </div>
-
-        <div className="feature-card" style={{
-          backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '12px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
-        }}>
-          <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📊</div>
-          <h3 style={{ margin: '10px 0', color: '#333' }}>AI 역량 진단</h3>
-          <p style={{ color: '#666', fontSize: '0.9rem', lineHeight: '1.5' }}>
-            공고와 나의 적합도를 AI가 분석하고,<br />
-            부족한 점수를 채울 방법을 제안합니다.
-          </p>
-        </div>
-
-        <div className="feature-card" style={{
-          backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '12px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
-        }}>
-          <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🤖</div>
-          <h3 style={{ margin: '10px 0', color: '#333' }}>1:1 AI 멘토링</h3>
-          <p style={{ color: '#666', fontSize: '0.9rem', lineHeight: '1.5' }}>
-            자소서 작성부터 면접 준비까지,<br />
-            궁금한 점은 언제든 AI 멘토에게 물어보세요.
-          </p>
-        </div>
+        <FeatureCard
+          icon="🔍"
+          title="맞춤 공고 추천"
+          desc="나의 관심 직무와 기술 스택을 분석하여 꼭 맞는 최적의 채용 공고를 찾아드립니다."
+        />
+        <FeatureCard
+          icon="📊"
+          title="AI 역량 진단"
+          desc="공고별 요구 역량과 내 스펙을 비교 분석하고, 합격 가능성을 높일 전략을 제안합니다."
+        />
+        <FeatureCard
+          icon="🤖"
+          title="1:1 AI 멘토링"
+          desc="자소서 작성 팁부터 면접 예상 질문까지, 궁금한 점은 언제든 AI 멘토에게 물어보세요."
+        />
       </div>
 
       {/* 4. Call to Action Button */}
-      <button
-        onClick={handleStart}
-        style={{
-          padding: '16px 40px',
-          fontSize: '1.2rem',
-          fontWeight: 'bold',
-          color: 'white',
-          backgroundColor: '#1976d2',
-          border: 'none',
-          borderRadius: '30px',
-          cursor: 'pointer',
-          boxShadow: '0 4px 6px rgba(25, 118, 210, 0.3)',
-          transition: 'transform 0.2s'
-        }}
-        onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-        onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-      >
-        MentoAI 시작하기
-      </button>
+      <div style={{ animation: 'fadeIn 1s ease-out 0.6s backwards' }}>
+        <button
+          onClick={handleStart}
+          style={{
+            padding: '20px 60px',
+            fontSize: '1.3rem',
+            fontWeight: 'bold',
+            color: 'white',
+            background: 'linear-gradient(90deg, #1976d2, #1565c0)',
+            border: 'none',
+            borderRadius: '50px',
+            cursor: 'pointer',
+            boxShadow: '0 10px 20px rgba(25, 118, 210, 0.3)',
+            transition: 'all 0.3s ease',
+            transform: 'translateY(0)'
+          }}
+          onMouseOver={(e) => {
+            e.target.style.transform = 'translateY(-3px)';
+            e.target.style.boxShadow = '0 15px 30px rgba(25, 118, 210, 0.4)';
+          }}
+          onMouseOut={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = '0 10px 20px rgba(25, 118, 210, 0.3)';
+          }}
+        >
+          MentoAI 시작하기
+        </button>
+      </div>
 
-      {/* 5. Footer Text */}
-      <p style={{
-        marginTop: '20px',
-        color: '#999',
-        fontSize: '0.8rem'
-      }}>
-        이미 계정이 있으신가요? '시작하기'를 눌러 로그인하세요.
-      </p>
+      {/* Keyframes for animations (Inline Style Tag for simplicity) */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .floating-icon {
+          animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
+        }
+      `}</style>
     </div>
   );
 };
+
+// Sub-component for Feature Card
+const FeatureCard = ({ icon, title, desc }) => (
+  <div style={{
+    backgroundColor: 'white',
+    padding: '30px',
+    borderRadius: '20px',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
+    transition: 'transform 0.3s ease',
+    border: '1px solid #f0f0f0',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
+  }}
+    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+  >
+    <div style={{
+      fontSize: '3rem',
+      marginBottom: '20px',
+      backgroundColor: '#f5f9ff',
+      width: '80px',
+      height: '80px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '50%'
+    }}>
+      {icon}
+    </div>
+    <h3 style={{ margin: '10px 0', color: '#333', fontSize: '1.4rem' }}>{title}</h3>
+    <p style={{ color: '#666', fontSize: '1rem', lineHeight: '1.6', wordBreak: 'keep-all' }}>
+      {desc}
+    </p>
+  </div>
+);
 
 export default Onboarding;
