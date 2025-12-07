@@ -204,7 +204,7 @@ function Dashboard() {
         </div>
         <div style={{
           flex: '0 1 auto',
-          textAlign: 'right',
+          textAlign: 'left',
           backgroundColor: '#f8f9fa',
           padding: '10px 15px',
           borderRadius: '8px',

@@ -239,7 +239,7 @@ function ActivityRecommender() {
     <div className="page-container">
       <div style={{ padding: '0 10px 20px 10px' }}>
         <h2 style={{ margin: '0 0 10px 0' }}>
-          {careerGoal ? `'${careerGoal}' 관련 채용 공고` : '채용 공고 목록'}
+          채용 공고 목록
         </h2>
         <p style={{ color: '#666', margin: 0 }}>
           목표 직무에 맞는 공고를 선택하여 내 역량 점수를 확인해보세요.
@@ -468,9 +468,11 @@ function ActivityRecommender() {
                 왼쪽 목록에서 공고를 선택하여<br />역량 분석과 추천 활동을 확인하세요.
               </div>
             )}
+
           </div>
         </div>
       )}
+
       {/* 캘린더 추가 확인 모달 */}
       <Modal
         isOpen={isCalendarModalOpen}
@@ -500,7 +502,7 @@ function ActivityRecommender() {
         onApply={(filters) => setSelectedFilters(filters)}
         initialSelected={selectedFilters}
       />
-    </div>
+    </div >
   );
 }
 
