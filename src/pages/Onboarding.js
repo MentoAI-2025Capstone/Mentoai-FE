@@ -33,7 +33,7 @@ const Onboarding = () => {
           fontSize: '0.9rem',
           marginBottom: '20px'
         }}>
-          ✨ AI 커리어 멘토
+          ✨ AI 멘토
         </div>
         <h1 style={{
           fontSize: '3.5rem',
