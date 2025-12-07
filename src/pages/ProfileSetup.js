@@ -45,7 +45,7 @@ const CustomDropdownIndicator = (props) => {
 };
 
 function ProfileSetup() {
-  const { skillOptions, majorOptions, jobOptions } = useMetaData();
+  const { skillOptions, majorOptions, jobOptions, schoolOptions } = useMetaData();
 
   const [education, setEducation] = useState({ school: '', major: '', grade: '' });
   const [careerGoal, setCareerGoal] = useState('');
@@ -62,17 +62,15 @@ function ProfileSetup() {
 
   // 학교 검색 (AsyncSelect 용)
   const loadSchoolOptions = (inputValue = '') => {
-    const query = inputValue || '';
-    console.log('[ProfileSetup] 학교 검색 요청:', query);
-    return apiClient.get(`/meta/data/schools?q=${query}`)
-      .then(res => {
-        console.log('[ProfileSetup] 학교 검색 응답:', res.data);
-        return res.data.map(s => ({ value: s, label: s }));
-      })
-      .catch(err => {
-        console.error('[ProfileSetup] 학교 검색 실패:', err.response?.data || err.message);
-        return [];
-      });
+    const normalized = (inputValue || '').trim().toLowerCase();
+    if (!normalized) {
+      return Promise.resolve(schoolOptions);
+    }
+    return Promise.resolve(
+      schoolOptions.filter(option =>
+        option.label.toLowerCase().includes(normalized)
+      )
+    );
   };
 
   const loadCertificationOptions = (inputValue = '') => {
@@ -264,7 +262,7 @@ function ProfileSetup() {
               <label>학교</label>
               <AsyncSelect
                 cacheOptions
-                defaultOptions
+                defaultOptions={schoolOptions}
                 loadOptions={loadSchoolOptions}
                 onChange={(selected) => setEducation({ ...education, school: selected ? selected.value : '' })}
                 value={education.school ? { label: education.school, value: education.school } : null}

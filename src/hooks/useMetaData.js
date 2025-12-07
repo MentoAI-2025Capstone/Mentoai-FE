@@ -5,6 +5,7 @@ export const useMetaData = () => {
   const [skillOptions, setSkillOptions] = useState([]);
   const [majorOptions, setMajorOptions] = useState([]);
   const [jobOptions, setJobOptions] = useState([]);
+  const [schoolOptions, setSchoolOptions] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,6 +27,12 @@ export const useMetaData = () => {
         if (jobsRes.data && Array.isArray(jobsRes.data)) {
           setJobOptions(jobsRes.data.map(j => ({ value: j, label: j })));
         }
+
+        // 학교 데이터 가져오기
+        const schoolsRes = await apiClient.get('/meta/data/schools');
+        if (schoolsRes.data && Array.isArray(schoolsRes.data)) {
+          setSchoolOptions(schoolsRes.data.map(s => ({ value: s, label: s })));
+        }
       } catch (error) {
         console.error("메타데이터 로딩 실패:", error);
       }
@@ -34,5 +41,5 @@ export const useMetaData = () => {
     fetchData();
   }, []);
 
-  return { skillOptions, majorOptions, jobOptions };
+  return { skillOptions, majorOptions, jobOptions, schoolOptions };
 };
