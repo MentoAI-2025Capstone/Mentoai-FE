@@ -86,17 +86,24 @@ const PublicRoute = ({ children }) => {
 };
 
 // --- 메인 App 컴포넌트 ---
+import Onboarding from './pages/Onboarding'; // [NEW] 온보딩 페이지
+
+// ... (기존 imports)
+
+// --- 메인 App 컴포넌트 ---
 function App() {
   const location = useLocation();
   const { isAuthenticated, profileComplete } = getAuthInfo();
   const contentRef = useRef(null);
 
+  // Navbar 표시 조건: 로그인 + 프로필 완료 + (온보딩 페이지 아님)
+  // 온보딩 페이지는 비로그인 상태이므로 isAuthenticated가 false라 자동으로 안 보임
   const showNavbar = isAuthenticated && profileComplete;
 
   const appClassName = showNavbar ? "App" : "App-unauthed";
   const getContentClass = () => {
-    // 콜백 페이지도 전체 화면(content-full)을 사용하도록 조건 추가
-    if (!isAuthenticated || location.pathname === '/oauth/callback' || location.pathname === '/profile-setup') {
+    // 콜백, 프로필 설정, 온보딩은 전체 화면 사용
+    if (!isAuthenticated || location.pathname === '/oauth/callback' || location.pathname === '/profile-setup' || location.pathname === '/') {
       return "content-full";
     }
     if (location.pathname === '/prompt') { return "content-chat"; }
@@ -105,12 +112,10 @@ function App() {
 
   // 라우트 변경 시 스크롤을 항상 맨 위로 강제 초기화
   useEffect(() => {
-    // setTimeout으로 DOM 업데이트 후 실행 보장
     setTimeout(() => {
       if (contentRef.current) {
         contentRef.current.scrollTop = 0;
       }
-      // window 스크롤도 초기화 (이중 보장)
       window.scrollTo(0, 0);
     }, 0);
   }, [location.pathname]);
@@ -120,6 +125,16 @@ function App() {
       {showNavbar && <Navbar />}
       <main ref={contentRef} className={getContentClass()}>
         <Routes>
+          {/* 0. 랜딩/온보딩 경로 (Root) */}
+          {/* 로그인 안 된 상태면 Onboarding, 로그인 된 상태면 Dashboard 등으로 이동 */}
+          <Route path="/" element={
+            isAuthenticated ? (
+              <Navigate to={profileComplete ? "/dashboard" : "/profile-setup"} replace />
+            ) : (
+              <Onboarding />
+            )
+          } />
+
           {/* 1. 로그인/프로필 경로 */}
           <Route path="/login" element={<PublicRoute><AuthPage /></PublicRoute>} />
           <Route path="/profile-setup" element={<ProfileSetupRoute><ProfileSetup /></ProfileSetupRoute>} />
@@ -134,8 +149,7 @@ function App() {
           <Route path="/schedule" element={<PrivateRoute><ScheduleCalendar /></PrivateRoute>} />
           <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
 
-          {/* 4. 기본 경로 리디렉션 */}
-          <Route path="/" element={<Navigate to={isAuthenticated ? (profileComplete ? "/dashboard" : "/profile-setup") : "/login"} replace />} />
+          {/* 4. 그 외 경로는 Root로 리디렉션 */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
