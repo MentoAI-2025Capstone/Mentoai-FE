@@ -11,6 +11,7 @@ import ScheduleCalendar from './pages/ScheduleCalendar';
 import MyPage from './pages/MyPage';
 import OAuthCallback from './pages/OAuthCallback';
 import Dashboard from './pages/Dashboard';
+import Onboarding from './pages/Onboarding'; // [NEW] 온보딩 페이지
 import './App.css';
 
 // 브라우저 스크롤 복원 비활성화
@@ -84,11 +85,6 @@ const PublicRoute = ({ children }) => {
   }
   return children;
 };
-
-// --- 메인 App 컴포넌트 ---
-import Onboarding from './pages/Onboarding'; // [NEW] 온보딩 페이지
-
-// ... (기존 imports)
 
 // --- 메인 App 컴포넌트 ---
 function App() {
