@@ -118,9 +118,9 @@ function Dashboard() {
           ...roleFitRes.data,
           roleFitScore: 49,
           breakdown: [
-            { axis: '기술역량', score: 40 },
-            { axis: '자격', score: 65 },
-            { axis: '관련경험', score: 25 },
+            { axis: '기술 역량', score: 40 },
+            { axis: '증빙/자격', score: 65 },
+            { axis: '관련 경험', score: 25 },
             { axis: '학력/전공', score: 65 }
           ]
         });

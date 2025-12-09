@@ -12,12 +12,22 @@ import {
 const RadarChartComponent = ({ data }) => {
   if (!data) return null;
 
-  const chartData = [
-    { subject: '기술 역량', A: Math.round(data.skillFit * 100), fullMark: 100 },
-    { subject: '관련 경험', A: Math.round(data.experienceFit * 100), fullMark: 100 },
-    { subject: '학력/전공', A: Math.round(data.educationFit * 100), fullMark: 100 },
-    { subject: '증빙/자격', A: Math.round(data.evidenceFit * 100), fullMark: 100 },
-  ];
+  let chartData = [];
+
+  if (Array.isArray(data)) {
+    chartData = data.map(item => ({
+      subject: item.axis,
+      A: item.score,
+      fullMark: 100
+    }));
+  } else {
+    chartData = [
+      { subject: '기술 역량', A: Math.round(data.skillFit * 100), fullMark: 100 },
+      { subject: '관련 경험', A: Math.round(data.experienceFit * 100), fullMark: 100 },
+      { subject: '학력/전공', A: Math.round(data.educationFit * 100), fullMark: 100 },
+      { subject: '증빙/자격', A: Math.round(data.evidenceFit * 100), fullMark: 100 },
+    ];
+  }
 
   // 커스텀 Tick 렌더러로 텍스트 잘림 방지
   const renderPolarAngleAxis = ({ payload, x, y, cx, cy, ...rest }) => {
