@@ -76,7 +76,7 @@ function ActivityRecommender() {
             params: {
               targetRoleId: targetRole, // 명세서의 targetRoleId 파라미터
               page: 1,
-              size: 20
+              size: 100
             }
           });
 
@@ -91,7 +91,7 @@ function ActivityRecommender() {
           console.log('[ActivityRecommender] 목표 직무 없음.');
           // 목표 직무가 없으면 전체 공고를 보여주거나 안내 문구 표시
           const allJobsResponse = await apiClient.get('/job-postings', {
-            params: { page: 1, size: 20 }
+            params: { page: 1, size: 100 }
           });
           if (allJobsResponse.data && allJobsResponse.data.items) {
             setActivities(allJobsResponse.data.items);
