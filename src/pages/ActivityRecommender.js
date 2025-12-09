@@ -19,10 +19,15 @@ const getUserIdFromStorage = () => {
 
 function ActivityRecommender() {
   const navigate = useNavigate();
-  const [activities, setActivities] = useState([]); // 공고(Job Postings) 목록
+  const [activities, setActivities] = useState([]); // API로 불러온 추천 공고 목록
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(null); // 선택된 공고 ID (jobId)
   const [careerGoal, setCareerGoal] = useState('');
+
+  // 탭 상태: 'recommend' | 'favorites'
+  const [currentTab, setCurrentTab] = useState('recommend');
+  // 즐겨찾기 목록 (localStorage 연동)
+  const [favorites, setFavorites] = useState([]);
 
   // 선택된 공고에 대한 분석 결과
   const [userScore, setUserScore] = useState(null);
@@ -39,6 +44,16 @@ function ActivityRecommender() {
   // 직무 필터 상태
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
+
+  // 0. 즐겨찾기 초기 로드 (localStorage)
+  useEffect(() => {
+    try {
+      const storedFavorites = JSON.parse(localStorage.getItem('mentoJobFavorites')) || [];
+      setFavorites(storedFavorites);
+    } catch (e) {
+      console.error("즐겨찾기 로드 실패", e);
+    }
+  }, []);
 
   // 1. 초기 로드: 목표 직무 가져오기 -> 관련 공고 검색 (GET /job-postings)
   useEffect(() => {
@@ -71,10 +86,9 @@ function ActivityRecommender() {
           setCareerGoal(targetRole);
 
           // 1-2. 공고 검색 (GET /job-postings)
-          // 명세서에 따라 targetRoleId 파라미터 사용
           const jobResponse = await apiClient.get('/job-postings', {
             params: {
-              targetRoleId: targetRole, // 명세서의 targetRoleId 파라미터
+              targetRoleId: targetRole,
               page: 1,
               size: 100
             }
@@ -107,6 +121,25 @@ function ActivityRecommender() {
     fetchData();
   }, []);
 
+  // 즐겨찾기 토글 함수
+  const toggleFavorite = (e, job) => {
+    e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+
+    const isFav = favorites.some(fav => fav.jobId === job.jobId);
+    let newFavorites;
+
+    if (isFav) {
+      // 삭제
+      newFavorites = favorites.filter(fav => fav.jobId !== job.jobId);
+    } else {
+      // 추가
+      newFavorites = [...favorites, job];
+    }
+
+    setFavorites(newFavorites);
+    localStorage.setItem('mentoJobFavorites', JSON.stringify(newFavorites));
+  };
+
   // 2. 공고 클릭 시: 점수 분석 및 추천 활동(Improvements) 조회
   const handleJobClick = async (job) => {
     // job: JobPostingResponse 객체
@@ -121,7 +154,7 @@ function ActivityRecommender() {
     setRoleFitData(null);
 
     try {
-      // 2-1. 공고 적합도 점수 계산 (POST /job-postings/{jobId}/score)
+      // 2-1. 공고 적합도 점수 계산
       console.log(`[ActivityRecommender] 공고 #${job.jobId}에 대한 분석 시작`);
 
       const roleFitResponse = await apiClient.post(
@@ -132,14 +165,11 @@ function ActivityRecommender() {
 
       if (roleFitResponse.data) {
         setRoleFitData(roleFitResponse.data);
-        // JobFitScoreResponse 스키마: totalScore 사용
         setUserScore(roleFitResponse.data.totalScore);
-        setTargetScore(90); // 기준 점수는 고정 (백엔드에서 제공하지 않음)
+        setTargetScore(90);
 
-        // JobFitScoreResponse에 improvements 배열이 포함되어 있음
         if (roleFitResponse.data.improvements && roleFitResponse.data.improvements.length > 0) {
           setImprovements(roleFitResponse.data.improvements);
-          console.log('[ActivityRecommender] 개선 제안:', roleFitResponse.data.improvements);
         } else {
           // improvements가 없으면 별도 API 호출
           const targetRoleId = job.targetRoles?.[0]?.targetRoleId;
@@ -153,7 +183,6 @@ function ActivityRecommender() {
                 }
               }
             );
-            console.log('[ActivityRecommender] 추천 활동(별도 조회):', improvementsResponse.data);
             setImprovements(improvementsResponse.data || []);
           }
         }
@@ -161,7 +190,6 @@ function ActivityRecommender() {
 
     } catch (error) {
       console.error('[ActivityRecommender] 분석 실패:', error);
-      console.error('[ActivityRecommender] 에러 상세:', error.response?.data || error.message);
     } finally {
       setIsAnalyzing(false);
     }
@@ -184,7 +212,6 @@ function ActivityRecommender() {
     const job = selectedJobForCalendar;
 
     try {
-      // 마감일이 있으면 마감일, 없으면 오늘 날짜 사용
       const eventDate = job.deadline ? new Date(job.deadline) : new Date();
 
       const eventData = {
@@ -195,12 +222,9 @@ function ActivityRecommender() {
         alertMinutes: 1440 // 1일 전 알림
       };
 
-      console.log('[ActivityRecommender] 일정 추가 요청:', eventData);
-
       const userId = getUserIdFromStorage();
       await apiClient.post(`/users/${userId}/calendar/events`, eventData);
 
-      // alert("일정이 캘린더에 저장되었습니다.");
       setIsSuccessModalOpen(true); // 성공 모달 표시
     } catch (error) {
       console.error('[ActivityRecommender] 일정 추가 실패:', error);
@@ -216,24 +240,36 @@ function ActivityRecommender() {
     setSelectedJobForCalendar(null);
   };
 
-  // 필터링 적용된 공고 목록
-  const filteredActivities = activities.filter(job => {
-    if (selectedFilters.length === 0) return true;
+  // 표시할 목록 결정 (추천 탭 vs 즐겨찾기 탭)
+  const getDisplayList = () => {
+    // 1. 기본 리스트 선택
+    let sourceList = currentTab === 'recommend' ? activities : favorites;
 
-    // 필터 조건: 제목, 직군, 또는 타겟 직무 이름에 선택된 키워드가 포함되어 있는지 확인
-    const jobText = [
-      job.title,
-      job.jobSector,
-      job.targetRoles?.map(r => r.name).join(' ')
-    ].join(' ').toLowerCase();
+    // 2. 필터 적용
+    if (selectedFilters.length === 0) return sourceList;
 
-    // 선택된 필터 중 '하나라도' 포함되면 보여줌 (OR 조건) -> 필요시 AND로 변경 가능
-    return selectedFilters.some(filter => jobText.includes(filter.toLowerCase()));
-  });
+    return sourceList.filter(job => {
+      const jobText = [
+        job.title,
+        job.jobSector,
+        job.targetRoles?.map(r => r.name).join(' ')
+      ].join(' ').toLowerCase();
 
-  // 선택된 공고 찾기 (activities 배열의 요소는 JobPostingResponse 구조)
-  // 필터링된 목록 내에서 찾아야 안전하지만, activeTab은 ID이므로 전체에서 찾아도 무방
-  const selectedActivity = activities.find(act => act.jobId === activeTab);
+      return selectedFilters.some(filter => jobText.includes(filter.toLowerCase()));
+    });
+  };
+
+  const displayList = getDisplayList();
+
+  // 선택된 공고 찾기 (전체 activities + favorites 합쳐서 검색, 또는 API 호출)
+  // activeTab은 ID이므로 전체 풀에서 찾습니다.
+  const findSelectedActivity = () => {
+    // activities와 favorites에 중복이 있을 수 있으므로 합치고 검색
+    const all = [...activities, ...favorites];
+    return all.find(act => act.jobId === activeTab);
+  };
+
+  const selectedActivity = findSelectedActivity();
 
   return (
     <div className="page-container">
@@ -254,18 +290,55 @@ function ActivityRecommender() {
           {/* 왼쪽: 공고 목록 */}
           <div className="task-list-card" style={{ flex: 1, minWidth: '300px', maxHeight: '80vh', overflowY: 'auto' }}>
 
+            {/* 상단 탭 (추천 공고 / 즐겨찾기) */}
+            <div style={{ display: 'flex', borderBottom: '1px solid #ddd', marginBottom: '15px' }}>
+              <button
+                onClick={() => setCurrentTab('recommend')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  borderBottom: currentTab === 'recommend' ? '3px solid #1976d2' : '3px solid transparent',
+                  color: currentTab === 'recommend' ? '#1976d2' : '#666',
+                  fontWeight: currentTab === 'recommend' ? 'bold' : 'normal',
+                  fontSize: '1rem',
+                  cursor: 'pointer'
+                }}
+              >
+                추천 공고
+              </button>
+              <button
+                onClick={() => setCurrentTab('favorites')}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  borderBottom: currentTab === 'favorites' ? '3px solid #FFD700' : '3px solid transparent',
+                  color: currentTab === 'favorites' ? '#FFD700' : '#666', // 활성 시 텍스트도 노란색 계열로? 가독성을 위해 검정+아이콘 강조가 나을수도. 일단 노랑/파랑 구분.
+                  fontWeight: currentTab === 'favorites' ? 'bold' : 'normal',
+                  fontSize: '1rem',
+                  cursor: 'pointer'
+                }}
+              >
+                <span style={{ marginRight: '5px' }}>★</span>
+                즐겨찾기
+              </button>
+            </div>
+
             {/* 필터 버튼 영역 */}
-            <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 5px' }}>
               <button
                 onClick={() => setIsFilterModalOpen(true)}
                 style={{
-                  padding: '8px 12px',
+                  padding: '6px 12px',
                   borderRadius: '20px',
                   border: '1px solid #ddd',
                   backgroundColor: selectedFilters.length > 0 ? '#e3f2fd' : 'white',
                   color: selectedFilters.length > 0 ? '#1976d2' : '#555',
                   cursor: 'pointer',
-                  fontSize: '0.9rem',
+                  fontSize: '0.85rem',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
@@ -287,30 +360,60 @@ function ActivityRecommender() {
             </div>
 
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {filteredActivities.map(job => (
-                <li
-                  key={job.jobId}
-                  className={activeTab === job.jobId ? 'active' : ''}
-                  onClick={() => handleJobClick(job)}
-                  style={{
-                    padding: '15px',
-                    borderBottom: '1px solid #f1f3f4',
-                    cursor: 'pointer',
-                    backgroundColor: activeTab === job.jobId ? '#e8f0fe' : 'white'
-                  }}
-                >
-                  <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{job.title}</div>
-                  <div style={{ fontSize: '0.9rem', color: '#555' }}>{job.companyName}</div>
-                  <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>
-                    {job.workPlace}
-                    {job.deadline && ` | ~${new Date(job.deadline).toLocaleDateString()}`}
-                  </div>
-                </li>
-              ))}
+              {displayList.map(job => {
+                const isFavorite = favorites.some(fav => fav.jobId === job.jobId);
+                return (
+                  <li
+                    key={job.jobId}
+                    className={activeTab === job.jobId ? 'active' : ''}
+                    onClick={() => handleJobClick(job)}
+                    style={{
+                      padding: '15px',
+                      borderBottom: '1px solid #f1f3f4',
+                      cursor: 'pointer',
+                      backgroundColor: activeTab === job.jobId ? '#e8f0fe' : 'white',
+                      position: 'relative' // 별 아이콘 배치를 위해
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div style={{ paddingRight: '30px' }}> {/* 별 아이콘 공간 확보 */}
+                        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{job.title}</div>
+                        <div style={{ fontSize: '0.9rem', color: '#555' }}>{job.companyName}</div>
+                        <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>
+                          {job.workPlace}
+                          {job.deadline && ` | ~${new Date(job.deadline).toLocaleDateString()}`}
+                        </div>
+                      </div>
+                      {/* 즐겨찾기 별 아이콘 */}
+                      <button
+                        onClick={(e) => toggleFavorite(e, job)}
+                        style={{
+                          position: 'absolute',
+                          top: '15px',
+                          right: '15px',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '1.5rem',
+                          color: isFavorite ? '#FFD700' : '#e0e0e0', // 노란색 or 밝은 회색
+                          padding: 0,
+                          lineHeight: 1,
+                          transition: 'color 0.2s'
+                        }}
+                        title={isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"}
+                      >
+                        ★
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
-            {activities.length === 0 && (
-              <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
-                표시할 공고가 없습니다.
+            {displayList.length === 0 && (
+              <div style={{ padding: '40px 20px', textAlign: 'center', color: '#888' }}>
+                {currentTab === 'favorites'
+                  ? '즐겨찾기한 공고가 없습니다.\n마음에 드는 공고에 별표를 눌러보세요!'
+                  : '표시할 공고가 없습니다.'}
               </div>
             )}
           </div>
@@ -319,12 +422,27 @@ function ActivityRecommender() {
           <div className="activity-detail-card" style={{ flex: 2, padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }}>
             {selectedActivity ? (
               <>
-                <div style={{ borderBottom: '1px solid #eee', paddingBottom: '15px', marginBottom: '15px' }}>
-                  <h2 style={{ margin: '0 0 10px 0' }}>{selectedActivity.title}</h2>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#333' }}>{selectedActivity.companyName}</div>
-                  <div style={{ color: '#666', marginTop: '5px' }}>
-                    {selectedActivity.jobSector} | {selectedActivity.employmentType}
+                <div style={{ borderBottom: '1px solid #eee', paddingBottom: '15px', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <h2 style={{ margin: '0 0 10px 0' }}>{selectedActivity.title}</h2>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#333' }}>{selectedActivity.companyName}</div>
+                    <div style={{ color: '#666', marginTop: '5px' }}>
+                      {selectedActivity.jobSector} | {selectedActivity.employmentType}
+                    </div>
                   </div>
+                  {/* 상세 뷰에서도 별 아이콘 표시 (옵션) */}
+                  <button
+                    onClick={(e) => toggleFavorite(e, selectedActivity)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '2rem',
+                      color: favorites.some(f => f.jobId === selectedActivity.jobId) ? '#FFD700' : '#e0e0e0'
+                    }}
+                  >
+                    ★
+                  </button>
                 </div>
 
                 {/* 1. 점수 분석 섹션 */}
