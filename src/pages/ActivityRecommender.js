@@ -17,6 +17,58 @@ const getUserIdFromStorage = () => {
   }
 };
 
+// [주작질] 가짜 공고 데이터 정의
+const FAKE_JOBS = [
+  {
+    jobId: 'fake-1',
+    title: '금융IT 서비스 개발 및 운영',
+    companyName: '하나금융티아이',
+    jobSector: 'IT/보안',
+    employmentType: '신입/경력',
+    workPlace: '서울',
+    deadline: '2025-12-31T23:59:59',
+    description: '금융IT 서비스 개발 및 운영 업무를 담당합니다. (데모 데이터)',
+    requirements: '관련 학과 전공자 및 동등 자격 소지자',
+    link: 'https://example.com/fake-1'
+  },
+  {
+    jobId: 'fake-2',
+    title: '정보보안 담당자',
+    companyName: '에스앤아이코퍼레이션',
+    jobSector: '보안/정보보호',
+    employmentType: '경력',
+    workPlace: '서울',
+    deadline: '2025-12-25T23:59:59',
+    description: '정보보안 관리 체계 수립 및 운영 업무 (데모 데이터)',
+    requirements: 'ISMS-P 인증 심사원 자격 보유자 우대',
+    link: 'https://example.com/fake-2'
+  },
+  {
+    jobId: 'fake-3',
+    title: '경력 · IT · 정보보안 · 서울(강남)',
+    companyName: '(주)비지에프',
+    jobSector: 'IT 서비스',
+    employmentType: '경력',
+    workPlace: '서울(강남)',
+    deadline: '2026-01-15T23:59:59',
+    description: 'BGF리테일 그룹사 정보보안 담당 (데모 데이터)',
+    requirements: '정보보안 기사 자격증 보유자 필',
+    link: 'https://example.com/fake-3'
+  },
+  {
+    jobId: 'fake-4',
+    title: '정보보안 · 서울 중구',
+    companyName: '신한DS',
+    jobSector: '보안/금융',
+    employmentType: '정규직',
+    workPlace: '서울 중구',
+    deadline: '2025-12-30T18:00:00',
+    description: '신한금융그룹 보안 관제 및 운영 (데모 데이터)',
+    requirements: '금융보안원 관련 경력자 우대',
+    link: 'https://example.com/fake-4'
+  }
+];
+
 function ActivityRecommender() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]); // API로 불러온 추천 공고 목록
@@ -82,7 +134,7 @@ function ActivityRecommender() {
         }
 
         if (targetRole) {
-          console.log(`[ActivityRecommender] 목표 직무 '${targetRole}' 발견. 관련 공고 조회.`);
+          console.log(`[ActivityRecommender] 목표 직무 '\${targetRole}' 발견. 관련 공고 조회.`);
           setCareerGoal(targetRole);
 
           // 1-2. 공고 검색 (GET /job-postings)
@@ -153,12 +205,42 @@ function ActivityRecommender() {
     setImprovements([]);
     setRoleFitData(null);
 
+    // [주작질] 가짜 공고 클릭 시 API 호출 없이 가짜 데이터 세팅
+    if (job.jobId && String(job.jobId).startsWith('fake-')) {
+      console.log('[ActivityRecommender] 가짜 공고 클릭 감지. API 패스.');
+      setTimeout(() => {
+        setUserScore(93);
+        setTargetScore(90);
+        setRoleFitData({
+          totalScore: 93,
+          breakdown: [
+            { axis: '직무 연관성', score: 95 },
+            { axis: '필요 역량', score: 88 }
+          ],
+          target: job.jobSector,
+          user: '사용자'
+        });
+        setImprovements([
+          {
+            activity: { title: 'K-Shield 주니어 교육', summary: '정보보호 전문 인력 양성 과정' },
+            expectedScoreDelta: 5.0
+          },
+          {
+            activity: { title: '정보보안기사 자격증', summary: '국가기술자격' },
+            expectedScoreDelta: 3.5
+          }
+        ]);
+        setIsAnalyzing(false);
+      }, 500); // 0.5초 로딩 효과
+      return;
+    }
+
     try {
       // 2-1. 공고 적합도 점수 계산
-      console.log(`[ActivityRecommender] 공고 #${job.jobId}에 대한 분석 시작`);
+      console.log(`[ActivityRecommender] 공고 #\${job.jobId}에 대한 분석 시작`);
 
       const roleFitResponse = await apiClient.post(
-        `/job-postings/${job.jobId}/score`
+        `/job-postings/\${job.jobId}/score`
       );
 
       console.log('[ActivityRecommender] 점수 계산 결과:', roleFitResponse.data);
@@ -175,7 +257,7 @@ function ActivityRecommender() {
           const targetRoleId = job.targetRoles?.[0]?.targetRoleId;
           if (targetRoleId) {
             const improvementsResponse = await apiClient.get(
-              `/users/${userId}/improvements`,
+              `/users/\${userId}/improvements`,
               {
                 params: {
                   roleId: targetRoleId,
@@ -216,19 +298,24 @@ function ActivityRecommender() {
 
       const eventData = {
         eventType: 'JOB_POSTING',
-        jobPostingId: job.jobId,
+        jobPostingId: String(job.jobId).startsWith('fake-') ? 99999 : job.jobId, // fake ID면 임의의 값 전송 (백엔드 에러 가능성 있으나 데모용으로 감수 or API가 String 처리 시 무관)
         startAt: eventDate.toISOString(),
         endAt: eventDate.toISOString(),
         alertMinutes: 1440 // 1일 전 알림
       };
 
-      const userId = getUserIdFromStorage();
-      await apiClient.post(`/users/${userId}/calendar/events`, eventData);
-
-      setIsSuccessModalOpen(true); // 성공 모달 표시
+      if (String(job.jobId).startsWith('fake-')) {
+        // [주작질] 캘린더 추가도 그냥 성공한 척
+        console.log('[ActivityRecommender] 가짜 공고 캘린더 추가 - API 패스');
+        setIsSuccessModalOpen(true);
+      } else {
+        const userId = getUserIdFromStorage();
+        await apiClient.post(`/users/\${userId}/calendar/events`, eventData);
+        setIsSuccessModalOpen(true); // 성공 모달 표시
+      }
     } catch (error) {
       console.error('[ActivityRecommender] 일정 추가 실패:', error);
-      alert(`일정 추가 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
+      alert(`일정 추가 중 오류가 발생했습니다: \${error.response?.data?.message || error.message}`);
     } finally {
       setIsCalendarModalOpen(false);
       setSelectedJobForCalendar(null);
@@ -242,10 +329,22 @@ function ActivityRecommender() {
 
   // 표시할 목록 결정 (추천 탭 vs 즐겨찾기 탭)
   const getDisplayList = () => {
+    // [주작질] 직무 필터에 '보안/정보보호'와 '금융공학'이 *모두* 있거나 선택된 경우 가짜 데이터 강제 리턴
+    const hasSecurity = selectedFilters.includes('보안/정보보호');
+    const hasFinance = selectedFilters.includes('금융공학');
+
+    if (hasSecurity && hasFinance) {
+      // 추천 탭일 경우에만 강제 주입 하거나, 즐겨찾기 탭에서도?
+      // "공고들이 뜨도록" -> 추천 탭에 뜨는 것이 자연스러움.
+      if (currentTab === 'recommend') {
+        return FAKE_JOBS;
+      }
+    }
+
     // 1. 기본 리스트 선택
     let sourceList = currentTab === 'recommend' ? activities : favorites;
 
-    // 2. 필터 적용
+    // 2. 필터 적용 (일반 로직)
     if (selectedFilters.length === 0) return sourceList;
 
     return sourceList.filter(job => {
@@ -261,11 +360,9 @@ function ActivityRecommender() {
 
   const displayList = getDisplayList();
 
-  // 선택된 공고 찾기 (전체 activities + favorites 합쳐서 검색, 또는 API 호출)
-  // activeTab은 ID이므로 전체 풀에서 찾습니다.
+  // 선택된 공고 찾기 (전체 activities + favorites + FAKE_JOBS 합쳐서 검색)
   const findSelectedActivity = () => {
-    // activities와 favorites에 중복이 있을 수 있으므로 합치고 검색
-    const all = [...activities, ...favorites];
+    const all = [...activities, ...favorites, ...FAKE_JOBS];
     return all.find(act => act.jobId === activeTab);
   };
 
@@ -595,7 +692,7 @@ function ActivityRecommender() {
       <Modal
         isOpen={isCalendarModalOpen}
         title="캘린더 일정 추가"
-        message={`'${selectedJobForCalendar?.title}' 공고를 캘린더에 추가하시겠습니까?`}
+        message={`'\${selectedJobForCalendar?.title}' 공고를 캘린더에 추가하시겠습니까?`}
         onConfirm={confirmAddToCalendar}
         onCancel={cancelAddToCalendar}
         confirmText="추가"
