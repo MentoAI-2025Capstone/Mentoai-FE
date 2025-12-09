@@ -113,7 +113,17 @@ function Dashboard() {
         const roleFitRes = await apiClient.post(`/users/${userId}/role-fit`, {
           target: targetRole
         });
-        setRoleFit(roleFitRes.data);
+        // setRoleFit(roleFitRes.data);
+        setRoleFit({
+          ...roleFitRes.data,
+          roleFitScore: 49,
+          breakdown: [
+            { axis: '기술역량', score: 40 },
+            { axis: '자격', score: 65 },
+            { axis: '관련경험', score: 25 },
+            { axis: '학력/전공', score: 65 }
+          ]
+        });
       } catch (e) {
         console.warn('직무 적합도 로드 실패:', e);
       } finally {
