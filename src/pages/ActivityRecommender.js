@@ -127,10 +127,7 @@ function ActivityRecommender() {
     // 추천 탭이 아니면 실행 안 함
     if (currentTab !== 'recommend') return;
     
-    // 필터가 없을 때는 초기 로드 결과 사용 (필터링 useEffect 실행 안 함)
-    if (selectedFilters.length === 0) return;
-    
-    const fetchFilteredJobs = async () => {
+    const fetchJobs = async () => {
       const userId = getUserIdFromStorage();
       if (!userId) return;
       
@@ -155,7 +152,20 @@ function ActivityRecommender() {
           size: 50
         };
         
-        // 여러 필터를 OR 조건으로 처리 (각 필터에 대해 API 호출 후 합치기)
+        // 필터가 없을 때는 초기 로드와 동일하게 처리
+        if (selectedFilters.length === 0) {
+          const params = targetRole ? baseParams : { page: 1, size: 50 };
+          const jobResponse = await apiClient.get('/job-postings', { params });
+          
+          if (jobResponse.data && jobResponse.data.items) {
+            setActivities(jobResponse.data.items);
+          } else {
+            setActivities([]);
+          }
+          return;
+        }
+        
+        // 필터가 있을 때는 필터링 처리
         const allResults = [];
         
         for (const filter of selectedFilters) {
@@ -177,14 +187,14 @@ function ActivityRecommender() {
         
         setActivities(uniqueResults);
       } catch (error) {
-        console.error('[ActivityRecommender] 필터링된 공고 로드 실패:', error);
+        console.error('[ActivityRecommender] 공고 로드 실패:', error);
         setActivities([]);
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchFilteredJobs();
+    fetchJobs();
   }, [selectedFilters, currentTab]);
 
   // 즐겨찾기 토글 함수
