@@ -19,10 +19,21 @@ const getUserIdFromStorage = () => {
 // JSON 코드 블록 제거 함수
 const cleanContent = (text) => {
   if (!text) return '';
-  // ```json ... ``` 또는 ``` ... ``` 제거
-  return text.replace(/```json\s*([\s\S]*?)\s*```/g, '$1')
+  
+  // JSON 객체 패턴 감지 ({"items":[...]} 형태)
+  const jsonPattern = /^\s*\{[\s\S]*"items"[\s\S]*\}\s*$/;
+  
+  // 코드 블록 제거
+  let cleaned = text.replace(/```json\s*([\s\S]*?)\s*```/g, '$1')
     .replace(/```\s*([\s\S]*?)\s*```/g, '$1')
     .trim();
+  
+  // JSON 객체만 있는 경우 빈 문자열 반환 (responsePayload.items로 표시되므로)
+  if (jsonPattern.test(cleaned)) {
+    return '';
+  }
+  
+  return cleaned;
 };
 
 // 추천 결과 리스트 컴포넌트 (아코디언)
@@ -253,19 +264,19 @@ function PromptInput() {
 
       // AI 응답
       if (logDetail.geminiResponse) {
-        // 텍스트 응답 (JSON이면 정제)
-        const cleanedContent = cleanContent(logDetail.geminiResponse);
-        if (cleanedContent) {
-          loadedMessages.push({ role: 'ai', content: cleanedContent });
-        }
-
-        // 추천 아이템이 있으면 리스트 형태로 추가
-        if (logDetail.responsePayload && logDetail.responsePayload.items) {
+        // 추천 아이템이 있으면 리스트 형태로만 표시 (JSON 텍스트는 숨김)
+        if (logDetail.responsePayload && logDetail.responsePayload.items && logDetail.responsePayload.items.length > 0) {
           loadedMessages.push({
             role: 'ai',
             type: 'recommendation_list',
             items: logDetail.responsePayload.items
           });
+        } else {
+          // 추천 아이템이 없는 경우에만 텍스트 응답 표시 (JSON이면 정제)
+          const cleanedContent = cleanContent(logDetail.geminiResponse);
+          if (cleanedContent) {
+            loadedMessages.push({ role: 'ai', content: cleanedContent });
+          }
         }
       }
 
