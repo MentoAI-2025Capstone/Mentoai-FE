@@ -243,6 +243,16 @@ function PromptInput() {
         
         if (applyStarts.length > 0) {
           targetDate = applyStarts[0];
+        } else {
+          // EVENT_START, APPLY_START가 없으면 APPLY_END 사용 (공모전 마감일)
+          const applyEnds = item.activity.dates
+            .filter(d => d.dateType === 'APPLY_END')
+            .map(d => new Date(d.dateValue))
+            .sort((a, b) => a - b);
+          
+          if (applyEnds.length > 0) {
+            targetDate = applyEnds[0];
+          }
         }
       }
     }
