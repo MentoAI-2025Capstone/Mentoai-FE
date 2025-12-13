@@ -60,45 +60,235 @@ function ActivityRecommender() {
   ];
 
   const navigate = useNavigate();
-  const [activities, setActivities] = useState([]); // API로 불러온 추천 공고 목록
+  const [activities, setActivities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(null); // 선택된 공고 ID (jobId)
+  const [activeTab, setActiveTab] = useState(null);
   const [careerGoal, setCareerGoal] = useState('');
-
-  // 탭 상태: 'recommend' | 'favorites'
   const [currentTab, setCurrentTab] = useState('recommend');
-  // 즐겨찾기 목록 (localStorage 연동)
   const [favorites, setFavorites] = useState([]);
-
-  // 선택된 공고에 대한 분석 결과
   const [userScore, setUserScore] = useState(null);
-  const [targetScore, setTargetScore] = useState(null); // 회사(공고) 요구 점수
+  const [targetScore, setTargetScore] = useState(null);
   const [roleFitData, setRoleFitData] = useState(null);
-  const [improvements, setImprovements] = useState([]); // 추천 공모전/대회
-
-  const [isAnalyzing, setIsAnalyzing] = useState(false); // 분석 로딩 상태
-
+  const [improvements, setImprovements] = useState([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [selectedJobForCalendar, setSelectedJobForCalendar] = useState(null);
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false); // 성공 알림 모달 상태
-  const [successMessage, setSuccessMessage] = useState('일정이 캘린더에 저장되었습니다.'); // 성공 알림 메시지
-
-  // 직무 필터 상태
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('일정이 캘린더에 저장되었습니다.');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
 
-  // ... (중략) ...
+  useEffect(() => {
+    try {
+      const storedFavorites = JSON.parse(localStorage.getItem('mentoJobFavorites')) || [];
+      setFavorites(storedFavorites);
+    } catch (e) {
+      console.error("즐겨찾기 로드 실패", e);
+    }
+  }, []);
 
-  // 3. 캘린더에 일정 추가 (확인 팝업 요청)
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      const userId = getUserIdFromStorage();
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
+      try {
+        let targetRole = null;
+        const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+        if (storedUser?.user?.interestDomains?.[0]) {
+          targetRole = storedUser.user.interestDomains[0];
+        } else {
+          const profileResponse = await apiClient.get(`/users/${userId}/profile`);
+          if (profileResponse.data?.interestDomains?.[0]) {
+            targetRole = profileResponse.data.interestDomains[0];
+          }
+        }
+        if (targetRole) {
+          setCareerGoal(targetRole);
+          const jobResponse = await apiClient.get('/job-postings', {
+            params: { targetRoleId: targetRole, page: 1, size: 100 }
+          });
+          if (jobResponse.data && jobResponse.data.items) {
+            setActivities(jobResponse.data.items);
+          } else {
+            setActivities([]);
+          }
+        } else {
+          const allJobsResponse = await apiClient.get('/job-postings', {
+            params: { page: 1, size: 100 }
+          });
+          if (allJobsResponse.data && allJobsResponse.data.items) {
+            setActivities(allJobsResponse.data.items);
+          }
+        }
+      } catch (error) {
+        console.error('[ActivityRecommender] 데이터 로드 실패:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (currentTab !== 'recommend') return;
+    const fetchJobs = async () => {
+      const userId = getUserIdFromStorage();
+      if (!userId) return;
+      setIsLoading(true);
+      try {
+        let targetRole = null;
+        const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+        if (storedUser?.user?.interestDomains?.[0]) {
+          targetRole = storedUser.user.interestDomains[0];
+        } else {
+          const profileResponse = await apiClient.get(`/users/${userId}/profile`);
+          if (profileResponse.data?.interestDomains?.[0]) {
+            targetRole = profileResponse.data.interestDomains[0];
+          }
+        }
+        const baseParams = { targetRoleId: targetRole, page: 1, size: 100 };
+        if (selectedFilters.length === 0) {
+          const params = targetRole ? baseParams : { page: 1, size: 100 };
+          const jobResponse = await apiClient.get('/job-postings', { params });
+          if (jobResponse.data && jobResponse.data.items) {
+            setActivities(jobResponse.data.items);
+          } else {
+            setActivities([]);
+          }
+          return;
+        }
+        let allResults = [];
+        const hasHardcodedFilter = selectedFilters.some(f =>
+          f.includes('웹') || f.includes('백엔드') || f.includes('서버')
+        );
+        if (hasHardcodedFilter) {
+          allResults = [...HARDCODED_JOBS];
+        }
+        for (const filter of selectedFilters) {
+          const filterParams = { ...baseParams, keyword: filter };
+          try {
+            const jobResponse = await apiClient.get('/job-postings', { params: filterParams });
+            if (jobResponse.data?.items) {
+              allResults.push(...jobResponse.data.items);
+            }
+          } catch (error) {
+            console.error(`[ActivityRecommender] 필터 "${filter}" 조회 실패:`, error);
+          }
+        }
+        const uniqueResults = Array.from(
+          new Map(allResults.map(job => [job.jobId, job])).values()
+        );
+        setActivities(uniqueResults);
+      } catch (error) {
+        setActivities([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchJobs();
+  }, [selectedFilters, currentTab]);
+
+  const toggleFavorite = (e, job) => {
+    e.stopPropagation();
+    const isFav = favorites.some(fav => fav.jobId === job.jobId);
+    let newFavorites;
+    if (isFav) {
+      newFavorites = favorites.filter(fav => fav.jobId !== job.jobId);
+    } else {
+      newFavorites = [...favorites, job];
+    }
+    setFavorites(newFavorites);
+    localStorage.setItem('mentoJobFavorites', JSON.stringify(newFavorites));
+  };
+
+  const handleJobClick = async (job) => {
+    setActiveTab(job.jobId);
+    const userId = getUserIdFromStorage();
+    if (!userId) return;
+    setIsAnalyzing(true);
+    setUserScore(null);
+    setTargetScore(null);
+    setImprovements([]);
+    setRoleFitData(null);
+
+    if (job.jobId.toString().startsWith('mock-')) {
+      setTimeout(() => {
+        let mockScore = 60;
+        if (job.jobId === 'mock-1') mockScore = 68;
+        else if (job.jobId === 'mock-2') mockScore = 65;
+        else if (job.jobId === 'mock-3') mockScore = 62;
+
+        let mockImprovements = [];
+        if (job.jobId === 'mock-1') {
+          mockImprovements = [
+            { activity: { title: 'MVP/MVVM 아키텍처 디자인 패턴 학습', summary: 'KG이니시스 우대: 아키텍처 설계 및 디자인 패턴 적용 능력 함양' }, expectedScoreIncrease: 4.8 },
+            { activity: { title: 'Spring Boot/JPA 기반 결제 시스템 구축 프로젝트', summary: 'KG이니시스 직무 관련: 대용량 트래픽 처리 및 결제/정산 도메인 경험' }, expectedScoreIncrease: 5.2 }
+          ];
+        } else if (job.jobId === 'mock-2') {
+          mockImprovements = [
+            { activity: { title: 'AWS/GCP 클라우드 인프라 구축 실습', summary: '카페24 우대: 클라우드 환경 개발 경험 및 인프라 이해도 증진' }, expectedScoreIncrease: 4.5 },
+            { activity: { title: 'Python/Node.js 기반 백엔드 API 개발', summary: '카페24 기술 스택: Java 외 다양한 언어 활용 역량 확보' }, expectedScoreIncrease: 3.9 }
+          ];
+        } else if (job.jobId === 'mock-3') {
+          mockImprovements = [
+            { activity: { title: 'ISTQB CTFL 자격증 취득', summary: '윌라 QA 우대: 소프트웨어 테스팅 국제 자격증으로 전문성 입증' }, expectedScoreIncrease: 5.0 },
+            { activity: { title: 'JIRA/Confluence 활용 테스트 케이스(TC) 작성 실습', summary: '윌라 QA 필수: 협업 도구 사용 능력 및 체계적인 TC 설계 역량 강화' }, expectedScoreIncrease: 4.1 }
+          ];
+        }
+        const mockData = { totalScore: mockScore, improvements: mockImprovements };
+        setRoleFitData(mockData);
+        setUserScore(mockScore);
+        setImprovements(mockData.improvements);
+        setIsAnalyzing(false);
+      }, 800);
+      return;
+    }
+
+    try {
+      const roleFitResponse = await apiClient.post(`/job-postings/${job.jobId}/score`);
+      if (roleFitResponse.data) {
+        setRoleFitData(roleFitResponse.data);
+        setUserScore(roleFitResponse.data.totalScore);
+        setTargetScore(null);
+        if (roleFitResponse.data.improvements && roleFitResponse.data.improvements.length > 0) {
+          setImprovements(roleFitResponse.data.improvements);
+        } else {
+          const targetRoleId = job.targetRoles?.[0]?.targetRoleId;
+          if (targetRoleId) {
+            try {
+              const improvementsResponse = await apiClient.get(`/users/${userId}/improvements`, { params: { roleId: targetRoleId, size: 5 } });
+              setImprovements(improvementsResponse.data || []);
+            } catch (improvementsError) {
+              setImprovements([]);
+            }
+          }
+        }
+      } else {
+        setUserScore(null);
+        setRoleFitData(null);
+        setImprovements([]);
+      }
+    } catch (error) {
+      setUserScore(null);
+      setRoleFitData(null);
+      setImprovements([]);
+      alert(`역량 분석 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const handleAddToCalendarRequest = (job) => {
-    // 상시채용 (mock-2, mock-3) 예외 처리
     // includes를 사용하여 더 안전하게 체크
     if (job.jobId.toString().includes('mock-2') || job.jobId.toString().includes('mock-3')) {
       setSuccessMessage('상시채용입니다.');
       setIsSuccessModalOpen(true);
       return;
     }
-
     const userId = getUserIdFromStorage();
     if (!userId) {
       alert("로그인이 필요합니다.");
@@ -108,14 +298,10 @@ function ActivityRecommender() {
     setIsCalendarModalOpen(true);
   };
 
-  // 3-1. 실제 캘린더 추가 로직
   const confirmAddToCalendar = async () => {
     if (!selectedJobForCalendar) return;
     const job = selectedJobForCalendar;
-
-    // [Mock 공고 예외 처리] 
-    // mock-1 (KG이니시스) 등 ID가 문자열인 경우 백엔드 전송 시 에러 발생하므로(백엔드는 Long 기대),
-    // API 호출 없이 프론트엔드에서 성공 처리만 수행
+    // Mock 예외 처리
     if (job.jobId && job.jobId.toString().startsWith('mock-')) {
       setSuccessMessage('일정이 캘린더에 저장되었습니다.');
       setIsSuccessModalOpen(true);
@@ -123,24 +309,20 @@ function ActivityRecommender() {
       setSelectedJobForCalendar(null);
       return;
     }
-
     try {
       const eventDate = job.deadline ? new Date(job.deadline) : new Date();
-
       const eventData = {
         eventType: 'JOB_POSTING',
         jobPostingId: job.jobId,
         startAt: eventDate.toISOString(),
         endAt: eventDate.toISOString(),
-        alertMinutes: 1440 // 1일 전 알림
+        alertMinutes: 1440
       };
-
       const userId = getUserIdFromStorage();
       await apiClient.post(`/users/${userId}/calendar/events`, eventData);
-      setSuccessMessage('일정이 캘린더에 저장되었습니다.'); // 성공 메시지 리셋
-      setIsSuccessModalOpen(true); // 성공 모달 표시
+      setSuccessMessage('일정이 캘린더에 저장되었습니다.');
+      setIsSuccessModalOpen(true);
     } catch (error) {
-      console.error('[ActivityRecommender] 일정 추가 실패:', error);
       alert(`일정 추가 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsCalendarModalOpen(false);
@@ -153,20 +335,15 @@ function ActivityRecommender() {
     setSelectedJobForCalendar(null);
   };
 
-  // 표시할 목록 결정 (추천 탭 vs 즐겨찾기 탭)
   const getDisplayList = () => {
-    // 서버에서 필터링된 결과를 받으므로 클라이언트 사이드 필터링 제거
     return currentTab === 'recommend' ? activities : favorites;
   };
 
   const displayList = getDisplayList();
-
-  // 선택된 공고 찾기 (전체 activities + favorites 합쳐서 검색)
   const findSelectedActivity = () => {
     const all = [...activities, ...favorites];
     return all.find(act => act.jobId === activeTab);
   };
-
   const selectedActivity = findSelectedActivity();
 
   return (
