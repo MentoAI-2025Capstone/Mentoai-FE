@@ -282,8 +282,11 @@ function ActivityRecommender() {
     // Mock 공고인 경우 가짜 분석 결과 반환
     if (job.jobId.toString().startsWith('mock-')) {
       setTimeout(() => {
-        // 60점대 점수 (60 ~ 69)
-        const mockScore = 60 + Math.floor(Math.random() * 10);
+        // 공고별 고정 점수 부여 (일관성 유지)
+        let mockScore = 60;
+        if (job.jobId === 'mock-1') mockScore = 68; // KG이니시스
+        else if (job.jobId === 'mock-2') mockScore = 65; // 카페24
+        else if (job.jobId === 'mock-3') mockScore = 62; // 윌라
 
         let mockImprovements = [];
 
