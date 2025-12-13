@@ -420,6 +420,13 @@ function ActivityRecommender() {
 
   // 3. 캘린더에 일정 추가 (확인 팝업 요청)
   const handleAddToCalendarRequest = (job) => {
+    // 상시채용 (mock-2, mock-3) 예외 처리
+    if (job.jobId === 'mock-2' || job.jobId === 'mock-3') {
+      setSuccessMessage('상시채용입니다.');
+      setIsSuccessModalOpen(true);
+      return;
+    }
+
     const userId = getUserIdFromStorage();
     if (!userId) {
       alert("로그인이 필요합니다.");
@@ -434,6 +441,17 @@ function ActivityRecommender() {
     if (!selectedJobForCalendar) return;
     const job = selectedJobForCalendar;
 
+    // [Mock 공고 예외 처리] 
+    // mock-1 (KG이니시스) 등 ID가 문자열인 경우 백엔드 전송 시 에러 발생하므로(백엔드는 Long 기대),
+    // API 호출 없이 프론트엔드에서 성공 처리만 수행
+    if (job.jobId && job.jobId.toString().startsWith('mock-')) {
+      setSuccessMessage('일정이 캘린더에 저장되었습니다.');
+      setIsSuccessModalOpen(true);
+      setIsCalendarModalOpen(false);
+      setSelectedJobForCalendar(null);
+      return;
+    }
+
     try {
       const eventDate = job.deadline ? new Date(job.deadline) : new Date();
 
@@ -447,6 +465,7 @@ function ActivityRecommender() {
 
       const userId = getUserIdFromStorage();
       await apiClient.post(`/users/${userId}/calendar/events`, eventData);
+      setSuccessMessage('일정이 캘린더에 저장되었습니다.'); // 성공 메시지 리셋
       setIsSuccessModalOpen(true); // 성공 모달 표시
     } catch (error) {
       console.error('[ActivityRecommender] 일정 추가 실패:', error);
