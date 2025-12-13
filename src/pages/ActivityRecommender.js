@@ -284,51 +284,64 @@ function ActivityRecommender() {
         // 60점대 점수 (60 ~ 69)
         const mockScore = 60 + Math.floor(Math.random() * 10);
 
-        // 다양한 추천 활동 풀 (중복 방지 및 다양성)
-        const mockImprovements = [
-          {
-            activity: {
-              title: 'SQLD 자격증 취득',
-              summary: '데이터베이스 설계 및 활용 능력을 증명하는 국가공인 자격'
+        let mockImprovements = [];
+
+        // 공고별 맞춤형 추천 활동 (각 2개씩)
+        if (job.jobId === 'mock-1') {
+          // KG이니시스 (백엔드)
+          mockImprovements = [
+            {
+              activity: {
+                title: 'MVP/MVVM 아키텍처 디자인 패턴 학습',
+                summary: 'KG이니시스 우대: 아키텍처 설계 및 디자인 패턴 적용 능력 함양'
+              },
+              expectedScoreIncrease: 4.8
             },
-            expectedScoreIncrease: 4.2
-          },
-          {
-            activity: {
-              title: 'AWS Certified Solutions Architect Associate',
-              summary: '클라우드 아키텍처 설계 및 구현 능력 검증'
+            {
+              activity: {
+                title: 'Spring Boot/JPA 기반 결제 시스템 구축 프로젝트',
+                summary: 'KG이니시스 직무 관련: 대용량 트래픽 처리 및 결제/정산 도메인 경험'
+              },
+              expectedScoreIncrease: 5.2
+            }
+          ];
+        } else if (job.jobId === 'mock-2') {
+          // 카페24 (웹)
+          mockImprovements = [
+            {
+              activity: {
+                title: 'AWS/GCP 클라우드 인프라 구축 실습',
+                summary: '카페24 우대: 클라우드 환경 개발 경험 및 인프라 이해도 증진'
+              },
+              expectedScoreIncrease: 4.5
             },
-            expectedScoreIncrease: 5.5
-          },
-          {
-            activity: {
-              title: '알고리즘 코딩 테스트 심화 학습',
-              summary: '효율적인 코드 작성 및 문제 해결 능력 향상 (백준/프로그래머스)'
+            {
+              activity: {
+                title: 'Python/Node.js 기반 백엔드 API 개발',
+                summary: '카페24 기술 스택: Java 외 다양한 언어 활용 역량 확보'
+              },
+              expectedScoreIncrease: 3.9
+            }
+          ];
+        } else if (job.jobId === 'mock-3') {
+          // 윌라 (QA)
+          mockImprovements = [
+            {
+              activity: {
+                title: 'ISTQB CTFL 자격증 취득',
+                summary: '윌라 QA 우대: 소프트웨어 테스팅 국제 자격증으로 전문성 입증'
+              },
+              expectedScoreIncrease: 5.0
             },
-            expectedScoreIncrease: 3.8
-          },
-          {
-            activity: {
-              title: '팀 프로젝트: 웹 서비스 배포 경험',
-              summary: 'CI/CD 파이프라인 구축 및 실제 사용자 대상 배포 경험'
-            },
-            expectedScoreIncrease: 4.5
-          },
-          {
-            activity: {
-              title: 'Docker/Kubernetes 컨테이너 기술 습득',
-              summary: '현대적인 애플리케이션 배포 및 운영을 위한 필수 기술'
-            },
-            expectedScoreIncrease: 3.2
-          },
-          {
-            activity: {
-              title: '오픈소스 컨트리뷰션 (Spring/React)',
-              summary: '실무 레벨의 코드 리뷰 경험 및 협업 역량 강화'
-            },
-            expectedScoreIncrease: 2.9
-          }
-        ];
+            {
+              activity: {
+                title: 'JIRA/Confluence 활용 테스트 케이스(TC) 작성 실습',
+                summary: '윌라 QA 필수: 협업 도구 사용 능력 및 체계적인 TC 설계 역량 강화'
+              },
+              expectedScoreIncrease: 4.1
+            }
+          ];
+        }
 
         const mockData = {
           totalScore: mockScore,
