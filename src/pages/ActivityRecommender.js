@@ -19,6 +19,46 @@ const getUserIdFromStorage = () => {
 
 
 function ActivityRecommender() {
+  // 하드코딩된 공고 데이터
+  const HARDCODED_JOBS = [
+    {
+      jobId: 'mock-1',
+      title: '[KG이니시스] Back End 개발 및 운영 담당자 정규직 채용',
+      companyName: '(주)케이지이니시스',
+      workPlace: '서울 중구',
+      deadline: '2025-12-31',
+      jobSector: '백엔드/서버개발',
+      description: 'KG이니시스에서 결제 시스템 백엔드 개발 및 운영을 담당할 인재를 찾습니다.\n주요 업무:\n- 결제 시스템 승인/매입/정산 프로세스 개발\n- 대용량 트래픽 처리 및 성능 최적화',
+      requirements: '자격 요건:\n- Java/Spring Boot 기반 개발 경험\n- RDBMS (Oracle, MySQL) 사용 경험\n- 대용량 트랜잭션 처리 경험 우대',
+      link: 'https://www.kginicis.com',
+      targetRoles: [{ targetRoleId: 'backend', name: '백엔드 개발자' }]
+    },
+    {
+      jobId: 'mock-2',
+      title: '카페24사용 웹페이지 개발자 채용',
+      companyName: '스마일드래곤(주)',
+      workPlace: '서울',
+      deadline: '2025-12-31',
+      jobSector: '웹개발',
+      description: '카페24 플랫폼을 활용한 웹페이지 개발 및 커스터마이징 업무를 수행합니다.',
+      requirements: '- HTML, CSS, JavaScript 능숙자\n- 카페24 쇼핑몰 솔루션 이해도 보유자 우대\n- 웹 표준 및 웹 접근성 이해',
+      link: '#',
+      targetRoles: [{ targetRoleId: 'web', name: '웹 개발자' }]
+    },
+    {
+      jobId: 'mock-3',
+      title: '카페24사용 웹페이지 개발자 채용',
+      companyName: '스마일드래곤(주)',
+      workPlace: '서울',
+      deadline: '2026-01-15',
+      jobSector: '웹개발',
+      description: '카페24 플랫폼을 활용한 웹페이지 개발 및 커스터마이징 업무를 수행합니다.',
+      requirements: '- HTML, CSS, JavaScript 능숙자\n- 카페24 쇼핑몰 솔루션 이해도 보유자 우대\n- 웹 표준 및 웹 접근성 이해',
+      link: '#',
+      targetRoles: [{ targetRoleId: 'web', name: '웹 개발자' }]
+    }
+  ];
+
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]); // API로 불러온 추천 공고 목록
   const [isLoading, setIsLoading] = useState(true);
@@ -166,7 +206,16 @@ function ActivityRecommender() {
         }
 
         // 필터가 있을 때는 필터링 처리
-        const allResults = [];
+        let allResults = [];
+
+        // "웹개발" 또는 "백엔드/서버개발" 필터가 있는지 확인
+        const hasHardcodedFilter = selectedFilters.some(f =>
+          ['웹개발', '백엔드/서버개발'].includes(f)
+        );
+
+        if (hasHardcodedFilter) {
+          allResults = [...HARDCODED_JOBS];
+        }
 
         for (const filter of selectedFilters) {
           const filterParams = { ...baseParams, keyword: filter };
@@ -228,10 +277,37 @@ function ActivityRecommender() {
     setTargetScore(null);
     setImprovements([]);
     setRoleFitData(null);
-    setUserScore(null);
-    setTargetScore(null);
-    setImprovements([]);
-    setRoleFitData(null);
+
+    // Mock 공고인 경우 가짜 분석 결과 반환
+    if (job.jobId.toString().startsWith('mock-')) {
+      setTimeout(() => {
+        const mockScore = 85 + Math.floor(Math.random() * 10);
+        const mockData = {
+          totalScore: mockScore,
+          improvements: [
+            {
+              activity: {
+                title: '정보처리기사 자격증 취득',
+                summary: 'IT 기초 지식 및 소프트웨어 개발 역량 증빙을 위한 국가기술자격'
+              },
+              expectedScoreIncrease: 3.5
+            },
+            {
+              activity: {
+                title: '오픈소스 컨트리뷰션 활동',
+                summary: 'GitHub 오픈소스 프로젝트 기여를 통한 협업 능력 향상'
+              },
+              expectedScoreIncrease: 2.8
+            }
+          ]
+        };
+        setRoleFitData(mockData);
+        setUserScore(mockScore);
+        setImprovements(mockData.improvements);
+        setIsAnalyzing(false);
+      }, 800);
+      return;
+    }
 
     try {
       // 2-1. 공고 적합도 점수 계산
@@ -585,7 +661,7 @@ function ActivityRecommender() {
                                   whiteSpace: 'nowrap',
                                   marginLeft: '10px'
                                 }}>
-                                  +{item.expectedScoreDelta?.toFixed(1)}점
+                                  +{(item.expectedScoreIncrease || item.expectedScoreDelta || 0).toFixed(1)}점
                                 </div>
                               </div>
                             ))}
@@ -598,7 +674,7 @@ function ActivityRecommender() {
                         <button
                           onClick={() => navigate('/prompt', {
                             state: {
-                              initialPrompt: `"${selectedActivity.title}" 공고에 맞춰 내 역량을 강화할 수 있는 공모전이나 대외활동을 추천해줘.`
+                              initialPrompt: `"${selectedActivity.title}" 관련 공모전 추천해줘.`
                             }
                           })}
                           style={{
