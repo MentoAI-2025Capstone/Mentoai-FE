@@ -5,8 +5,7 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
-  ResponsiveContainer,
-  Tooltip
+  ResponsiveContainer
 } from 'recharts';
 
 const RadarChartComponent = ({ data }) => {
@@ -71,10 +70,6 @@ const RadarChartComponent = ({ data }) => {
             strokeWidth={2}
             fill="#1976d2"
             fillOpacity={0.5}
-          />
-          <Tooltip
-            formatter={(value) => [`${value}점`, '점수']}
-            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
           />
         </RadarChart>
       </ResponsiveContainer>
