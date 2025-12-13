@@ -122,6 +122,58 @@ function ActivityRecommender() {
     fetchData();
   }, []);
 
+  // 필터 변경 시 API 호출하여 필터링된 공고 가져오기
+  useEffect(() => {
+    // 추천 탭이 아니거나 필터가 없으면 초기 로드만 사용
+    if (currentTab !== 'recommend') return;
+    
+    const fetchFilteredJobs = async () => {
+      const userId = getUserIdFromStorage();
+      if (!userId) return;
+      
+      setIsLoading(true);
+      try {
+        // 목표 직무 가져오기
+        let targetRole = null;
+        const storedUser = JSON.parse(sessionStorage.getItem('mentoUser'));
+        
+        if (storedUser?.user?.interestDomains?.[0]) {
+          targetRole = storedUser.user.interestDomains[0];
+        } else {
+          const profileResponse = await apiClient.get(`/users/${userId}/profile`);
+          if (profileResponse.data?.interestDomains?.[0]) {
+            targetRole = profileResponse.data.interestDomains[0];
+          }
+        }
+        
+        const params = {
+          targetRoleId: targetRole,
+          page: 1,
+          size: 100
+        };
+        
+        // 필터가 있으면 keyword로 전달 (첫 번째 필터 사용)
+        if (selectedFilters.length > 0) {
+          params.keyword = selectedFilters[0];
+        }
+        
+        const jobResponse = await apiClient.get('/job-postings', { params });
+        
+        if (jobResponse.data && jobResponse.data.items) {
+          setActivities(jobResponse.data.items);
+        } else {
+          setActivities([]);
+        }
+      } catch (error) {
+        console.error('[ActivityRecommender] 필터링된 공고 로드 실패:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchFilteredJobs();
+  }, [selectedFilters, currentTab]);
+
   // 즐겨찾기 토글 함수
   const toggleFavorite = (e, job) => {
     e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
@@ -259,22 +311,8 @@ function ActivityRecommender() {
 
   // 표시할 목록 결정 (추천 탭 vs 즐겨찾기 탭)
   const getDisplayList = () => {
-    // 1. 기본 리스트 선택
-    let sourceList = currentTab === 'recommend' ? activities : favorites;
-
-    // 2. 필터 적용 (일반 로직)
-    if (selectedFilters.length === 0) return sourceList;
-
-    return sourceList.filter(job => {
-      const jobText = [
-        job.title,
-        job.companyName,
-        job.jobSector,
-        job.targetRoles?.map(r => r.targetRoleName || r.name).join(' ')
-      ].join(' ').toLowerCase();
-
-      return selectedFilters.some(filter => jobText.includes(filter.toLowerCase()));
-    });
+    // 서버에서 필터링된 결과를 받으므로 클라이언트 사이드 필터링 제거
+    return currentTab === 'recommend' ? activities : favorites;
   };
 
   const displayList = getDisplayList();
