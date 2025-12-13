@@ -17,57 +17,6 @@ const getUserIdFromStorage = () => {
   }
 };
 
-// [주작질] 가짜 공고 데이터 정의
-const FAKE_JOBS = [
-  {
-    jobId: 'fake-1',
-    title: '금융IT 서비스 개발 및 운영',
-    companyName: '하나금융티아이',
-    jobSector: 'IT/보안',
-    employmentType: '신입/경력',
-    workPlace: '서울',
-    deadline: '2025-12-31T23:59:59',
-    description: '금융IT 서비스 개발 및 운영 업무를 담당합니다. (데모 데이터)',
-    requirements: '관련 학과 전공자 및 동등 자격 소지자',
-    link: 'https://example.com/fake-1'
-  },
-  {
-    jobId: 'fake-2',
-    title: '정보보안 담당자',
-    companyName: '에스앤아이코퍼레이션',
-    jobSector: '보안/정보보호',
-    employmentType: '경력',
-    workPlace: '서울',
-    deadline: '2025-12-25T23:59:59',
-    description: '정보보안 관리 체계 수립 및 운영 업무 (데모 데이터)',
-    requirements: 'ISMS-P 인증 심사원 자격 보유자 우대',
-    link: 'https://example.com/fake-2'
-  },
-  {
-    jobId: 'fake-3',
-    title: '경력 · IT · 정보보안 · 서울(강남)',
-    companyName: '(주)비지에프',
-    jobSector: 'IT 서비스',
-    employmentType: '경력',
-    workPlace: '서울(강남)',
-    deadline: '2026-01-15T23:59:59',
-    description: 'BGF리테일 그룹사 정보보안 담당 (데모 데이터)',
-    requirements: '정보보안 기사 자격증 보유자 필',
-    link: 'https://example.com/fake-3'
-  },
-  {
-    jobId: 'fake-4',
-    title: '정보보안 · 서울 중구',
-    companyName: '신한DS',
-    jobSector: '보안/금융',
-    employmentType: '정규직',
-    workPlace: '서울 중구',
-    deadline: '2025-12-30T18:00:00',
-    description: '신한금융그룹 보안 관제 및 운영 (데모 데이터)',
-    requirements: '금융보안원 관련 경력자 우대',
-    link: 'https://example.com/fake-4'
-  }
-];
 
 function ActivityRecommender() {
   const navigate = useNavigate();
@@ -205,42 +154,12 @@ function ActivityRecommender() {
     setImprovements([]);
     setRoleFitData(null);
 
-    // [주작질] 가짜 공고 클릭 시 API 호출 없이 가짜 데이터 세팅
-    if (job.jobId && String(job.jobId).startsWith('fake-')) {
-      console.log('[ActivityRecommender] 가짜 공고 클릭 감지. API 패스.');
-      setTimeout(() => {
-        setUserScore(93);
-        setTargetScore(90);
-        setRoleFitData({
-          totalScore: 93,
-          breakdown: [
-            { axis: '직무 연관성', score: 95 },
-            { axis: '필요 역량', score: 88 }
-          ],
-          target: job.jobSector,
-          user: '사용자'
-        });
-        setImprovements([
-          {
-            activity: { title: 'K-Shield 주니어 교육', summary: '정보보호 전문 인력 양성 과정' },
-            expectedScoreDelta: 5.0
-          },
-          {
-            activity: { title: '정보보안기사 자격증', summary: '국가기술자격' },
-            expectedScoreDelta: 3.5
-          }
-        ]);
-        setIsAnalyzing(false);
-      }, 500); // 0.5초 로딩 효과
-      return;
-    }
-
     try {
       // 2-1. 공고 적합도 점수 계산
-      console.log(`[ActivityRecommender] 공고 #\${job.jobId}에 대한 분석 시작`);
+      console.log(`[ActivityRecommender] 공고 #${job.jobId}에 대한 분석 시작`);
 
       const roleFitResponse = await apiClient.post(
-        `/job-postings/\${job.jobId}/score`
+        `/job-postings/${job.jobId}/score`
       );
 
       console.log('[ActivityRecommender] 점수 계산 결과:', roleFitResponse.data);
@@ -248,7 +167,8 @@ function ActivityRecommender() {
       if (roleFitResponse.data) {
         setRoleFitData(roleFitResponse.data);
         setUserScore(roleFitResponse.data.totalScore);
-        setTargetScore(90);
+        // targetScore는 백엔드에서 제공하지 않으므로 null로 설정하거나 표시하지 않음
+        setTargetScore(null);
 
         if (roleFitResponse.data.improvements && roleFitResponse.data.improvements.length > 0) {
           setImprovements(roleFitResponse.data.improvements);
@@ -256,22 +176,38 @@ function ActivityRecommender() {
           // improvements가 없으면 별도 API 호출
           const targetRoleId = job.targetRoles?.[0]?.targetRoleId;
           if (targetRoleId) {
-            const improvementsResponse = await apiClient.get(
-              `/users/\${userId}/improvements`,
-              {
-                params: {
-                  roleId: targetRoleId,
-                  size: 5
+            try {
+              const improvementsResponse = await apiClient.get(
+                `/users/${userId}/improvements`,
+                {
+                  params: {
+                    roleId: targetRoleId,
+                    size: 5
+                  }
                 }
-              }
-            );
-            setImprovements(improvementsResponse.data || []);
+              );
+              setImprovements(improvementsResponse.data || []);
+            } catch (improvementsError) {
+              console.warn('[ActivityRecommender] 개선 활동 조회 실패:', improvementsError);
+              setImprovements([]);
+            }
           }
         }
+      } else {
+        console.warn('[ActivityRecommender] 점수 계산 결과가 비어있습니다.');
+        setUserScore(null);
+        setRoleFitData(null);
+        setImprovements([]);
       }
 
     } catch (error) {
       console.error('[ActivityRecommender] 분석 실패:', error);
+      console.error('[ActivityRecommender] 에러 상세:', error.response?.data || error.message);
+      // 에러 발생 시에도 분석 상태를 초기화하여 사용자에게 알림
+      setUserScore(null);
+      setRoleFitData(null);
+      setImprovements([]);
+      alert(`역량 분석 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -298,24 +234,18 @@ function ActivityRecommender() {
 
       const eventData = {
         eventType: 'JOB_POSTING',
-        jobPostingId: String(job.jobId).startsWith('fake-') ? 99999 : job.jobId, // fake ID면 임의의 값 전송 (백엔드 에러 가능성 있으나 데모용으로 감수 or API가 String 처리 시 무관)
+        jobPostingId: job.jobId,
         startAt: eventDate.toISOString(),
         endAt: eventDate.toISOString(),
         alertMinutes: 1440 // 1일 전 알림
       };
 
-      if (String(job.jobId).startsWith('fake-')) {
-        // [주작질] 캘린더 추가도 그냥 성공한 척
-        console.log('[ActivityRecommender] 가짜 공고 캘린더 추가 - API 패스');
-        setIsSuccessModalOpen(true);
-      } else {
-        const userId = getUserIdFromStorage();
-        await apiClient.post(`/users/\${userId}/calendar/events`, eventData);
-        setIsSuccessModalOpen(true); // 성공 모달 표시
-      }
+      const userId = getUserIdFromStorage();
+      await apiClient.post(`/users/${userId}/calendar/events`, eventData);
+      setIsSuccessModalOpen(true); // 성공 모달 표시
     } catch (error) {
       console.error('[ActivityRecommender] 일정 추가 실패:', error);
-      alert(`일정 추가 중 오류가 발생했습니다: \${error.response?.data?.message || error.message}`);
+      alert(`일정 추가 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsCalendarModalOpen(false);
       setSelectedJobForCalendar(null);
@@ -329,18 +259,6 @@ function ActivityRecommender() {
 
   // 표시할 목록 결정 (추천 탭 vs 즐겨찾기 탭)
   const getDisplayList = () => {
-    // [주작질] 직무 필터에 '보안/정보보호'와 '금융공학'이 *모두* 있거나 선택된 경우 가짜 데이터 강제 리턴
-    const hasSecurity = selectedFilters.includes('보안/정보보호');
-    const hasFinance = selectedFilters.includes('금융공학');
-
-    if (hasSecurity && hasFinance) {
-      // 추천 탭일 경우에만 강제 주입 하거나, 즐겨찾기 탭에서도?
-      // "공고들이 뜨도록" -> 추천 탭에 뜨는 것이 자연스러움.
-      if (currentTab === 'recommend') {
-        return FAKE_JOBS;
-      }
-    }
-
     // 1. 기본 리스트 선택
     let sourceList = currentTab === 'recommend' ? activities : favorites;
 
@@ -350,8 +268,9 @@ function ActivityRecommender() {
     return sourceList.filter(job => {
       const jobText = [
         job.title,
+        job.companyName,
         job.jobSector,
-        job.targetRoles?.map(r => r.name).join(' ')
+        job.targetRoles?.map(r => r.targetRoleName || r.name).join(' ')
       ].join(' ').toLowerCase();
 
       return selectedFilters.some(filter => jobText.includes(filter.toLowerCase()));
@@ -360,9 +279,9 @@ function ActivityRecommender() {
 
   const displayList = getDisplayList();
 
-  // 선택된 공고 찾기 (전체 activities + favorites + FAKE_JOBS 합쳐서 검색)
+  // 선택된 공고 찾기 (전체 activities + favorites 합쳐서 검색)
   const findSelectedActivity = () => {
-    const all = [...activities, ...favorites, ...FAKE_JOBS];
+    const all = [...activities, ...favorites];
     return all.find(act => act.jobId === activeTab);
   };
 
