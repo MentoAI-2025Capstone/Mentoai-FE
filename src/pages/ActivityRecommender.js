@@ -91,7 +91,7 @@ function ActivityRecommender() {
             params: {
               targetRoleId: targetRole,
               page: 1,
-              size: 100
+              size: 50
             }
           });
 
@@ -106,7 +106,7 @@ function ActivityRecommender() {
           console.log('[ActivityRecommender] 목표 직무 없음.');
           // 목표 직무가 없으면 전체 공고를 보여주거나 안내 문구 표시
           const allJobsResponse = await apiClient.get('/job-postings', {
-            params: { page: 1, size: 100 }
+            params: { page: 1, size: 50 }
           });
           if (allJobsResponse.data && allJobsResponse.data.items) {
             setActivities(allJobsResponse.data.items);
@@ -124,8 +124,11 @@ function ActivityRecommender() {
 
   // 필터 변경 시 API 호출하여 필터링된 공고 가져오기
   useEffect(() => {
-    // 추천 탭이 아니거나 필터가 없으면 초기 로드만 사용
+    // 추천 탭이 아니면 실행 안 함
     if (currentTab !== 'recommend') return;
+    
+    // 필터가 없을 때는 초기 로드 결과 사용 (필터링 useEffect 실행 안 함)
+    if (selectedFilters.length === 0) return;
     
     const fetchFilteredJobs = async () => {
       const userId = getUserIdFromStorage();
@@ -146,26 +149,36 @@ function ActivityRecommender() {
           }
         }
         
-        const params = {
+        const baseParams = {
           targetRoleId: targetRole,
           page: 1,
-          size: 100
+          size: 50
         };
         
-        // 필터가 있으면 keyword로 전달 (첫 번째 필터 사용)
-        if (selectedFilters.length > 0) {
-          params.keyword = selectedFilters[0];
+        // 여러 필터를 OR 조건으로 처리 (각 필터에 대해 API 호출 후 합치기)
+        const allResults = [];
+        
+        for (const filter of selectedFilters) {
+          const filterParams = { ...baseParams, keyword: filter };
+          try {
+            const jobResponse = await apiClient.get('/job-postings', { params: filterParams });
+            if (jobResponse.data?.items) {
+              allResults.push(...jobResponse.data.items);
+            }
+          } catch (error) {
+            console.error(`[ActivityRecommender] 필터 "${filter}" 조회 실패:`, error);
+          }
         }
         
-        const jobResponse = await apiClient.get('/job-postings', { params });
+        // 중복 제거 (jobId 기준)
+        const uniqueResults = Array.from(
+          new Map(allResults.map(job => [job.jobId, job])).values()
+        );
         
-        if (jobResponse.data && jobResponse.data.items) {
-          setActivities(jobResponse.data.items);
-        } else {
-          setActivities([]);
-        }
+        setActivities(uniqueResults);
       } catch (error) {
         console.error('[ActivityRecommender] 필터링된 공고 로드 실패:', error);
+        setActivities([]);
       } finally {
         setIsLoading(false);
       }
