@@ -266,20 +266,16 @@ function PromptInput() {
     targetDateOnly.setHours(0, 0, 0, 0);
 
     if (targetDateOnly < today) {
+      // 과거 날짜 경고 모달 표시 (확인/취소 버튼)
       openModal({ 
         title: '알림', 
-        message: `이 활동의 날짜(${targetDate.toLocaleDateString()})가 이미 지났습니다. 캘린더에 추가하시겠습니까?` 
+        message: `이 활동의 날짜(${targetDate.toLocaleDateString()})가 이미 지났습니다.\n캘린더에 추가하시겠습니까?`,
+        onConfirm: () => {
+          // 사용자가 확인을 클릭한 경우 캘린더 추가 진행
+          addToCalendarInternal(item, startAt, endAt);
+        }
       });
-      // 사용자가 확인을 눌렀을 때만 추가하도록 하려면 여기서 return하고 확인 모달을 띄워야 하지만,
-      // 현재 openModal은 단순 알림만 지원하므로 일단 경고만 표시하고 진행
-      // 실제로는 과거 날짜는 추가하지 않는 것이 좋을 수 있음
-      const shouldProceed = window.confirm(
-        `이 활동의 날짜(${targetDate.toLocaleDateString()})가 이미 지났습니다.\n` +
-        `캘린더에 추가하시겠습니까?`
-      );
-      if (!shouldProceed) {
-        return;
-      }
+      return; // 모달에서 사용자 응답을 기다림
     }
 
     // ISO String 변환
@@ -312,6 +308,18 @@ function PromptInput() {
       const endDate = new Date(targetDate);
       endDate.setHours(endDate.getHours() + 2);
       endAt = endDate.toISOString();
+    }
+
+    // 과거 날짜가 아닌 경우 바로 추가
+    addToCalendarInternal(item, startAt, endAt);
+  };
+
+  // 실제 캘린더 추가 로직 (내부 함수)
+  const addToCalendarInternal = async (item, startAt, endAt) => {
+    const userId = getUserIdFromStorage();
+    if (!userId) {
+      openModal({ title: '알림', message: '로그인이 필요합니다.' });
+      return;
     }
 
     try {
@@ -533,7 +541,7 @@ function PromptInput() {
         onConfirm={handleModalConfirm}
         onCancel={closeModal}
         confirmText="확인"
-        cancelText={null}
+        cancelText={modalState.onConfirm ? "취소" : null}
       />
       <div className={styles.chatLayout}>
 
