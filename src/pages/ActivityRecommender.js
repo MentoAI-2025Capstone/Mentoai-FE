@@ -283,8 +283,14 @@ function ActivityRecommender() {
   };
 
   const handleAddToCalendarRequest = (job) => {
-    // includes를 사용하여 더 안전하게 체크
-    if (job.jobId.toString().includes('mock-2') || job.jobId.toString().includes('mock-3')) {
+    // 1. 상시채용 예외 처리 (mock-2, mock-3) - 이중 체크
+    const strId = job.jobId ? job.jobId.toString() : '';
+    if (
+      job.jobId === 'mock-2' ||
+      job.jobId === 'mock-3' ||
+      strId.includes('mock-2') ||
+      strId.includes('mock-3')
+    ) {
       setSuccessMessage('상시채용입니다.');
       setIsSuccessModalOpen(true);
       return;
@@ -301,8 +307,24 @@ function ActivityRecommender() {
   const confirmAddToCalendar = async () => {
     if (!selectedJobForCalendar) return;
     const job = selectedJobForCalendar;
-    // Mock 예외 처리
-    if (job.jobId && job.jobId.toString().startsWith('mock-')) {
+    const strId = job.jobId ? job.jobId.toString() : '';
+
+    // 1. 상시채용 예외 처리 (안전장치: 혹시라도 여기까지 넘어온 경우)
+    if (
+      job.jobId === 'mock-2' ||
+      job.jobId === 'mock-3' ||
+      strId.includes('mock-2') ||
+      strId.includes('mock-3')
+    ) {
+      setSuccessMessage('상시채용입니다.');
+      setIsSuccessModalOpen(true);
+      setIsCalendarModalOpen(false);
+      setSelectedJobForCalendar(null);
+      return;
+    }
+
+    // 2. KG이니시스 (mock-1) 예외 처리
+    if (job.jobId && strId.startsWith('mock-')) {
       setSuccessMessage('일정이 캘린더에 저장되었습니다.');
       setIsSuccessModalOpen(true);
       setIsCalendarModalOpen(false);
