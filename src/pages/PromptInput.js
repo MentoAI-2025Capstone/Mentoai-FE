@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import styles from './PromptInput.module.css';
 import { checkGuardrails } from '../utils/guardrails';
 import apiClient from '../api/apiClient';
+import Modal from '../components/Modal';
 
 // sessionStorage에서 userId를 가져오는 헬퍼
 const getUserIdFromStorage = () => {
@@ -19,20 +20,20 @@ const getUserIdFromStorage = () => {
 // JSON 코드 블록 제거 함수
 const cleanContent = (text) => {
   if (!text) return '';
-  
+
   // JSON 객체 패턴 감지 ({"items":[...]} 형태)
   const jsonPattern = /^\s*\{[\s\S]*"items"[\s\S]*\}\s*$/;
-  
+
   // 코드 블록 제거
   let cleaned = text.replace(/```json\s*([\s\S]*?)\s*```/g, '$1')
     .replace(/```\s*([\s\S]*?)\s*```/g, '$1')
     .trim();
-  
+
   // JSON 객체만 있는 경우 빈 문자열 반환 (responsePayload.items로 표시되므로)
   if (jsonPattern.test(cleaned)) {
     return '';
   }
-  
+
   return cleaned;
 };
 
@@ -207,27 +208,111 @@ function PromptInput() {
   const handleAddToCalendar = async (item) => {
     const userId = getUserIdFromStorage();
     if (!userId) {
-      alert("로그인이 필요합니다.");
+      openModal({ title: '알림', message: '로그인이 필요합니다.' });
       return;
     }
 
     if (!item.activity || !item.activity.activityId) {
-      alert("활동 정보를 찾을 수 없어 캘린더에 추가할 수 없습니다.");
+      openModal({ title: '알림', message: '활동 정보를 찾을 수 없어 캘린더에 추가할 수 없습니다.' });
       return;
     }
 
-    // 날짜 결정 로직: APPLY_END -> EVENT_START -> 현재 시간
-    let targetDate = new Date();
-    if (item.activity.dates && item.activity.dates.length > 0) {
-      const applyEnd = item.activity.dates.find(d => d.dateType === 'APPLY_END');
-      const eventStart = item.activity.dates.find(d => d.dateType === 'EVENT_START');
+    // 날짜 결정 로직: 백엔드 resolveStartAt과 동일한 우선순위
+    // EVENT_START -> APPLY_START -> publishedAt -> createdAt -> 내일
+    let targetDate = null;
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0); // 내일 00:00:00
 
-      if (applyEnd) targetDate = new Date(applyEnd.dateValue);
-      else if (eventStart) targetDate = new Date(eventStart.dateValue);
+    if (item.activity.dates && item.activity.dates.length > 0) {
+      // EVENT_START 중 가장 빠른 날짜
+      const eventStarts = item.activity.dates
+        .filter(d => d.dateType === 'EVENT_START')
+        .map(d => new Date(d.dateValue))
+        .sort((a, b) => a - b);
+      
+      if (eventStarts.length > 0) {
+        targetDate = eventStarts[0];
+      } else {
+        // APPLY_START 중 가장 빠른 날짜
+        const applyStarts = item.activity.dates
+          .filter(d => d.dateType === 'APPLY_START')
+          .map(d => new Date(d.dateValue))
+          .sort((a, b) => a - b);
+        
+        if (applyStarts.length > 0) {
+          targetDate = applyStarts[0];
+        }
+      }
+    }
+
+    // dates에서 날짜를 찾지 못한 경우
+    if (!targetDate) {
+      if (item.activity.publishedAt) {
+        targetDate = new Date(item.activity.publishedAt);
+      } else if (item.activity.createdAt) {
+        targetDate = new Date(item.activity.createdAt);
+      } else {
+        // 모든 날짜 정보가 없으면 내일로 설정
+        targetDate = tomorrow;
+      }
+    }
+
+    // 과거 날짜 체크 (오늘 이전이면 경고)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const targetDateOnly = new Date(targetDate);
+    targetDateOnly.setHours(0, 0, 0, 0);
+
+    if (targetDateOnly < today) {
+      openModal({ 
+        title: '알림', 
+        message: `이 활동의 날짜(${targetDate.toLocaleDateString()})가 이미 지났습니다. 캘린더에 추가하시겠습니까?` 
+      });
+      // 사용자가 확인을 눌렀을 때만 추가하도록 하려면 여기서 return하고 확인 모달을 띄워야 하지만,
+      // 현재 openModal은 단순 알림만 지원하므로 일단 경고만 표시하고 진행
+      // 실제로는 과거 날짜는 추가하지 않는 것이 좋을 수 있음
+      const shouldProceed = window.confirm(
+        `이 활동의 날짜(${targetDate.toLocaleDateString()})가 이미 지났습니다.\n` +
+        `캘린더에 추가하시겠습니까?`
+      );
+      if (!shouldProceed) {
+        return;
+      }
     }
 
     // ISO String 변환
     const startAt = targetDate.toISOString();
+
+    // endAt 계산: EVENT_END -> APPLY_END -> startAt + 2시간
+    let endAt = null;
+    if (item.activity.dates && item.activity.dates.length > 0) {
+      const eventEnds = item.activity.dates
+        .filter(d => d.dateType === 'EVENT_END')
+        .map(d => new Date(d.dateValue))
+        .sort((a, b) => b - a); // 가장 늦은 날짜
+      
+      if (eventEnds.length > 0) {
+        endAt = eventEnds[0].toISOString();
+      } else {
+        const applyEnds = item.activity.dates
+          .filter(d => d.dateType === 'APPLY_END')
+          .map(d => new Date(d.dateValue))
+          .sort((a, b) => b - a);
+        
+        if (applyEnds.length > 0) {
+          endAt = applyEnds[0].toISOString();
+        }
+      }
+    }
+
+    // endAt이 없으면 startAt + 2시간
+    if (!endAt) {
+      const endDate = new Date(targetDate);
+      endDate.setHours(endDate.getHours() + 2);
+      endAt = endDate.toISOString();
+    }
 
     try {
       await apiClient.post('/recommend/calendar', {
@@ -235,12 +320,13 @@ function PromptInput() {
         activityId: item.activity.activityId,
         eventType: resolveEventType(item.activity),
         startAt,
+        endAt,
         alertMinutes: 1440 // 1일 전 알림 기본값
       });
-      alert(`"${item.activity.title}" 일정이 캘린더에 추가되었습니다.`);
+      openModal({ title: '성공', message: `"${item.activity.title}" 일정이 캘린더에 추가되었습니다.` });
     } catch (error) {
       console.error("캘린더 추가 실패:", error);
-      alert("캘린더 추가에 실패했습니다.");
+      openModal({ title: '오류', message: '캘린더 추가에 실패했습니다.' });
     }
   };
 
@@ -307,7 +393,7 @@ function PromptInput() {
 
     const guardrailResult = checkGuardrails(targetPrompt);
     if (!guardrailResult.isSafe) {
-      alert(guardrailResult.message);
+      openModal({ title: '알림', message: guardrailResult.message });
       return;
     }
 
@@ -403,15 +489,52 @@ function PromptInput() {
       ]);
 
       // 사용자에게 알림
-      alert(`추천 요청 실패: ${error.response?.data?.message || error.message}`);
+      openModal({ title: '오류', message: `추천 요청 실패: ${error.response?.data?.message || error.message}` });
     } finally {
       setIsLoading(false);
       console.log('[PromptInput] ===== 요청 종료 =====');
     }
   };
 
+  // 모달 상태
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null
+  });
+
+  const openModal = ({ title, message, onConfirm = null }) => {
+    setModalState({
+      isOpen: true,
+      title,
+      message,
+      onConfirm
+    });
+  };
+
+  const closeModal = () => {
+    setModalState(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const handleModalConfirm = () => {
+    if (modalState.onConfirm) {
+      modalState.onConfirm();
+    }
+    closeModal();
+  };
+
   return (
     <div className={styles.chatPageContainer}>
+      <Modal
+        isOpen={modalState.isOpen}
+        title={modalState.title}
+        message={modalState.message}
+        onConfirm={handleModalConfirm}
+        onCancel={closeModal}
+        confirmText="확인"
+        cancelText={null}
+      />
       <div className={styles.chatLayout}>
 
         {/* 1. 채팅 히스토리 사이드바 */}
