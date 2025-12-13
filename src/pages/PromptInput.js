@@ -251,7 +251,7 @@ function PromptInput() {
     setIsLoading(true);
 
     try {
-      const response = await apiClient.get(`/recommend/chats/${logId}`);
+      const response = await apiClient.get(`/recommend/chats/${logId}?includePayload=true`);
       const logDetail = response.data;
       console.log('[PromptInput] 상세 로그 로드:', logDetail);
 
