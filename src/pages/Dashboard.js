@@ -243,7 +243,7 @@ function Dashboard() {
           ) : roleFit && roleFit.breakdown ? (
             <div>
               <h4 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#333' }}>
-                🎯 {roleFit.target} 적합도: <span style={{ color: '#1976d2', fontSize: '1.2rem' }}>{roleFit.roleFitScore}점</span>
+                🎯 {profile?.interestDomains?.[0] || '희망직무'} 적합도: <span style={{ color: '#1976d2', fontSize: '1.2rem' }}>{roleFit.roleFitScore}점</span>
               </h4>
               <RadarChartComponent data={roleFit.breakdown} />
             </div>
