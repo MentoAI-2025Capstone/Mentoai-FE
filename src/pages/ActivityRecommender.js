@@ -46,6 +46,10 @@ function ActivityRecommender() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
 
+  // 공고 관련 공모전 추천 상태
+  const [recommendedContests, setRecommendedContests] = useState([]);
+  const [isLoadingContests, setIsLoadingContests] = useState(false);
+
   // 0. 즐겨찾기 초기 로드 (localStorage)
   useEffect(() => {
     try {
@@ -91,7 +95,7 @@ function ActivityRecommender() {
             params: {
               targetRoleId: targetRole,
               page: 1,
-              size: 50
+              size: 100
             }
           });
 
@@ -106,7 +110,7 @@ function ActivityRecommender() {
           console.log('[ActivityRecommender] 목표 직무 없음.');
           // 목표 직무가 없으면 전체 공고를 보여주거나 안내 문구 표시
           const allJobsResponse = await apiClient.get('/job-postings', {
-            params: { page: 1, size: 50 }
+            params: { page: 1, size: 100 }
           });
           if (allJobsResponse.data && allJobsResponse.data.items) {
             setActivities(allJobsResponse.data.items);
@@ -149,12 +153,12 @@ function ActivityRecommender() {
         const baseParams = {
           targetRoleId: targetRole,
           page: 1,
-          size: 50
+          size: 100
         };
         
         // 필터가 없을 때는 초기 로드와 동일하게 처리
         if (selectedFilters.length === 0) {
-          const params = targetRole ? baseParams : { page: 1, size: 50 };
+          const params = targetRole ? baseParams : { page: 1, size: 100 };
           const jobResponse = await apiClient.get('/job-postings', { params });
           
           if (jobResponse.data && jobResponse.data.items) {
@@ -228,6 +232,7 @@ function ActivityRecommender() {
     setTargetScore(null);
     setImprovements([]);
     setRoleFitData(null);
+    setRecommendedContests([]);
 
     try {
       // 2-1. 공고 적합도 점수 계산
@@ -236,6 +241,52 @@ function ActivityRecommender() {
       const roleFitResponse = await apiClient.post(
         `/job-postings/${job.jobId}/score`
       );
+
+      // 2-2. 공고 관련 공모전 추천 (병렬 처리)
+      const fetchContests = async () => {
+        setIsLoadingContests(true);
+        try {
+          const targetRoleId = job.targetRoles?.[0]?.targetRoleId;
+          const query = `${job.title} ${job.companyName} 관련 공모전 추천`;
+          
+          // 공고에서 스킬/키워드 추출 (jobSector, skills 등)
+          const preferTags = [];
+          if (job.jobSector) {
+            preferTags.push(job.jobSector.toLowerCase());
+          }
+          // 추가 스킬이 있다면 preferTags에 추가 가능
+          
+          const requestBody = {
+            userId: userId,
+            query: query,
+            topK: 5,
+            useProfileHints: true,
+            preferTags: preferTags.length > 0 ? preferTags : undefined,
+            intentHint: {
+              normalizedIntent: 'CONTEST',
+              keywords: [],
+              filter: {
+                activityType: 'CONTEST',
+                requiredTags: ['공모전', '대회', '해커톤']
+              }
+            }
+          };
+
+          console.log('[ActivityRecommender] 공모전 추천 요청:', requestBody);
+          const contestResponse = await apiClient.post('/recommend', requestBody);
+          
+          if (contestResponse.data?.items) {
+            setRecommendedContests(contestResponse.data.items);
+            console.log('[ActivityRecommender] 공모전 추천 결과:', contestResponse.data.items);
+          }
+        } catch (error) {
+          console.error('[ActivityRecommender] 공모전 추천 실패:', error);
+        } finally {
+          setIsLoadingContests(false);
+        }
+      };
+      
+      fetchContests();
 
       console.log('[ActivityRecommender] 점수 계산 결과:', roleFitResponse.data);
 
@@ -548,7 +599,42 @@ function ActivityRecommender() {
                         </div>
                       </div>
 
-                      {/* 2. 추천 공모전/대회 섹션 */}
+                      {/* 2. 공고 관련 공모전 추천 섹션 */}
+                      {(isLoadingContests || recommendedContests.length > 0) && (
+                        <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+                          <h4 style={{ margin: '0 0 10px 0', fontSize: '1rem' }}>🎯 이 공고에 맞는 공모전 추천</h4>
+                          {isLoadingContests ? (
+                            <div style={{ textAlign: 'center', padding: '10px', color: '#666' }}>
+                              공모전을 찾는 중...
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                              {recommendedContests.map((item, idx) => (
+                                <div key={idx} style={{
+                                  padding: '12px',
+                                  backgroundColor: 'white',
+                                  border: '1px solid #e0e0e0',
+                                  borderRadius: '6px'
+                                }}>
+                                  <div style={{ fontWeight: 'bold', fontSize: '0.95rem', marginBottom: '4px' }}>
+                                    {item.activity?.title || '추천 공모전'}
+                                  </div>
+                                  <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '4px' }}>
+                                    {item.activity?.summary ? item.activity.summary.substring(0, 80) + '...' : ''}
+                                  </div>
+                                  {item.reason && (
+                                    <div style={{ fontSize: '0.8rem', color: '#007bff', marginTop: '4px' }}>
+                                      💡 {item.reason}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* 3. 점수 향상을 위한 추천 활동 섹션 */}
                       {improvements.length > 0 && (
                         <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
                           <h4 style={{ margin: '0 0 10px 0', fontSize: '1rem' }}>💡 점수 향상을 위한 추천 활동</h4>
