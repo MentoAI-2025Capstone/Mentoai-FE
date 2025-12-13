@@ -46,14 +46,6 @@ function ActivityRecommender() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
 
-  // 공고 관련 공모전 추천 상태
-  const [recommendedContests, setRecommendedContests] = useState([]);
-
-  // 공모전 캘린더 추가 관련 상태
-  const [isContestCalendarModalOpen, setIsContestCalendarModalOpen] = useState(false);
-  const [selectedContestForCalendar, setSelectedContestForCalendar] = useState(null);
-  const [isLoadingContests, setIsLoadingContests] = useState(false);
-
   // 0. 즐겨찾기 초기 로드 (localStorage)
   useEffect(() => {
     try {
@@ -91,7 +83,7 @@ function ActivityRecommender() {
         }
 
         if (targetRole) {
-          console.log(`[ActivityRecommender] 목표 직무 '\${targetRole}' 발견. 관련 공고 조회.`);
+          console.log(`[ActivityRecommender] 목표 직무 '${targetRole}' 발견. 관련 공고 조회.`);
           setCareerGoal(targetRole);
 
           // 1-2. 공고 검색 (GET /job-postings)
@@ -236,7 +228,10 @@ function ActivityRecommender() {
     setTargetScore(null);
     setImprovements([]);
     setRoleFitData(null);
-    setRecommendedContests([]);
+    setUserScore(null);
+    setTargetScore(null);
+    setImprovements([]);
+    setRoleFitData(null);
 
     try {
       // 2-1. 공고 적합도 점수 계산
@@ -245,52 +240,6 @@ function ActivityRecommender() {
       const roleFitResponse = await apiClient.post(
         `/job-postings/${job.jobId}/score`
       );
-
-      // 2-2. 공고 관련 공모전 추천 (병렬 처리)
-      const fetchContests = async () => {
-        setIsLoadingContests(true);
-        try {
-          const targetRoleId = job.targetRoles?.[0]?.targetRoleId;
-          const query = `${job.title} ${job.companyName} 관련 공모전 추천`;
-
-          // 공고에서 스킬/키워드 추출 (jobSector, skills 등)
-          const preferTags = [];
-          if (job.jobSector) {
-            preferTags.push(job.jobSector.toLowerCase());
-          }
-          // 추가 스킬이 있다면 preferTags에 추가 가능
-
-          const requestBody = {
-            userId: userId,
-            query: query,
-            topK: 5,
-            useProfileHints: true,
-            preferTags: preferTags.length > 0 ? preferTags : undefined,
-            intentHint: {
-              normalizedIntent: 'CONTEST',
-              keywords: [],
-              filter: {
-                activityType: 'CONTEST',
-                requiredTags: ['공모전', '대회', '해커톤']
-              }
-            }
-          };
-
-          console.log('[ActivityRecommender] 공모전 추천 요청:', requestBody);
-          const contestResponse = await apiClient.post('/recommend', requestBody);
-
-          if (contestResponse.data?.items) {
-            setRecommendedContests(contestResponse.data.items);
-            console.log('[ActivityRecommender] 공모전 추천 결과:', contestResponse.data.items);
-          }
-        } catch (error) {
-          console.error('[ActivityRecommender] 공모전 추천 실패:', error);
-        } finally {
-          setIsLoadingContests(false);
-        }
-      };
-
-      fetchContests();
 
       console.log('[ActivityRecommender] 점수 계산 결과:', roleFitResponse.data);
 
@@ -385,134 +334,6 @@ function ActivityRecommender() {
   const cancelAddToCalendar = () => {
     setIsCalendarModalOpen(false);
     setSelectedJobForCalendar(null);
-  };
-
-  // 공모전 캘린더 추가 함수
-  const handleAddContestToCalendar = async (item) => {
-    const userId = getUserIdFromStorage();
-    if (!userId) {
-      alert('로그인이 필요합니다.');
-      return;
-    }
-
-    if (!item.activity || !item.activity.activityId) {
-      alert('활동 정보를 찾을 수 없어 캘린더에 추가할 수 없습니다.');
-      return;
-    }
-
-    // 날짜 결정: APPLY_END (마감일) 우선
-    let targetDate = null;
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-
-    if (item.activity.dates && item.activity.dates.length > 0) {
-      // APPLY_END (마감일) 찾기
-      const applyEnds = item.activity.dates
-        .filter(d => d.dateType === 'APPLY_END')
-        .map(d => new Date(d.dateValue))
-        .sort((a, b) => a - b); // 가장 빠른 마감일
-
-      if (applyEnds.length > 0) {
-        targetDate = applyEnds[0];
-      } else {
-        // APPLY_END가 없으면 EVENT_START 사용
-        const eventStarts = item.activity.dates
-          .filter(d => d.dateType === 'EVENT_START')
-          .map(d => new Date(d.dateValue))
-          .sort((a, b) => a - b);
-
-        if (eventStarts.length > 0) {
-          targetDate = eventStarts[0];
-        }
-      }
-    }
-
-    // dates에서 날짜를 찾지 못한 경우
-    if (!targetDate) {
-      if (item.activity.publishedAt) {
-        targetDate = new Date(item.activity.publishedAt);
-      } else if (item.activity.createdAt) {
-        targetDate = new Date(item.activity.createdAt);
-      } else {
-        targetDate = tomorrow;
-      }
-    }
-
-    // 과거 날짜 체크
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const targetDateOnly = new Date(targetDate);
-    targetDateOnly.setHours(0, 0, 0, 0);
-
-    if (targetDateOnly < today) {
-      // 과거 날짜 경고
-      setSelectedContestForCalendar({ item, targetDate });
-      setIsContestCalendarModalOpen(true);
-      return;
-    }
-
-    // 과거 날짜가 아니면 바로 추가
-    await addContestToCalendarInternal(item, targetDate);
-  };
-
-  // 실제 공모전 캘린더 추가 로직
-  const addContestToCalendarInternal = async (item, targetDate) => {
-    const userId = getUserIdFromStorage();
-    if (!userId) {
-      alert('로그인이 필요합니다.');
-      return;
-    }
-
-    const startAt = targetDate.toISOString();
-
-    // endAt 계산: EVENT_END 또는 startAt + 2시간
-    let endAt = null;
-    if (item.activity.dates && item.activity.dates.length > 0) {
-      const eventEnds = item.activity.dates
-        .filter(d => d.dateType === 'EVENT_END')
-        .map(d => new Date(d.dateValue))
-        .sort((a, b) => b - a);
-
-      if (eventEnds.length > 0) {
-        endAt = eventEnds[0].toISOString();
-      }
-    }
-
-    if (!endAt) {
-      const endDate = new Date(targetDate);
-      endDate.setHours(endDate.getHours() + 2);
-      endAt = endDate.toISOString();
-    }
-
-    try {
-      await apiClient.post('/recommend/calendar', {
-        userId,
-        activityId: item.activity.activityId,
-        eventType: 'ACTIVITY',
-        startAt,
-        endAt,
-        alertMinutes: 1440
-      });
-      setIsSuccessModalOpen(true);
-    } catch (error) {
-      console.error('[ActivityRecommender] 공모전 캘린더 추가 실패:', error);
-      alert(`일정 추가 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
-    }
-  };
-
-  const confirmAddContestToCalendar = async () => {
-    if (!selectedContestForCalendar) return;
-    const { item, targetDate } = selectedContestForCalendar;
-    await addContestToCalendarInternal(item, targetDate);
-    setIsContestCalendarModalOpen(false);
-    setSelectedContestForCalendar(null);
-  };
-
-  const cancelAddContestToCalendar = () => {
-    setIsContestCalendarModalOpen(false);
-    setSelectedContestForCalendar(null);
   };
 
   // 표시할 목록 결정 (추천 탭 vs 즐겨찾기 탭)
@@ -731,70 +552,6 @@ function ActivityRecommender() {
                         </div>
                       </div>
 
-                      {/* 2. 공고 관련 공모전 추천 섹션 */}
-                      {(isLoadingContests || recommendedContests.length > 0) && (
-                        <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
-                          <h4 style={{ margin: '0 0 10px 0', fontSize: '1rem' }}>🎯 이 공고에 맞는 공모전 추천</h4>
-                          {isLoadingContests ? (
-                            <div style={{ textAlign: 'center', padding: '10px', color: '#666' }}>
-                              공모전을 찾는 중...
-                            </div>
-                          ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                              {recommendedContests.map((item, idx) => (
-                                <div key={idx} style={{
-                                  padding: '12px',
-                                  backgroundColor: 'white',
-                                  border: '1px solid #e0e0e0',
-                                  borderRadius: '6px',
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  gap: '10px'
-                                }}>
-                                  <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 'bold', fontSize: '0.95rem', marginBottom: '4px' }}>
-                                      {item.activity?.title || '추천 공모전'}
-                                    </div>
-                                    <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '4px' }}>
-                                      {item.activity?.summary ? item.activity.summary.substring(0, 80) + '...' : ''}
-                                    </div>
-                                    {item.reason && (
-                                      <div style={{ fontSize: '0.8rem', color: '#007bff', marginTop: '4px' }}>
-                                        💡 {item.reason}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleAddContestToCalendar(item);
-                                    }}
-                                    style={{
-                                      padding: '8px 12px',
-                                      backgroundColor: '#e3f2fd',
-                                      border: '1px solid #90caf9',
-                                      borderRadius: '4px',
-                                      color: '#1976d2',
-                                      cursor: 'pointer',
-                                      fontSize: '0.85rem',
-                                      fontWeight: 'bold',
-                                      whiteSpace: 'nowrap',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '4px'
-                                    }}
-                                    title="캘린더에 추가"
-                                  >
-                                    📅 추가
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
                       {/* 3. 점수 향상을 위한 추천 활동 섹션 */}
                       {improvements.length > 0 && (
                         <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
@@ -839,7 +596,11 @@ function ActivityRecommender() {
                       {/* 3. AI 질문 버튼 */}
                       <div style={{ marginTop: '20px', textAlign: 'center' }}>
                         <button
-                          onClick={() => navigate('/prompt')}
+                          onClick={() => navigate('/prompt', {
+                            state: {
+                              initialPrompt: `"${selectedActivity.title}" 공고에 맞춰 내 역량을 강화할 수 있는 공모전이나 대외활동을 추천해줘.`
+                            }
+                          })}
                           style={{
                             backgroundColor: '#6c757d',
                             color: 'white',
@@ -919,7 +680,7 @@ function ActivityRecommender() {
       <Modal
         isOpen={isCalendarModalOpen}
         title="캘린더 일정 추가"
-        message={`'\${selectedJobForCalendar?.title}' 공고를 캘린더에 추가하시겠습니까?`}
+        message={`'${selectedJobForCalendar?.title}' 공고를 캘린더에 추가하시겠습니까?`}
         onConfirm={confirmAddToCalendar}
         onCancel={cancelAddToCalendar}
         confirmText="추가"
@@ -945,16 +706,7 @@ function ActivityRecommender() {
         initialSelected={selectedFilters}
       />
 
-      {/* 공모전 캘린더 추가 확인 모달 (과거 날짜) */}
-      <Modal
-        isOpen={isContestCalendarModalOpen}
-        title="알림"
-        message={`이 공모전의 마감일(${selectedContestForCalendar?.targetDate?.toLocaleDateString()})이 이미 지났습니다.\n캘린더에 추가하시겠습니까?`}
-        onConfirm={confirmAddContestToCalendar}
-        onCancel={cancelAddContestToCalendar}
-        confirmText="확인"
-        cancelText="취소"
-      />
+
     </div >
   );
 }
