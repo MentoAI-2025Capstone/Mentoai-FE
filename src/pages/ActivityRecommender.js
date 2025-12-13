@@ -281,25 +281,58 @@ function ActivityRecommender() {
     // Mock 공고인 경우 가짜 분석 결과 반환
     if (job.jobId.toString().startsWith('mock-')) {
       setTimeout(() => {
-        const mockScore = 85 + Math.floor(Math.random() * 10);
+        // 60점대 점수 (60 ~ 69)
+        const mockScore = 60 + Math.floor(Math.random() * 10);
+
+        // 다양한 추천 활동 풀 (중복 방지 및 다양성)
+        const mockImprovements = [
+          {
+            activity: {
+              title: 'SQLD 자격증 취득',
+              summary: '데이터베이스 설계 및 활용 능력을 증명하는 국가공인 자격'
+            },
+            expectedScoreIncrease: 4.2
+          },
+          {
+            activity: {
+              title: 'AWS Certified Solutions Architect Associate',
+              summary: '클라우드 아키텍처 설계 및 구현 능력 검증'
+            },
+            expectedScoreIncrease: 5.5
+          },
+          {
+            activity: {
+              title: '알고리즘 코딩 테스트 심화 학습',
+              summary: '효율적인 코드 작성 및 문제 해결 능력 향상 (백준/프로그래머스)'
+            },
+            expectedScoreIncrease: 3.8
+          },
+          {
+            activity: {
+              title: '팀 프로젝트: 웹 서비스 배포 경험',
+              summary: 'CI/CD 파이프라인 구축 및 실제 사용자 대상 배포 경험'
+            },
+            expectedScoreIncrease: 4.5
+          },
+          {
+            activity: {
+              title: 'Docker/Kubernetes 컨테이너 기술 습득',
+              summary: '현대적인 애플리케이션 배포 및 운영을 위한 필수 기술'
+            },
+            expectedScoreIncrease: 3.2
+          },
+          {
+            activity: {
+              title: '오픈소스 컨트리뷰션 (Spring/React)',
+              summary: '실무 레벨의 코드 리뷰 경험 및 협업 역량 강화'
+            },
+            expectedScoreIncrease: 2.9
+          }
+        ];
+
         const mockData = {
           totalScore: mockScore,
-          improvements: [
-            {
-              activity: {
-                title: '정보처리기사 자격증 취득',
-                summary: 'IT 기초 지식 및 소프트웨어 개발 역량 증빙을 위한 국가기술자격'
-              },
-              expectedScoreIncrease: 3.5
-            },
-            {
-              activity: {
-                title: '오픈소스 컨트리뷰션 활동',
-                summary: 'GitHub 오픈소스 프로젝트 기여를 통한 협업 능력 향상'
-              },
-              expectedScoreIncrease: 2.8
-            }
-          ]
+          improvements: mockImprovements
         };
         setRoleFitData(mockData);
         setUserScore(mockScore);
