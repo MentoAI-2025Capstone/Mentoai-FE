@@ -283,18 +283,22 @@ function ActivityRecommender() {
   };
 
   const handleAddToCalendarRequest = (job) => {
-    // 1. 상시채용 예외 처리 (mock-2, mock-3) - 이중 체크
     const strId = job.jobId ? job.jobId.toString() : '';
-    if (
-      job.jobId === 'mock-2' ||
-      job.jobId === 'mock-3' ||
-      strId.includes('mock-2') ||
-      strId.includes('mock-3')
-    ) {
+    // 1. Mock 공고 처리
+    if (strId.startsWith('mock-')) {
+      // mock-1 (KG이니시스)만 캘린더 추가 모달 표시 (나중에 가짜 성공 처리)
+      if (strId === 'mock-1') {
+        setSelectedJobForCalendar(job);
+        setIsCalendarModalOpen(true);
+        return;
+      }
+      // 그 외 (mock-2, mock-3 등)는 무조건 상시채용 팝업
       setSuccessMessage('상시채용입니다.');
       setIsSuccessModalOpen(true);
       return;
     }
+
+    // 2. 일반 공고 처리
     const userId = getUserIdFromStorage();
     if (!userId) {
       alert("로그인이 필요합니다.");
@@ -309,28 +313,21 @@ function ActivityRecommender() {
     const job = selectedJobForCalendar;
     const strId = job.jobId ? job.jobId.toString() : '';
 
-    // 1. 상시채용 예외 처리 (안전장치: 혹시라도 여기까지 넘어온 경우)
-    if (
-      job.jobId === 'mock-2' ||
-      job.jobId === 'mock-3' ||
-      strId.includes('mock-2') ||
-      strId.includes('mock-3')
-    ) {
-      setSuccessMessage('상시채용입니다.');
+    // 1. Mock 공고 예외 처리 (안전장치 & 실제 로직)
+    if (strId.startsWith('mock-')) {
+      // mock-1 (KG이니시스)은 성공 메시지
+      if (strId === 'mock-1') {
+        setSuccessMessage('일정이 캘린더에 저장되었습니다.');
+      } else {
+        // 그 외에는 상시채용 메시지 (혹시라도 모달이 떴을 경우 대비)
+        setSuccessMessage('상시채용입니다.');
+      }
       setIsSuccessModalOpen(true);
       setIsCalendarModalOpen(false);
       setSelectedJobForCalendar(null);
       return;
     }
 
-    // 2. KG이니시스 (mock-1) 예외 처리
-    if (job.jobId && strId.startsWith('mock-')) {
-      setSuccessMessage('일정이 캘린더에 저장되었습니다.');
-      setIsSuccessModalOpen(true);
-      setIsCalendarModalOpen(false);
-      setSelectedJobForCalendar(null);
-      return;
-    }
     try {
       const eventDate = job.deadline ? new Date(job.deadline) : new Date();
       const eventData = {
