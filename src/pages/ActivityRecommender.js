@@ -26,11 +26,11 @@ function ActivityRecommender() {
       title: '[KG이니시스] Back End 개발 및 운영 담당자 정규직 채용',
       companyName: '(주)케이지이니시스',
       workPlace: '서울 중구',
-      deadline: '2025-12-31',
+      deadline: '2025-12-26', // 요청에 따라 수정
       jobSector: '백엔드/서버개발',
       description: 'KG이니시스에서 결제 시스템 백엔드 개발 및 운영을 담당할 인재를 찾습니다.\n주요 업무:\n- 결제 시스템 승인/매입/정산 프로세스 개발\n- 대용량 트래픽 처리 및 성능 최적화',
       requirements: '자격 요건:\n- Java/Spring Boot 기반 개발 경험\n- RDBMS (Oracle, MySQL) 사용 경험\n- 대용량 트랜잭션 처리 경험 우대',
-      link: 'https://www.kginicis.com',
+      link: 'https://www.jobda.im/position/167137/jd', // 요청에 따라 수정
       targetRoles: [{ targetRoleId: 'backend', name: '백엔드 개발자' }]
     },
     {
@@ -81,6 +81,7 @@ function ActivityRecommender() {
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [selectedJobForCalendar, setSelectedJobForCalendar] = useState(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false); // 성공 알림 모달 상태
+  const [successMessage, setSuccessMessage] = useState('일정이 캘린더에 저장되었습니다.'); // 성공 알림 메시지
 
   // 직무 필터 상태
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
