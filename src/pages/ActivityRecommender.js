@@ -47,15 +47,15 @@ function ActivityRecommender() {
     },
     {
       jobId: 'mock-3',
-      title: '카페24사용 웹페이지 개발자 채용',
-      companyName: '스마일드래곤(주)',
-      workPlace: '서울',
-      deadline: '2026-01-15',
-      jobSector: '웹개발',
-      description: '카페24 플랫폼을 활용한 웹페이지 개발 및 커스터마이징 업무를 수행합니다.',
-      requirements: '- HTML, CSS, JavaScript 능숙자\n- 카페24 쇼핑몰 솔루션 이해도 보유자 우대\n- 웹 표준 및 웹 접근성 이해',
+      title: '[윌라] QA 주니어 엔지니어',
+      companyName: '(주)인플루엔셜',
+      workPlace: '서울 강남구',
+      deadline: '2025-12-31',
+      jobSector: 'QA 엔지니어',
+      description: '오디오북 서비스 윌라의 품질 향상을 위한 QA 엔지니어를 모십니다.\n주요 업무:\n- 모바일 앱/웹 서비스 기능 테스트 및 유지보수\n- 테스트 케이스 작성 및 수행\n- 버그 리포팅 및 이슈 추적',
+      requirements: '- QA 관련 경력 1년 이상 또는 신입\n- 모바일 환경에 대한 이해\n- 꼼꼼하고 논리적인 사고 보유자',
       link: '#',
-      targetRoles: [{ targetRoleId: 'web', name: '웹 개발자' }]
+      targetRoles: [{ targetRoleId: 'qa', name: 'QA 엔지니어' }]
     }
   ];
 
@@ -208,9 +208,9 @@ function ActivityRecommender() {
         // 필터가 있을 때는 필터링 처리
         let allResults = [];
 
-        // "웹개발" 또는 "백엔드/서버개발" 필터가 있는지 확인
+        // "웹" 또는 "백엔드" 또는 "서버" 키워드가 포함된 필터가 있는지 확인
         const hasHardcodedFilter = selectedFilters.some(f =>
-          ['웹개발', '백엔드/서버개발'].includes(f)
+          f.includes('웹') || f.includes('백엔드') || f.includes('서버')
         );
 
         if (hasHardcodedFilter) {
