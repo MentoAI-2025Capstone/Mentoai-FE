@@ -108,26 +108,11 @@ function ActivityRecommender() {
         }
         if (targetRole) {
           setCareerGoal(targetRole);
-          const jobResponse = await apiClient.get('/job-postings', {
-            params: { targetRoleId: targetRole, page: 1, size: 100 }
-          });
-          if (jobResponse.data && jobResponse.data.items) {
-            setActivities(jobResponse.data.items);
-          } else {
-            setActivities([]);
-          }
-        } else {
-          const allJobsResponse = await apiClient.get('/job-postings', {
-            params: { page: 1, size: 100 }
-          });
-          if (allJobsResponse.data && allJobsResponse.data.items) {
-            setActivities(allJobsResponse.data.items);
-          }
         }
       } catch (error) {
         console.error('[ActivityRecommender] 데이터 로드 실패:', error);
       } finally {
-        setIsLoading(false);
+        // 데이터 로딩은 두 번째 useEffect(fetchJobs)에서 담당하므로 여기서는 처리 안 함
       }
     };
     fetchData();
@@ -660,21 +645,39 @@ function ActivityRecommender() {
                       <a href={selectedActivity.link} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
                         <button style={{ width: '100%', padding: '12px', cursor: 'pointer', backgroundColor: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px' }}>공고 원문 보기</button>
                       </a>
-                      <button
-                        onClick={() => handleAddToCalendarRequest(selectedActivity)}
-                        style={{
-                          flex: 1,
-                          padding: '12px',
-                          cursor: 'pointer',
-                          backgroundColor: '#e3f2fd',
-                          border: '1px solid #90caf9',
-                          borderRadius: '4px',
-                          color: '#1976d2',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        📅 일정에 추가하기
-                      </button>
+                      {['mock-2', 'mock-3'].includes(selectedActivity.jobId) ? (
+                        <button
+                          disabled
+                          style={{
+                            flex: 1,
+                            padding: '12px',
+                            cursor: 'not-allowed',
+                            backgroundColor: '#f5f5f5',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            color: '#999',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          상시채용입니다
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleAddToCalendarRequest(selectedActivity)}
+                          style={{
+                            flex: 1,
+                            padding: '12px',
+                            cursor: 'pointer',
+                            backgroundColor: '#e3f2fd',
+                            border: '1px solid #90caf9',
+                            borderRadius: '4px',
+                            color: '#1976d2',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          📅 일정에 추가하기
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
