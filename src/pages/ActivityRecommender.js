@@ -203,9 +203,9 @@ function ActivityRecommender() {
     if (job.jobId.toString().startsWith('mock-')) {
       setTimeout(() => {
         let mockScore = 60;
-        if (job.jobId === 'mock-1') mockScore = 68;
-        else if (job.jobId === 'mock-2') mockScore = 65;
-        else if (job.jobId === 'mock-3') mockScore = 62;
+        if (job.jobId === 'mock-1') mockScore = 48;
+        else if (job.jobId === 'mock-2') mockScore = 45;
+        else if (job.jobId === 'mock-3') mockScore = 49;
 
         let mockImprovements = [];
         if (job.jobId === 'mock-1') {
