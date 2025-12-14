@@ -43,7 +43,7 @@ export default function OAuthCallback() {
         const meResponse = await apiClient.get('/auth/me');
         console.log('[OAuthCallback.js] GET /auth/me - Full response:', meResponse);
 
-        // 5) [!!!] [수정] 덮어쓰지 않고, 기존 tokens와 새 user 정보를 합칩니다.
+        // 5) [!!!] [수정] 덮어쓰지 않고, 기존 tokens와 새 user 정보를 합칩니다. 
         // profileComplete 값을 user 객체에 복사 (백엔드 응답의 루트에 있음)
         // URL에서 받은 name이 있고, API 응답에 name이 없다면 URL의 name을 사용 (또는 우선순위 조정)
         const apiUser = meResponse.data.user || {};
