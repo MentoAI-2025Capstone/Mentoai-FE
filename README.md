@@ -1,70 +1,67 @@
-# Getting Started with Create React App
+# Mento AI (멘토 AI)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Mento AI는 사용자의 역량을 분석하고 커리어 개발을 위한 맞춤형 활동을 추천해주는 AI 멘토링 플랫폼입니다.
 
-## Available Scripts
+## 🚀 주요 기능 (Features)
 
-In the project directory, you can run:
+*   **대시보드 (Dashboard)**: 사용자의 기술 역량, 자격, 관련 경험, 학력/전공 점수를 시각적으로 분석(Radar Chart)하여 보여줍니다.
+*   **활동 추천 (Activity Recommender)**: 사용자의 현재 상태와 목표에 맞춰 필요한 활동을 추천합니다.
+*   **AI 멘토링 (AI Mentoring)**: 사용자가 입력한 프롬프트를 기반으로 AI 멘토가 조언을 제공합니다.
+*   **구글 로그인 (Google Login)**: 간편하고 안전한 구글 OAuth 인증을 지원합니다.
 
-### `npm start`
+## 🛠 기술 스택 (Tech Stack)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+*   Frontend: React (v19), React Router (v7)
+*   Visualization: Recharts
+*   HTTP Client: Axios
+*   Authentication: @react-oauth/google
+*   Testing: Jest, React Testing Library
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📦 설치 및 실행 (Installation & Getting Started)
 
-### `npm test`
+이 프로젝트는 [Create React App](https://github.com/facebook/create-react-app)을 기반으로 생성되었습니다.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 1. 저장소 클론 (Clone Repository)
 
-### `npm run build`
+```bash
+git clone [repository-url]
+cd Mentoai-FE
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 2. 패키지 설치 (Install Dependencies)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 3. 개발 서버 실행 (Run Development Server)
 
-### `npm run eject`
+```bash
+npm start
+```
+앱이 개발 모드에서 실행됩니다.\
+[http://localhost:3000](http://localhost:3000)을 열어 브라우저에서 확인하세요.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+코드를 수정하면 페이지가 자동으로 새로고침됩니다.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 4. 빌드 (Build)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+npm run build
+```
+프로덕션 배포를 위해 앱을 빌드합니다.\
+`build` 폴더에 최적화된 파일이 생성됩니다.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 📂 프로젝트 구조 (Project Structure)
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+mento-ai/
+├── public/
+├── src/
+│   ├── api/            # API 통신 관련 로직
+│   ├── components/     # 재사용 가능한 UI 컴포넌트
+│   ├── pages/          # 주요 페이지 (Dashboard, ActivityRecommender 등)
+│   ├── App.js          # 메인 앱 컴포넌트 & 라우팅
+│   └── index.js        # 진입점 (Entry Point)
+└── package.json
+```
